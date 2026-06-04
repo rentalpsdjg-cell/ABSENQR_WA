@@ -62,7 +62,6 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="bg-blogger-override flex flex-col md:flex-row">
@@ -70,7 +69,7 @@
         <script>
             // CONFIGURATION
             const IS_PREVIEW = false; 
-            const GAS_URL = "https://script.google.com/macros/s/AKfycbxVBUyJ77AVzG4gVtvXv2Ls9AHrcLbCsJ11pr4AwoPjwdsjz9-zNZlctSZ1JPbylNlz/exec";
+            const GAS_URL = "https://script.google.com/macros/s/AKfycbxVBUyJ77AVzG4gVtvXv2Ls9AHrcLbCsJ11pr4AwoPjwdsjz9-zNZlctSZ1JPbylNlz/exec"; 
             
             let SESS_USER = null;
             let DATA_PESERTA = [];
@@ -173,7 +172,7 @@
                         </div>
                         <p class="text-xs font-semibold bg-white/20 inline-block px-3 py-1 rounded-full w-max mt-2">Hari Ini</p>
                     </div>
-                     
+                    
                     <div class="rounded-4xl p-6 flex flex-col justify-between bg-gradient-to-br from-[#FF8E9E] to-[#FF6B7D] text-white shadow-lg shadow-pink-200/60 relative overflow-hidden">
                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
                         <div class="mb-4">
@@ -216,7 +215,7 @@
                                     <th class="pb-4 px-2 font-extrabold text-center">Kategori</th>
                                     <th class="pb-4 px-2 font-extrabold text-center">Pesan WA</th>
                                 </tr>
-                            </thead>
+                            </table>
                             <tbody id="tableDashboardTerbaru" class="text-sm"></tbody>
                         </table>
                     </div>
@@ -386,19 +385,25 @@
                     </form>
                 </div>
             </section>
-
+ 
             <section id="menu-pengaturan" class="menu-section hide">
-                <h2 class="text-3xl md:text-4xl font-black text-brand-textMain mb-8 tracking-tight">Pengaturan WA Gateway</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-brand-textMain mb-8 tracking-tight">WhatsApp Gateway</h2>
                 <div class="card-figma p-8 md:p-10 max-w-4xl">
-                    <form id="formWAGateway" onsubmit="saveWAGateway(event)">
-                        <div class="mb-6">
-                            <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">API Token Fonnte / Gateway Lain</label>
-                            <input type="text" id="waToken" placeholder="Masukkan Token API Anda" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-blue font-bold text-sm text-slate-700">
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">Template Pesan Presensi</label>
-                            <textarea id="waTemplate" rows="4" placeholder="Halo {nama}, Anda terdata hadir pada jam {waktu}." class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-blue font-bold text-sm text-slate-700"></textarea>
-                            <p class="text-xs text-brand-textMuted mt-1">Gunakan tag: <code class="bg-slate-100 p-0.5 rounded">{nama}</code>, <code class="bg-slate-100 p-0.5 rounded">{waktu}</code>, <code class="bg-slate-100 p-0.5 rounded">{status}</code></p>
+                    <form id="formSettings" onsubmit="saveSettings(event)">
+                        <div class="grid grid-cols-1 gap-6 mb-8">
+                            <div>
+                                <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">API URL Gateway (Fonnte/Sejenis)</label>
+                                <input type="text" id="waUrl" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-blue font-bold text-sm text-slate-700" required>
+                            </div>
+                            <div>
+                                <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">Token Otorisasi API</label>
+                                <input type="password" id="waToken" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-blue font-bold text-sm text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">Template Pesan Notifikasi</label>
+                                <textarea id="waTemplate" rows="4" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-blue font-bold text-sm text-slate-700" required></textarea>
+                                <p class="text-xs text-brand-textMuted mt-2 font-semibold">Variabel yang tersedia: <b class="text-slate-600">[NAMA]</b>, <b class="text-slate-600">[ID]</b>, <b class="text-slate-600">[STATUS]</b>, <b class="text-slate-600">[WAKTU]</b></p>
+                            </div>
                         </div>
                         <button type="submit" class="bg-brand-blue text-white font-black px-10 py-4 rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-500 transition-all">Simpan Konfigurasi</button>
                     </form>
@@ -406,672 +411,511 @@
             </section>
         </main>
     </div>
-
+ 
     <script>
-        // Set Default Date Filter ke Hari Ini
-        document.getElementById('filterTanggal').value = new Date().toISOString().split('T')[0];
-
-        // 1. SYSTEM INITIALIZER & CACHE DATA LOCALSTORAGE
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load Data mock dari localStorage atau buat data awal
-            if (!localStorage.getItem('DATA_PESERTA')) {
-                const samplePeserta = [
-                    { id: "A001", nama: "Ahmad Fauzi", kategori: "Siswa", wa: "081234567890" },
-                    { id: "A002", nama: "Siti Aminah", kategori: "Siswa", wa: "081987654321" },
-                    { id: "B001", nama: "Budi Utomo", kategori: "Guru", wa: "085211223344" }
-                ];
-                localStorage.setItem('DATA_PESERTA', JSON.stringify(samplePeserta));
-            }
-            if (!localStorage.getItem('DATA_REKAP')) {
-                localStorage.setItem('DATA_REKAP', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('SETTINGS_CACHE')) {
-                const defaultSettings = {
-                    appNama: "HomeEd",
-                    instansiNama: "SMK Negeri 1 Jakarta",
-                    instansiAlamat: "Jl. Budi Utomo No.7, Sawah Besar, Jakarta Pusat",
-                    instansiLogo: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=200&auto=format&fit=crop",
-                    kepalaJabatan: "Kepala Sekolah",
-                    kepalaNama: "Dr. H. Supriyadi, M.Pd",
-                    kepalaJenisId: "NIP",
-                    kepalaId: "197508122003121002",
-                    waToken: "SAMPLE_TOKEN_FONNTE_123456",
-                    waTemplate: "Yth. Orang Tua/Wali, menginfokan bahwa {nama} ({kategori}) telah hadir di sekolah pada pukul {waktu} dengan status: {status}."
-                };
-                localStorage.setItem('SETTINGS_CACHE', JSON.stringify(defaultSettings));
-            }
-
-            // Sync ke Global Variable
-            DATA_PESERTA = JSON.parse(localStorage.getItem('DATA_PESERTA'));
-            DATA_REKAP = JSON.parse(localStorage.getItem('DATA_REKAP'));
-            SETTINGS_CACHE = JSON.parse(localStorage.getItem('SETTINGS_CACHE'));
-
-            // Terapkan Settings ke UI
-            applySettingsUI();
-
-            // Sembunyikan Loader & tampilkan Login Screen
-            setTimeout(() => {
-                document.getElementById('initialLoader').classList.add('opacity-0');
-                setTimeout(() => {
-                    document.getElementById('initialLoader').classList.add('hide');
-                    // Cek Sesi login
-                    if (sessionStorage.getItem('SESS_USER')) {
-                        SESS_USER = sessionStorage.getItem('SESS_USER');
-                        showDashboard();
-                    } else {
-                        document.getElementById('loginScreen').classList.remove('hide');
-                    }
-                }, 500);
-            }, 1000);
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Set Tanggal Default Hari Ini pada Filter Laporan
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterTanggal').value = today;
+            await loadSystemData();
         });
-
+ 
+        async function hitAPI(action, dataPayload = {}) {
+            const formData = new URLSearchParams();
+            formData.append('action', action);
+            formData.append('payload', JSON.stringify(dataPayload));
+ 
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error("API Error: ", error);
+                return { status: 'error', message: 'Koneksi ke API Cloud Gagal!' };
+            }
+        }
+ 
+        async function loadSystemData() {
+            document.getElementById('initialLoader').classList.remove('opacity-0');
+            const resSettings = await hitAPI('getSettings');
+            if(resSettings.status === 'success') {
+                SETTINGS_CACHE = resSettings.data;
+                applySettingsUI();
+            }
+            
+            if(!SESS_USER) {
+                document.getElementById('initialLoader').classList.add('opacity-0');
+                setTimeout(() => document.getElementById('initialLoader').classList.add('hide'), 500);
+                document.getElementById('loginScreen').classList.remove('hide');
+                return;
+            }
+            
+            await refreshDashboard();
+            await loadDataPeserta();
+            await loadDataAbsensi();
+            
+            document.getElementById('initialLoader').classList.add('opacity-0');
+            setTimeout(() => document.getElementById('initialLoader').classList.add('hide'), 500);
+        }
+ 
         function applySettingsUI() {
-            document.getElementById('loginAppName').innerText = SETTINGS_CACHE.appNama || "HomeEd";
-            document.getElementById('sidebarAppName').innerText = SETTINGS_CACHE.appNama || "HomeEd";
+            const appName = SETTINGS_CACHE.appNama || 'HomeEd';
+            document.getElementById('loginAppName').innerText = appName;
+            document.getElementById('sidebarAppName').innerText = appName;
+            document.title = appName + " - Sistem Kehadiran";
             
             if(SETTINGS_CACHE.instansiLogo) {
                 document.getElementById('loginLogo').src = SETTINGS_CACHE.instansiLogo;
                 document.getElementById('loginLogo').classList.remove('hide');
                 document.getElementById('loginIcon').classList.add('hide');
-
                 document.getElementById('sidebarLogo').src = SETTINGS_CACHE.instansiLogo;
                 document.getElementById('sidebarLogo').classList.remove('hide');
                 document.getElementById('sidebarIcon').classList.add('hide');
             }
-
-            // Form inputs setup
-            document.getElementById('appNama').value = SETTINGS_CACHE.appNama || "";
-            document.getElementById('instansiNama').value = SETTINGS_CACHE.instansiNama || "";
-            document.getElementById('instansiLogo').value = SETTINGS_CACHE.instansiLogo || "";
-            document.getElementById('instansiAlamat').value = SETTINGS_CACHE.instansiAlamat || "";
-            document.getElementById('kepalaJabatan').value = SETTINGS_CACHE.kepalaJabatan || "";
-            document.getElementById('kepalaNama').value = SETTINGS_CACHE.kepalaNama || "";
-            document.getElementById('kepalaJenisId').value = SETTINGS_CACHE.kepalaJenisId || "";
-            document.getElementById('kepalaId').value = SETTINGS_CACHE.kepalaId || "";
-            
-            // WA gateway form setup
-            document.getElementById('waToken').value = SETTINGS_CACHE.waToken || "";
-            document.getElementById('waTemplate').value = SETTINGS_CACHE.waTemplate || "";
-
-            // Populate category filters
-            populateKategoriFilter();
+ 
+            // Ambil data ke form pengaturan profil
+            document.getElementById('appNama').value = SETTINGS_CACHE.appNama || '';
+            document.getElementById('instansiNama').value = SETTINGS_CACHE.instansiNama || '';
+            document.getElementById('instansiLogo').value = SETTINGS_CACHE.instansiLogo || '';
+            document.getElementById('instansiAlamat').value = SETTINGS_CACHE.instansiAlamat || '';
+            document.getElementById('kepalaJabatan').value = SETTINGS_CACHE.kepalaJabatan || '';
+            document.getElementById('kepalaNama').value = SETTINGS_CACHE.kepalaNama || '';
+            document.getElementById('kepalaJenisId').value = SETTINGS_CACHE.kepalaJenisId || '';
+            document.getElementById('kepalaId').value = SETTINGS_CACHE.kepalaId || '';
+ 
+            // Ambil data ke form pengaturan WA
+            document.getElementById('waUrl').value = SETTINGS_CACHE.waUrl || '';
+            document.getElementById('waToken').value = SETTINGS_CACHE.waToken || '';
+            document.getElementById('waTemplate').value = SETTINGS_CACHE.waTemplate || '';
         }
-
-        function populateKategoriFilter() {
-            const categories = [...new Set(DATA_PESERTA.map(p => p.kategori))];
-            const select = document.getElementById('filterKategori');
-            select.innerHTML = '<option value="">Semua Kategori</option>';
-            categories.forEach(cat => {
-                if(cat) select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-        }
-
-        // 2. AUTHENTICATION SYSTEM
-        function handleLogin(e) {
+ 
+        async function handleLogin(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-
-            // Simple login checker (admin / admin)
-            if (user === 'admin' && pass === 'admin') {
-                sessionStorage.setItem('SESS_USER', user);
-                SESS_USER = user;
-                Swal.fire({ icon: 'success', title: 'Login Berhasil', text: 'Selamat datang di Aplikasi Kehadiran!', timer: 1500, showConfirmButton: false });
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Memverifikasi...';
+            
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            const res = await hitAPI('login', { username: u, password: p });
+            if(res.status === 'success') {
+                SESS_USER = res.data;
+                document.getElementById('navUserInfo').innerText = SESS_USER.nama;
                 document.getElementById('loginScreen').classList.add('hide');
-                showDashboard();
+                document.getElementById('mainNav').classList.remove('hide');
+                document.getElementById('mainContent').classList.remove('hide');
+                await loadSystemData();
+                switchMenu('dashboard');
             } else {
-                Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Username atau Password salah!' });
+                Swal.fire('Gagal Login', res.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Masuk Sekarang';
             }
         }
-
-        function logout() {
-            Swal.fire({
-                title: 'Apakah anda yakin?',
-                text: "Sesi login Anda akan berakhir.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#4DBBFF',
-                cancelButtonColor: '#FF7F93',
-                confirmButtonText: 'Ya, Keluar!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    sessionStorage.removeItem('SESS_USER');
-                    window.location.reload();
-                }
-            })
-        }
-
-        function showDashboard() {
-            document.getElementById('mainNav').classList.remove('hide');
-            document.getElementById('mainContent').classList.remove('hide');
-            switchMenu('dashboard');
-            document.getElementById('navUserInfo').innerText = SESS_USER;
-        }
-
-        // 3. MENU SWITCH NAVIGATION
-        function switchMenu(target) {
-            // Stop Scanner jika sedang aktif berpindah menu
-            if(target !== 'scan') { stopScanner(); }
-
-            // Hide all sections
-            document.querySelectorAll('.menu-section').forEach(sec => sec.classList.add('hide'));
-            // Show target section
-            const targetSection = document.getElementById(`menu-${target}`);
-            if(targetSection) targetSection.classList.remove('hide');
-
-            // Set active states on buttons
-            document.querySelectorAll('.menu-btn').forEach(btn => {
-                const indicator = btn.querySelector('.active-indicator');
-                if (btn.getAttribute('data-target') === target) {
-                    btn.classList.add('text-brand-blue', 'bg-blue-50/50');
-                    btn.classList.remove('text-brand-textMuted');
-                    if(indicator) indicator.classList.remove('opacity-0');
-                } else {
-                    btn.classList.remove('text-brand-blue', 'bg-blue-50/50');
-                    btn.classList.add('text-brand-textMuted');
-                    if(indicator) indicator.classList.add('opacity-0');
-                }
+ 
+        function switchMenu(menuTarget) {
+            document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hide'));
+            document.getElementById('menu-' + menuTarget).classList.remove('hide');
+            
+            document.querySelectorAll('.menu-btn').forEach(b => {
+                b.classList.remove('text-brand-blue', 'bg-slate-100/80');
+                b.classList.add('text-brand-textMuted');
+                b.querySelector('.active-indicator').classList.add('opacity-0');
             });
-
-            // Trigger content re-renders
-            if(target === 'dashboard') { renderDashboard(); }
-            if(target === 'peserta') { renderTablePeserta(); }
-            if(target === 'rekap') { renderTableRekap(); }
+            
+            const activeBtn = document.querySelector(`.menu-btn[data-target="${menuTarget}"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('text-brand-blue', 'bg-slate-100/80');
+                activeBtn.classList.remove('text-brand-textMuted');
+                activeBtn.querySelector('.active-indicator').classList.remove('opacity-0');
+            }
+            if(menuTarget !== 'scan') stopScanner();
         }
-
-        // 4. QR CAMERA ABSENSI & INPUT MANUAL LOGIC
+ 
+        async function refreshDashboard() {
+            const res = await hitAPI('getDashboard');
+            if(res.status === 'success') {
+                document.getElementById('countHadir').innerText = res.data.hadir;
+                document.getElementById('countIzin').innerText = res.data.izin;
+                document.getElementById('countSakit').innerText = res.data.sakit;
+                document.getElementById('countAlpa').innerText = res.data.alpa;
+                
+                let html = '';
+                res.data.terbaru.forEach(r => {
+                    let badgeWa = r.statusWA === 'Terkirim' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500';
+                    html += `<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-4 px-2 font-bold text-slate-500">${r.waktu}</td>
+                        <td class="py-4 px-2 font-black text-slate-800">${r.nama}</td>
+                        <td class="py-4 px-2 text-center"><span class="bg-blue-50 text-brand-blue text-xs font-bold px-3 py-1 rounded-full">${r.kategori}</span></td>
+                        <td class="py-4 px-2 text-center"><span class="${badgeWa} text-xs font-bold px-3 py-1 rounded-full">${r.statusWA}</span></td>
+                    </tr>`;
+                });
+                document.getElementById('tableDashboardTerbaru').innerHTML = html || '<tr><td colspan="4" class="text-center py-6 text-brand-textMuted font-bold">Belum ada absensi masuk hari ini.</td></tr>';
+            }
+        }
+ 
+        async function loadDataPeserta() {
+            const res = await hitAPI('getPeserta');
+            if(res.status === 'success') {
+                DATA_PESERTA = res.data;
+                renderTablePeserta();
+                
+                // Isi Filter Kategori secara Otomatis
+                const kats = [...new Set(DATA_PESERTA.map(p => p.kategori))];
+                let opt = '<option value="">Semua Kategori</option>';
+                kats.forEach(k => opt += `<option value="${k}">${k}</option>`);
+                document.getElementById('filterKategori').innerHTML = opt;
+            }
+        }
+ 
+        function renderTablePeserta() {
+            const q = document.getElementById('searchPeserta').value.toLowerCase();
+            let html = '';
+            const filtered = DATA_PESERTA.filter(p => p.nama.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+            
+            filtered.forEach(p => {
+                html += `<tr>
+                    <td class="p-5 font-bold text-slate-600">${p.id}</td>
+                    <td class="p-5 font-black text-slate-800">${p.nama}</td>
+                    <td class="p-5"><span class="bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded-full text-xs">${p.kategori}</span></td>
+                    <td class="p-5 font-semibold text-slate-600">${p.wa || '-'}</td>
+                    <td class="p-5 text-center flex justify-center gap-2">
+                        <button onclick="downloadSingleQR('${p.id}', '${p.nama}')" class="w-9 h-9 bg-orange-50 text-brand-orange rounded-xl hover:bg-brand-orange hover:text-white transition-all" title="Unduh QR"><i class="fas fa-qrcode"></i></button>
+                        <button onclick="openModalPeserta(true, '${p.id}')" class="w-9 h-9 bg-blue-50 text-brand-blue rounded-xl hover:bg-brand-blue hover:text-white transition-all" title="Edit"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('tableDataPeserta').innerHTML = html || '<tr><td colspan="5" class="text-center p-8 text-brand-textMuted font-bold">Data peserta tidak ditemukan.</td></tr>';
+        }
+ 
+        async function loadDataAbsensi() {
+            const res = await hitAPI('getRekap');
+            if(res.status === 'success') {
+                DATA_REKAP = res.data;
+                renderTableRekap();
+            }
+        }
+ 
+        function renderTableRekap() {
+            const tgl = document.getElementById('filterTanggal').value;
+            const kat = document.getElementById('filterKategori').value;
+            let html = '';
+            
+            const filtered = DATA_REKAP.filter(r => {
+                const matchTgl = r.waktu.split(' ')[0] === tgl;
+                const matchKat = kat === '' || r.kategori === kat;
+                return matchTgl && matchKat;
+            });
+ 
+            filtered.forEach(r => {
+                let badgeStatus = 'bg-slate-100 text-slate-600';
+                if(r.status === 'Hadir') badgeStatus = 'bg-blue-100 text-brand-blue';
+                else if(r.status === 'Izin' || r.status === 'Cuti') badgeStatus = 'bg-pink-100 text-brand-pink';
+                else if(r.status === 'Sakit') badgeStatus = 'bg-orange-100 text-brand-orange';
+                else if(r.status === 'Alfa') badgeStatus = 'bg-purple-100 text-brand-purple';
+ 
+                let badgeWa = r.statusWA === 'Terkirim' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500';
+ 
+                html += `<tr>
+                    <td class="p-5 font-bold text-slate-500">${r.id}</td>
+                    <td class="p-5 font-black text-slate-800">${r.nama}</td>
+                    <td class="p-5 text-center"><span class="bg-slate-50 text-slate-500 font-bold px-3 py-1 rounded-full text-xs">${r.kategori}</span></td>
+                    <td class="p-5 text-center font-semibold text-slate-600">${r.waktu.split(' ')[1] || r.waktu}</td>
+                    <td class="p-5 text-center"><span class="${badgeStatus} font-black px-3 py-1 rounded-full text-xs">${r.status}</span></td>
+                    <td class="p-5 text-center"><span class="${badgeWa} font-bold px-3 py-1 rounded-full text-xs">${r.statusWA}</span></td>
+                </tr>`;
+            });
+            document.getElementById('tableDataRekap').innerHTML = html || '<tr><td colspan="6" class="text-center p-8 text-brand-textMuted font-bold">Tidak ada rekap absensi pada tanggal dan kategori yang dipilih.</td></tr>';
+        }
+ 
+        // CONTROLLER SCANNER QR CODE
         function startScanner() {
             document.getElementById('readerPlaceholder').classList.add('hide');
             document.getElementById('btnStartScan').classList.add('hide');
             document.getElementById('btnStopScan').classList.remove('hide');
-
+            
             html5QrCode = new Html5Qrcode("reader");
-            Html5Qrcode.getCameras().then(cameras => {
-                if (cameras && cameras.length > 0) {
-                    let cameraId = cameras[0].id;
-                    // Tampilkan dropdown pilihan kamera jika lebih dari 1 kamera tersedia
-                    if(cameras.length > 1) {
-                        const selectorCon = document.getElementById('kameraSelectorContainer');
-                        const select = document.getElementById('cameraSelect');
-                        select.innerHTML = '';
-                        cameras.forEach((cam, idx) => {
-                            select.innerHTML += `<option value="${cam.id}">${cam.label || 'Kamera '+(idx+1)}</option>`;
-                        });
-                        selectorCon.classList.remove('hide');
-                        select.onchange = () => {
-                            html5QrCode.stop().then(() => {
-                                html5QrCode.start(select.value, { fps: 10, qrbox: 250 }, onScanSuccess);
-                            });
-                        };
-                        cameraId = select.value;
-                    }
-
-                    html5QrCode.start(cameraId, { fps: 10, qrbox: 250 }, onScanSuccess)
-                    .catch(err => { console.error(err); });
-                } else {
-                    Swal.fire('Kamera tidak ditemukan', '', 'error');
-                }
-            }).catch(err => { console.error(err); });
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    processScan(decodedText);
+                },
+                () => {}
+            ).catch(err => {
+                Swal.fire('Kamera Error', 'Gagal mengakses kamera perangkat.', 'error');
+                stopScanner();
+            });
         }
-
+ 
         function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('readerPlaceholder').classList.remove('hide');
-                    document.getElementById('btnStartScan').classList.remove('hide');
-                    document.getElementById('btnStopScan').classList.add('hide');
-                    document.getElementById('kameraSelectorContainer').classList.add('hide');
-                }).catch(err => console.error(err));
+            document.getElementById('readerPlaceholder').classList.remove('hide');
+            document.getElementById('btnStartScan').classList.remove('hide');
+            document.getElementById('btnStopScan').classList.add('hide');
+            if(html5QrCode) {
+                html5QrCode.stop().then(() => html5QrCode = null).catch(() => {});
             }
         }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            // Berikan getaran pendek di HP/Perangkat jika mendukung
-            if (navigator.vibrate) navigator.vibrate(100);
-            processScan(decodedText);
-        }
-
-        function processScan(idPeserta) {
-            if(!idPeserta.trim()) return;
+ 
+        async function processScan(scannedId) {
+            if(!scannedId.trim()) return;
             document.getElementById('manualId').value = '';
-
-            const peserta = DATA_PESERTA.find(p => p.id === idPeserta.trim());
-            const resultBox = document.getElementById('scanResult');
-
-            if (!peserta) {
-                resultBox.innerHTML = `
-                    <div class="w-32 h-32 rounded-[2rem] bg-rose-50 flex items-center justify-center mb-6 text-rose-500 animate-bounce">
-                        <i class="fas fa-times text-6xl"></i>
+            
+            // Animasi Loading Sementara di Box Hasil Scan
+            document.getElementById('scanResult').innerHTML = `<i class="fas fa-circle-notch fa-spin text-4xl text-brand-blue"></i><p class="mt-4 font-bold text-slate-600">Memproses kehadiran ID ${scannedId}...</p>`;
+            
+            const res = await hitAPI('scanQR', { id: scannedId });
+            if(res.status === 'success') {
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4 text-4xl shadow-md border border-emerald-100 animate-bounce"><i class="fas fa-check-circle"></i></div>
+                    <h4 class="text-3xl font-black text-slate-800">${res.data.nama}</h4>
+                    <p class="text-brand-blue font-black text-sm uppercase tracking-wide mt-1">${res.data.id} - ${res.data.kategori}</p>
+                    <div class="mt-6 bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100 text-left w-full max-w-xs">
+                        <p class="text-xs text-slate-400 font-bold">WAKTU ABSEN</p>
+                        <p class="text-slate-700 font-black text-sm">${res.data.waktu}</p>
+                        <p class="text-xs text-slate-400 font-bold mt-2">NOTIFIKASI WHATSAPP</p>
+                        <p class="font-black text-sm ${res.data.statusWA === 'Terkirim' ? 'text-emerald-600' : 'text-rose-500'}">${res.data.statusWA}</p>
                     </div>
-                    <h3 class="text-2xl font-black text-rose-500">ID Tidak Dikenal</h3>
-                    <p class="text-sm text-brand-textMuted mt-3 font-semibold">ID: ${idPeserta} tidak terdaftar di database.</p>
                 `;
-                return;
+                // Bunyi Beep bawaan browser (Opsional)
+                try { new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav').play(); } catch(e){}
+                await refreshDashboard();
+                await loadDataAbsensi();
+            } else {
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="w-24 h-24 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-4 text-4xl shadow-md border border-rose-100"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h4 class="text-xl font-black text-rose-600">Absensi Gagal!</h4>
+                    <p class="text-slate-600 font-bold text-sm max-w-xs mt-2">${res.message}</p>
+                    <button onclick="resetScanBoxUI()" class="mt-6 bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">Coba Lagi</button>
+                `;
             }
-
-            // Cek jika sudah absen hari ini
-            const tglHariIni = new Date().toISOString().split('T')[0];
-            const sudahAbsen = DATA_REKAP.find(r => r.id === peserta.id && r.waktu.startsWith(tglHariIni));
-
-            if (sudahAbsen) {
-                Swal.fire({ icon: 'warning', title: 'Sudah Presensi', text: `${peserta.nama} telah tercatat hadir hari ini!`, timer: 2000, showConfirmButton: false });
-                renderScanSuccessUI(peserta, sudahAbsen.waktu, "Sudah Hadir Sebelumnya");
-                return;
-            }
-
-            // Daftarkan Log Kehadiran Baru
-            const waktuMulai = new Date().toLocaleString('id-ID');
-            const logBaru = {
-                id: peserta.id,
-                nama: peserta.nama,
-                kategori: peserta.kategori,
-                waktu: new Date().toISOString(), // Format ISO untuk validasi filter sort
-                status: "Hadir",
-                waStatus: "Pending"
-            };
-
-            DATA_REKAP.unshift(logBaru);
-            localStorage.setItem('DATA_REKAP', JSON.stringify(DATA_REKAP));
-
-            // Kirim WhatsApp (Simulasi / Integrasi URL)
-            simulasiKirimWA(logBaru, peserta);
-
-            renderScanSuccessUI(peserta, waktuMulai, "Berhasil");
         }
-
-        function renderScanSuccessUI(peserta, waktuStr, statusInfo) {
-            const resultBox = document.getElementById('scanResult');
-            resultBox.innerHTML = `
-                <div class="w-32 h-32 rounded-[2rem] bg-green-50 flex items-center justify-center mb-6 text-green-500 shadow-md">
-                    <i class="fas fa-check-circle text-6xl"></i>
+ 
+        function resetScanBoxUI() {
+            document.getElementById('scanResult').innerHTML = `
+                <div class="w-32 h-32 rounded-[2rem] bg-slate-50 flex items-center justify-center mb-6 shadow-inner border border-slate-100">
+                    <i class="fas fa-qrcode text-6xl text-brand-blue"></i>
                 </div>
-                <span class="px-4 py-1 text-xs font-black bg-green-100 text-green-600 rounded-full mb-3">${statusInfo.toUpperCase()}</span>
-                <h3 class="text-2xl font-black text-slate-800">${peserta.nama}</h3>
-                <p class="text-sm text-brand-blue font-bold mt-1">${peserta.id} - ${peserta.kategori}</p>
-                <div class="mt-6 border-t border-slate-100 pt-4 w-full text-left">
-                    <p class="text-xs text-brand-textMuted font-bold uppercase tracking-wider mb-1">Waktu Presensi</p>
-                    <p class="text-sm font-black text-slate-700"><i class="far fa-clock mr-2 text-brand-blue"></i>${new Date(waktuStr).toLocaleString('id-ID')}</p>
-                </div>
+                <h3 class="text-2xl font-black text-slate-700">Arahkan Kartu QR</h3>
+                <p class="text-sm text-brand-textMuted mt-3 max-w-xs font-semibold">Tahan kartu peserta Anda di depan kamera agar sistem dapat memverifikasi kehadiran.</p>
             `;
         }
-
-        function simulasiKirimWA(log, peserta) {
-            let template = SETTINGS_CACHE.waTemplate || "Halo {nama}, Anda terdata hadir.";
-            template = template.replace('{nama}', log.nama)
-                               .replace('{kategori}', log.kategori)
-                               .replace('{status}', log.status)
-                               .replace('{waktu}', new Date(log.waktu).toLocaleTimeString('id-ID'));
-
-            console.log(`Mengirim Pesan WA ke ${peserta.wa} via API Token: ${SETTINGS_CACHE.waToken}. Isi pesan: ${template}`);
+ 
+        // DOWNLOAD GENERATOR QR CODE
+        function getQRUrl(id) {
+            return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(id)}`;
+        }
+ 
+        function downloadSingleQR(id, nama) {
+            const url = getQRUrl(id);
+            saveAs(url, `QR_${id}_${nama.replace(/\s+/g, '_')}.png`);
+        }
+ 
+        async function downloadSemuaQR() {
+            if(DATA_PESERTA.length === 0) return Swal.fire('Kosong', 'Tidak ada data peserta untuk diunduh.', 'warning');
             
-            // Hit Integrasi via API Fetch jika token ada (Contoh Fonnte)
-            if(SETTINGS_CACHE.waToken && SETTINGS_CACHE.waToken !== "SAMPLE_TOKEN_FONNTE_123456") {
-                fetch('https://api.fonnte.com/send', {
-                    method: 'POST',
-                    headers: { 'Authorization': SETTINGS_CACHE.waToken },
-                    body: new URLSearchParams({ 'target': peserta.wa, 'message': template })
-                }).then(res => {
-                    log.waStatus = "Terkirim";
-                    localStorage.setItem('DATA_REKAP', JSON.stringify(DATA_REKAP));
-                    if(document.getElementById('menu-dashboard').classList.contains('hide') === false) renderDashboard();
-                }).catch(err => {
-                    log.waStatus = "Gagal";
-                    localStorage.setItem('DATA_REKAP', JSON.stringify(DATA_REKAP));
-                });
-            } else {
-                // Default Simulasi sukses dalam 1.5 detik
-                setTimeout(() => {
-                    log.waStatus = "Terkirim";
-                    localStorage.setItem('DATA_REKAP', JSON.stringify(DATA_REKAP));
-                    renderDashboard();
-                }, 1500);
-            }
-        }
-
-        // 5. RENDER DASHBOARD DATA STATISTIK & RECENT ACTIVITIES
-        function renderDashboard() {
-            const tglHariIni = new Date().toISOString().split('T')[0];
-            const rekapHariIni = DATA_REKAP.filter(r => r.waktu.startsWith(tglHariIni));
-
-            document.getElementById('countHadir').innerText = rekapHariIni.filter(r => r.status === 'Hadir').length;
-            document.getElementById('countIzin').innerText = rekapHariIni.filter(r => r.status === 'Izin').length;
-            document.getElementById('countSakit').innerText = rekapHariIni.filter(r => r.status === 'Sakit').length;
-            document.getElementById('countAlpa').innerText = rekapHariIni.filter(r => r.status === 'Alfa').length;
-
-            const tbody = document.getElementById('tableDashboardTerbaru');
-            tbody.innerHTML = '';
-
-            // Tampilkan maks 5 aktivitas presensi terbaru
-            const limaterbaru = DATA_REKAP.slice(0, 5);
-            if(limaterbaru.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center font-bold text-slate-400">Belum ada aktivitas hari ini.</td></tr>`;
-                return;
-            }
-
-            limaterbaru.forEach(r => {
-                let badgeWa = `<span class="px-3 py-1 text-xs rounded-full bg-amber-50 text-amber-500 font-extrabold"><i class="fas fa-spinner fa-spin mr-1"></i>Pending</span>`;
-                if(r.waStatus === "Terkirim") badgeWa = `<span class="px-3 py-1 text-xs rounded-full bg-green-50 text-green-500 font-extrabold"><i class="fas fa-check mr-1"></i>Terkirim</span>`;
-                if(r.waStatus === "Gagal") badgeWa = `<span class="px-3 py-1 text-xs rounded-full bg-rose-50 text-rose-500 font-extrabold"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal</span>`;
-
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
-                        <td class="py-4 px-2 font-bold text-slate-700">${new Date(r.waktu).toLocaleTimeString('id-ID')}</td>
-                        <td class="py-4 px-2 font-black text-slate-800">${r.nama}<br><span class="text-xs text-brand-textMuted font-bold">ID: ${r.id}</span></td>
-                        <td class="py-4 px-2 text-center font-bold text-slate-600">${r.kategori}</td>
-                        <td class="py-4 px-2 text-center">${badgeWa}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // 6. MANAJEMEN DATA PESERTA (TAMBAH, EDIT, HAPUS, DOWNLOAD ZIP)
-        function renderTablePeserta() {
-            const keyword = document.getElementById('searchPeserta').value.toLowerCase();
-            const tbody = document.getElementById('tableDataPeserta');
-            tbody.innerHTML = '';
-
-            const filtered = DATA_PESERTA.filter(p => p.nama.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword));
-
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-bold">Data peserta tidak ditemukan.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(p => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-5 font-bold text-brand-blue">${p.id}</td>
-                        <td class="p-5 font-black text-slate-800">${p.nama}</td>
-                        <td class="p-5 font-bold text-slate-600">${p.kategori}</td>
-                        <td class="p-5 font-bold text-slate-600"><i class="fab fa-whatsapp text-green-500 mr-2"></i>${p.wa}</td>
-                        <td class="p-5 text-center flex justify-center gap-2">
-                            <button onclick="editPeserta('${p.id}')" class="w-9 h-9 bg-blue-50 text-brand-blue rounded-xl hover:bg-brand-blue hover:text-white transition"><i class="fas fa-edit text-xs"></i></button>
-                            <button onclick="hapusPeserta('${p.id}')" class="w-9 h-9 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition"><i class="fas fa-trash text-xs"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openModalPeserta() {
             Swal.fire({
-                title: 'Tambah Peserta Baru',
-                html: `
-                    <input id="swalId" class="swal2-input" style="border-radius:1rem; font-size: 14px;" placeholder="ID Peserta (Contoh: S001)">
-                    <input id="swalNama" class="swal2-input" style="border-radius:1rem; font-size: 14px;" placeholder="Nama Lengkap">
-                    <input id="swalKategori" class="swal2-input" style="border-radius:1rem; font-size: 14px;" placeholder="Kategori (Contoh: Siswa / Guru)">
-                    <input id="swalWa" class="swal2-input" style="border-radius:1rem; font-size: 14px;" placeholder="Nomor WhatsApp (Contoh: 0812...)">
-                `,
-                focusConfirm: false,
-                confirmButtonText: 'Simpan Data',
-                confirmButtonColor: '#4DBBFF',
-                showCancelButton: true,
-                cancelButtonText: 'Batal',
-                preConfirm: () => {
-                    const id = document.getElementById('swalId').value.trim();
-                    const nama = document.getElementById('swalNama').value.trim();
-                    const kategori = document.getElementById('swalKategori').value.trim();
-                    const wa = document.getElementById('swalWa').value.trim();
-                    if (!id || !nama || !kategori || !wa) {
-                        Swal.showValidationMessage(`Harap lengkapi semua field!`)
-                    }
-                    if(DATA_PESERTA.some(p => p.id === id)) {
-                        Swal.showValidationMessage(`ID Peserta sudah terpakai!`)
-                    }
-                    return { id, nama, kategori, wa };
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    DATA_PESERTA.push(result.value);
-                    localStorage.setItem('DATA_PESERTA', JSON.stringify(DATA_PESERTA));
-                    Swal.fire('Tersimpan!', 'Peserta berhasil didaftarkan.', 'success');
-                    renderTablePeserta();
-                    populateKategoriFilter();
-                }
-            });
-        }
-
-        function editPeserta(id) {
-            const p = DATA_PESERTA.find(x => x.id === id);
-            if(!p) return;
-
-            Swal.fire({
-                title: 'Edit Data Peserta',
-                html: `
-                    <input id="swalId" class="swal2-input bg-slate-100" style="border-radius:1rem; font-size: 14px;" value="${p.id}" disabled>
-                    <input id="swalNama" class="swal2-input" style="border-radius:1rem; font-size: 14px;" value="${p.nama}" placeholder="Nama Lengkap">
-                    <input id="swalKategori" class="swal2-input" style="border-radius:1rem; font-size: 14px;" value="${p.kategori}" placeholder="Kategori">
-                    <input id="swalWa" class="swal2-input" style="border-radius:1rem; font-size: 14px;" value="${p.wa}" placeholder="Nomor WhatsApp">
-                `,
-                focusConfirm: false,
-                confirmButtonText: 'Update Data',
-                confirmButtonColor: '#4DBBFF',
-                showCancelButton: true,
-                preConfirm: () => {
-                    const nama = document.getElementById('swalNama').value.trim();
-                    const kategori = document.getElementById('swalKategori').value.trim();
-                    const wa = document.getElementById('swalWa').value.trim();
-                    if (!nama || !kategori || !wa) { Swal.showValidationMessage(`Harap lengkapi field!`) }
-                    return { id, nama, kategori, wa };
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const idx = DATA_PESERTA.findIndex(x => x.id === id);
-                    DATA_PESERTA[idx] = result.value;
-                    localStorage.setItem('DATA_PESERTA', JSON.stringify(DATA_PESERTA));
-                    Swal.fire('Terupdate!', 'Data berhasil diperbaharui.', 'success');
-                    renderTablePeserta();
-                    populateKategoriFilter();
-                }
-            });
-        }
-
-        function hapusPeserta(id) {
-            Swal.fire({
-                title: 'Hapus Peserta?',
-                text: "Data kehadiran dengan ID ini juga akan terpengaruh.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#FF7F93',
-                confirmButtonText: 'Ya, Hapus!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    DATA_PESERTA = DATA_PESERTA.filter(x => x.id !== id);
-                    localStorage.setItem('DATA_PESERTA', JSON.stringify(DATA_PESERTA));
-                    Swal.fire('Terhapus!', 'Data peserta telah dihapus.', 'success');
-                    renderTablePeserta();
-                    populateKategoriFilter();
-                }
-            })
-        }
-
-        function downloadSemuaQR() {
-            if(DATA_PESERTA.length === 0) {
-                Swal.fire('Data kosong', 'Tidak ada data peserta untuk diunduh.', 'info');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Memproses ZIP QR Code',
-                text: 'Harap tunggu sebentar...',
+                title: 'Membuat ZIP QR...',
+                html: 'Mohon tunggu, berkas sedang diproses.',
                 allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
+                didOpen: () => Swal.showLoading()
             });
-
+ 
             const zip = new JSZip();
-            const containerHidden = document.createElement('div');
-            document.body.appendChild(containerHidden);
-
-            let processedCount = 0;
-
-            DATA_PESERTA.forEach((p, index) => {
-                const qrDiv = document.createElement('div');
-                containerHidden.appendChild(qrDiv);
-                
-                // Generate QR Code Object instan
-                new QRCode(qrDiv, { text: p.id, width: 256, height: 256 });
-
-                // Ambil base64 image hasil generate dari tag canvas
-                setTimeout(() => {
-                    const canvas = qrDiv.querySelector('canvas');
-                    if(canvas) {
-                        const imgData = canvas.toDataURL("image/png").split(',')[1];
-                        zip.file(`QR_${p.id}_${p.nama.replace(/[/\\?%*:|"<>\s]/g, '_')}.png`, imgData, {base64: true});
-                    }
-                    processedCount++;
-
-                    if (processedCount === DATA_PESERTA.length) {
-                        zip.generateAsync({type:"blob"}).then(function(content) {
-                            saveAs(content, `QR_CODE_PESERTA_${SETTINGS_CACHE.appNama.toUpperCase()}.zip`);
-                            containerHidden.remove();
-                            Swal.close();
-                            Swal.fire('Berhasil Unduh!', 'File ZIP berisi QR Code berhasil disimpan.', 'success');
-                        });
-                    }
-                }, 150);
-            });
-        }
-
-        // 7. BUKU KEHADIRAN / REKAP ABSENSI LOGIC (FILTER, ABSEN MANUAL, CETAK LAPORAN)
-        function renderTableRekap() {
-            const filterTgl = document.getElementById('filterTanggal').value;
-            const filterKat = document.getElementById('filterKategori').value;
-            const tbody = document.getElementById('tableDataRekap');
-            tbody.innerHTML = '';
-
-            const filtered = DATA_REKAP.filter(r => {
-                const matchesDate = filterTgl ? r.waktu.startsWith(filterTgl) : true;
-                const matchesCat = filterKat ? r.kategori === filterKat : true;
-                return matchesDate && matchesCat;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Tidak ada log rekap presensi yang sesuai.</td></tr>`;
-                return;
+            for(let p of DATA_PESERTA) {
+                try {
+                    const response = await fetch(getQRUrl(p.id));
+                    const blob = await response.blob();
+                    zip.file(`QR_${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, blob);
+                } catch(e) { console.error(e); }
             }
-
-            filtered.forEach(r => {
-                let badgeStatus = `<span class="px-3 py-1 text-xs font-black bg-blue-100 text-blue-600 rounded-full">Hadir</span>`;
-                if(r.status === "Izin") badgeStatus = `<span class="px-3 py-1 text-xs font-black bg-pink-100 text-pink-600 rounded-full">Izin</span>`;
-                if(r.status === "Sakit") badgeStatus = `<span class="px-3 py-1 text-xs font-black bg-orange-100 text-orange-600 rounded-full">Sakit</span>`;
-                if(r.status === "Alfa") badgeStatus = `<span class="px-3 py-1 text-xs font-black bg-purple-100 text-purple-600 rounded-full">Alfa</span>`;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-5 font-bold text-slate-700">${r.id}</td>
-                        <td class="p-5 font-black text-slate-800">${r.nama}</td>
-                        <td class="p-5 text-center font-bold text-slate-600">${r.kategori}</td>
-                        <td class="p-5 text-center font-bold text-slate-600">${new Date(r.waktu).toLocaleString('id-ID')}</td>
-                        <td class="p-5 text-center">${badgeStatus}</td>
-                        <td class="p-5 text-center font-semibold text-slate-500">${r.waStatus}</td>
-                    </tr>
-                `;
+ 
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                Swal.close();
+                saveAs(content, `Kumpulan_QR_Peserta.zip`);
             });
         }
-
-        function openModalAbsenManual() {
-            let optionsPeserta = '';
-            DATA_PESERTA.forEach(p => {
-                optionsPeserta += `<option value="${p.id}">${p.id} - ${p.nama} (${p.kategori})</option>`;
-            });
-
+ 
+        // MODAL HANDLERS (TAMBAH/EDIT PESERTA)
+        function openModalPeserta(isEdit = false, id = '') {
+            let p = isEdit ? DATA_PESERTA.find(x => x.id === id) : { id: '', nama: '', kategori: '', wa: '' };
+            
             Swal.fire({
-                title: 'Input Absensi Manual',
+                title: isEdit ? 'Edit Data Peserta' : 'Tambah Peserta Baru',
                 html: `
-                    <select id="swalManualId" class="swal2-input" style="border-radius:1rem; font-size:14px; width:80%">${optionsPeserta}</select>
-                    <select id="swalManualStatus" class="swal2-input" style="border-radius:1rem; font-size:14px; width:80%">
+                    <input id="m_id" class="swal2-input" placeholder="ID Peserta / NIS / NIK" value="${p.id}" ${isEdit ? 'disabled style="background:#f1f5f9"' : ''}>
+                    <input id="m_nama" class="swal2-input" placeholder="Nama Lengkap" value="${p.nama}">
+                    <input id="m_kat" class="swal2-input" placeholder="Kategori / Kelas / Jabatan" value="${p.kategori}">
+                    <input id="m_wa" class="swal2-input" placeholder="No WhatsApp (Contoh: 6281234567)" value="${p.wa}">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan Data',
+                cancelButtonText: 'Batal',
+                focusConfirm: false,
+                preConfirm: () => {
+                    return {
+                        id: document.getElementById('m_id').value,
+                        nama: document.getElementById('m_nama').value,
+                        kategori: document.getElementById('m_kat').value,
+                        wa: document.getElementById('m_wa').value
+                    }
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const d = result.value;
+                    if(!d.id || !d.nama || !d.kategori) return Swal.fire('Gagal', 'Semua field wajib diisi (kecuali WhatsApp).', 'error');
+                    
+                    Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    
+                    const action = isEdit ? 'editPeserta' : 'addPeserta';
+                    const payload = isEdit ? { oldId: p.id, data: d } : { data: d };
+                    
+                    const res = await hitAPI(action, payload);
+                    if(res.status === 'success') {
+                        Swal.fire('Berhasil', 'Data peserta berhasil diperbarui ke cloud.', 'success');
+                        await loadDataPeserta();
+                    } else {
+                        Swal.fire('Gagal Menyimpan', res.message, 'error');
+                    }
+                }
+            });
+        }
+ 
+        function openModalAbsenManual() {
+            if(DATA_PESERTA.length === 0) return Swal.fire('Kosong', 'Data peserta masih kosong.', 'warning');
+            
+            let optionsHtml = '';
+            DATA_PESERTA.forEach(p => optionsHtml += `<option value="${p.id}">${p.id} - ${p.nama}</option>`);
+            
+            Swal.fire({
+                title: 'Form Absen Manual',
+                html: `
+                    <select id="am_id" class="swal2-input" style="width:80%; font-size:14px;">${optionsHtml}</select>
+                    <select id="am_status" class="swal2-input" style="width:80%">
                         <option value="Hadir">Hadir</option>
                         <option value="Izin">Izin / Cuti</option>
                         <option value="Sakit">Sakit</option>
                         <option value="Alfa">Alfa</option>
                     </select>
                 `,
-                confirmButtonText: 'Catat Kehadiran',
-                confirmButtonColor: '#987CFF',
                 showCancelButton: true,
+                confirmButtonText: 'Kirim Kehadiran',
                 preConfirm: () => {
                     return {
-                        id: document.getElementById('swalManualId').value,
-                        status: document.getElementById('swalManualStatus').value
+                        id: document.getElementById('am_id').value,
+                        status: document.getElementById('am_status').value
                     }
                 }
-            }).then(result => {
+            }).then(async (result) => {
                 if(result.isConfirmed) {
-                    const peserta = DATA_PESERTA.find(p => p.id === result.value.id);
-                    const logBaru = {
-                        id: peserta.id,
-                        nama: peserta.nama,
-                        kategori: peserta.kategori,
-                        waktu: new Date().toISOString(),
-                        status: result.value.status,
-                        waStatus: "Terkirim (Manual)"
-                    };
-                    DATA_REKAP.unshift(logBaru);
-                    localStorage.setItem('DATA_REKAP', JSON.stringify(DATA_REKAP));
-                    Swal.fire('Berhasil!', 'Presensi manual berhasil dicatat.', 'success');
-                    renderTableRekap();
+                    Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    const res = await hitAPI('absenManual', result.value);
+                    if(res.status === 'success') {
+                        Swal.fire('Sukses', 'Absensi manual berhasil dicatat.', 'success');
+                        await refreshDashboard();
+                        await loadDataAbsensi();
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
                 }
             });
         }
-
-        function loadDataAbsensi() {
-            // Sinkronisasi ulang data / reload cache data
-            DATA_REKAP = JSON.parse(localStorage.getItem('DATA_REKAP')) || [];
-            renderTableRekap();
-            Swal.fire({ icon: 'success', title: 'Data Sinkron!', timer: 800, showConfirmButton: false });
+ 
+        async function saveInstansi(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'Menyimpan Profil...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const dataPayload = {
+                data: {
+                    appNama: document.getElementById('appNama').value,
+                    instansiNama: document.getElementById('instansiNama').value,
+                    instansiLogo: document.getElementById('instansiLogo').value,
+                    instansiAlamat: document.getElementById('instansiAlamat').value,
+                    kepalaJabatan: document.getElementById('kepalaJabatan').value,
+                    kepalaNama: document.getElementById('kepalaNama').value,
+                    kepalaJenisId: document.getElementById('kepalaJenisId').value,
+                    kepalaId: document.getElementById('kepalaId').value
+                }
+            };
+            const res = await hitAPI('saveSettings', dataPayload);
+            if(res.status === 'success') {
+                Swal.fire('Berhasil', 'Profil instansi berhasil diperbarui.', 'success');
+                await loadSystemData();
+            } else { Swal.fire('Gagal', 'Gagal memperbarui profil.', 'error'); }
         }
-
+ 
+        async function saveSettings(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'Menyimpan Konfigurasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const dataPayload = {
+                data: {
+                    waUrl: document.getElementById('waUrl').value,
+                    waToken: document.getElementById('waToken').value,
+                    waTemplate: document.getElementById('waTemplate').value
+                }
+            };
+            const res = await hitAPI('saveSettings', dataPayload);
+            if(res.status === 'success') {
+                Swal.fire('Berhasil', 'Konfigurasi WA Gateway disimpan.', 'success');
+                await loadSystemData();
+            } else { Swal.fire('Gagal', 'Gagal memperbarui konfigurasi.', 'error'); }
+        }
+ 
         function cetakRekap() {
-            const filterTgl = document.getElementById('filterTanggal').value;
-            const filterKat = document.getElementById('filterKategori').value;
+            const tgl = document.getElementById('filterTanggal').value;
+            const kat = document.getElementById('filterKategori').value || 'Semua';
             
             const filtered = DATA_REKAP.filter(r => {
-                const matchesDate = filterTgl ? r.waktu.startsWith(filterTgl) : true;
-                const matchesCat = filterKat ? r.kategori === filterKat : true;
-                return matchesDate && matchesCat;
+                const matchTgl = r.waktu.split(' ')[0] === tgl;
+                const matchKat = kat === 'Semua' || r.kategori === kat;
+                return matchTgl && matchKat;
             });
-
-            // Bangun Jendela Cetak HTML Transparan khusus KOP Instansi
-            let printWindow = window.open('', '_blank');
-            let tableRows = '';
-            filtered.forEach((r, i) => {
-                tableRows += `
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 8px; text-align:center;">${i+1}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${r.id}</td>
-                        <td style="border: 1px solid #000; padding: 8px; font-weight:bold;">${r.nama}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align:center;">${r.kategori}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align:center;">${new Date(r.waktu).toLocaleString('id-ID')}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align:center; font-weight:bold;">${r.status}</td>
-                    </tr>
-                `;
+ 
+            let rowsHtml = '';
+            filtered.forEach((r, idx) => {
+                rowsHtml += `<tr>
+                    <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${idx+1}</td>
+                    <td style="border:1px solid #cbd5e1; padding:8px;">${r.id}</td>
+                    <td style="border:1px solid #cbd5e1; padding:8px; font-weight:bold;">${r.nama}</td>
+                    <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${r.kategori}</td>
+                    <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${r.waktu.split(' ')[1] || ''}</td>
+                    <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:bold;">${r.status}</td>
+                </tr>`;
             });
-
-            printWindow.document.write(`
+ 
+            if(filtered.length === 0) {
+                rowsHtml = `<tr><td colspan="6" style="border:1px solid #cbd5e1; padding:20px; text-align:center; color:#94a3b8;">Tidak ada data kehadiran pada tanggal ini.</td></tr>`;
+            }
+ 
+            const w = window.open();
+            w.document.write(`
                 <html>
                 <head>
                     <title>Cetak Laporan Kehadiran</title>
                     <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color:#1a1a1a; }
-                        .kop { display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#334155; padding: 40px; }
+                        .kop { display: flex; align-items: center; border-bottom: 3px double #334155; padding-bottom: 20px; margin-bottom: 30px; }
                         .kop img { max-height: 80px; margin-right: 20px; }
-                        .kop-text h2 { margin: 0; text-transform: uppercase; }
-                        .kop-text p { margin: 4px 0 0 0; font-size: 12px; color: #555; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th { background-color: #f2f2f2; border: 1px solid #000; padding: 10px; text-transform: uppercase; font-size:12px; }
-                        .ttd-box { margin-top: 50px; float: right; text-align: center; width: 250px; }
+                        .kop-text h2 { margin: 0; font-size: 22px; font-weight: 900; }
+                        .kop-text p { margin: 4px 0 0 0; font-size: 12px; color:#64748b; font-weight:600; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+                        th { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; font-weight: bold; text-align: center; }
+                        .ttd-box { margin-top: 50px; float: right; text-align: center; font-size: 14px; padding-right: 40px; }
                     </style>
                 </head>
-                <body onload="window.print()">
+                <body>
                     <div class="kop">
-                        ${SETTINGS_CACHE.instansiLogo ? `<img src="${SETTINGS_CACHE.instansiLogo}" />` : ''}
+                        ${SETTINGS_CACHE.instansiLogo ? `<img src="${SETTINGS_CACHE.instansiLogo}">` : ''}
                         <div class="kop-text">
-                            <h2>${SETTINGS_CACHE.instansiNama}</h2>
-                            <p>${SETTINGS_CACHE.instansiAlamat}</p>
+                            <h2>${SETTINGS_CACHE.instansiNama || 'NAMA INSTANSI'}</h2>
+                            <p>${SETTINGS_CACHE.instansiAlamat || 'Alamat Instansi Belum Diatur'}</p>
                         </div>
                     </div>
-                    <h3 style="text-align:center; text-transform:uppercase;">Laporan Rekapitulasi Presensi Kehadiran</h3>
-                    <p style="font-size:14px;"><b>Tanggal:</b> ${filterTgl || 'Semua Tanggal'} | <b>Kategori:</b> ${filterKat || 'Semua Kategori'}</p>
+                    <h3 style="text-align:center; text-transform:uppercase; margin-bottom:25px;">LAPORAN REKAPITULASI KEHADIRAN PESERTA</h3>
+                    <p style="font-size:14px; margin-bottom:15px;"><b>Tanggal:</b> ${tgl} &nbsp;&nbsp;&nbsp;&nbsp; <b>Kategori:</b> ${kat}</p>
                     <table>
                         <thead>
                             <tr>
@@ -1079,50 +923,41 @@
                                 <th>ID Peserta</th>
                                 <th>Nama Lengkap</th>
                                 <th>Kategori</th>
-                                <th>Waktu Log</th>
+                                <th>Jam Scan</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${tableRows || '<tr><td colspan="6" style="text-align:center; padding:20px;">Tidak ada data.</td></tr>'}
-                        </tbody>
+                        <tbody>${rowsHtml}</tbody>
                     </table>
                     <div class="ttd-box">
-                        <p>${SETTINGS_CACHE.instansiAlamat.split(',')[1] || 'Kota'}, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
-                        <p style="margin-bottom:60px;"><b>${SETTINGS_CACHE.kepalaJabatan}</b></p>
-                        <p><u><b>${SETTINGS_CACHE.kepalaNama}</b></u></p>
-                        <p style="font-size:12px; margin-top:2px;">${SETTINGS_CACHE.kepalaJenisId}: ${SETTINGS_CACHE.kepalaId}</p>
+                        <p>${SETTINGS_CACHE.instansiAlamat ? SETTINGS_CACHE.instansiAlamat.split(',')[1] || 'Kota' : 'Kota'}, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+                        <p style="margin-top:-10px;">${SETTINGS_CACHE.kepalaJabatan || 'Penanggung Jawab'}</p>
+                        <br><br><br>
+                        <p><b><u>${SETTINGS_CACHE.kepalaNama || 'Nama Pejabat'}</u></b></p>
+                        <p style="margin-top:-12px; font-size:12px;">${SETTINGS_CACHE.kepalaJenisId || 'ID'}: ${SETTINGS_CACHE.kepalaId || '-'}</p>
                     </div>
+                    <script>window.print();<\/script>
                 </body>
                 </html>
             `);
-            printWindow.document.close();
+            w.document.close();
         }
-
-        // 8. SIMPAN SETTING PROFIL INSTANSI & WA GATEWAY CACHE
-        function saveInstansi(e) {
-            e.preventDefault();
-            SETTINGS_CACHE.appNama = document.getElementById('appNama').value;
-            SETTINGS_CACHE.instansiNama = document.getElementById('instansiNama').value;
-            SETTINGS_CACHE.instansiLogo = document.getElementById('instansiLogo').value;
-            SETTINGS_CACHE.instansiAlamat = document.getElementById('instansiAlamat').value;
-            SETTINGS_CACHE.kepalaJabatan = document.getElementById('kepalaJabatan').value;
-            SETTINGS_CACHE.kepalaNama = document.getElementById('kepalaNama').value;
-            SETTINGS_CACHE.kepalaJenisId = document.getElementById('kepalaJenisId').value;
-            SETTINGS_CACHE.kepalaId = document.getElementById('kepalaId').value;
-
-            localStorage.setItem('SETTINGS_CACHE', JSON.stringify(SETTINGS_CACHE));
-            Swal.fire('Profil Disimpan!', 'Detail data aplikasi dan instansi berhasil diperbaharui.', 'success');
-            applySettingsUI();
-        }
-
-        function saveWAGateway(e) {
-            e.preventDefault();
-            SETTINGS_CACHE.waToken = document.getElementById('waToken').value;
-            SETTINGS_CACHE.waTemplate = document.getElementById('waTemplate').value;
-
-            localStorage.setItem('SETTINGS_CACHE', JSON.stringify(SETTINGS_CACHE));
-            Swal.fire('WA Gateway Aktif!', 'Token dan template pesan berhasil dikonfigurasi.', 'success');
+ 
+        function logout() {
+            Swal.fire({
+                title: 'Keluar Aplikasi?',
+                text: "Sesi login Anda akan dihapus.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Keluar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    SESS_USER = null;
+                    document.getElementById('mainNav').classList.add('hide');
+                    document.getElementById('mainContent').classList.add('hide');
+                    document.getElementById('loginScreen').classList.remove('hide');
+                }
+            });
         }
     </script>
 </body>
