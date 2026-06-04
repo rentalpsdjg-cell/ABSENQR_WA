@@ -53,7 +53,7 @@
     <div class="bg-blogger-override">
  
         <script>
-            // URL Web App Anda sudah terpasang otomatis secara presisi di sini
+            // Tautan Web App Apps Script Anda
             const GAS_URL = "https://script.google.com/macros/s/AKfycbyNeE1mkHGZMn_lYZRI06mgGPoLuHWc1NX06w3sJcwlktyAGz0v0t4NZUy3Id2d8IL6/exec"; 
             
             let DATABASE_USERS = [];
@@ -332,7 +332,7 @@
                         logo.classList.remove('hide');
                     }
 
-                    // Terapkan Nilai Ke Dalam Form Setelan
+                    // Terapkan Nilai Ke Dalam Form Setelan Berdasarkan Spreadsheet Anda
                     document.getElementById('inpInstansi').value = CONFIG_PENGATURAN.instansiNama || "";
                     document.getElementById('inpAlamat').value = CONFIG_PENGATURAN.instansiAlamat || "";
                     document.getElementById('inpKepala').value = CONFIG_PENGATURAN.kepalaNama || "";
@@ -350,7 +350,7 @@
             document.getElementById('filterTanggal').value = new Date().toISOString().split('T')[0];
         });
 
-        // AUTENTIKASI AKUN SINKRON SPREADSHEET (TAB USERS)
+        // AUTENTIKASI AKUN SINKRON SPREADSHEET
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
@@ -417,7 +417,7 @@
             if (menuId === 'dashboard') initDashboardData();
         }
 
-        // SALIN DAN TEMPEL SELURUH DATA LANGSUNG DARI BARIS TAB PESERTA GOOGLE SHEETS
+        // AMBIL INPUT DARI SPREADSHEET MASSAL
         function openModalImportMassal() {
             Swal.fire({
                 title: 'Import Massal Peserta',
@@ -513,7 +513,7 @@
             });
         }
 
-        // EKSEKUSI DATA PEMINDAIAN DAN LIVE WRITING ABSENSI
+        // EKSEKUSI PEMINDAIAN QR
         function processScan(val) {
             if (!val) return;
             const target = DATA_PESERTA.find(p => String(p.id).trim() === String(val).trim());
@@ -537,7 +537,6 @@
                     wa: "Terkirim"
                 };
 
-                // Kirim catatan baris data absensi secara real-time ke Google Sheets
                 fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) })
                 .then(() => {
                     DATA_REKAP.push(payload);
@@ -638,17 +637,18 @@
             });
         }
 
-        // SIMPAN PENGATURAN SECARA LIVE KE TAB PENGATURAN SPREADSHEET
+        // FUNGSI UTAMA: UPDATE MENYELARASKAN DENGAN BARIS KEY PADA TAB PENGATURAN ANDA
         function saveInstansiLive(e) {
             e.preventDefault();
-            Swal.fire({ title: 'Menyimpan ke Sheets...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Menyimpan ke Sheets...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
+            // Payload disesuaikan 100% dengan teks kunci di kolom A tab Pengaturan database Anda
             const payloadData = [
-                { Key: "instansiNama", Value: document.getElementById('inpInstansi').value },
-                { Key: "instansiAlamat", Value: document.getElementById('inpAlamat').value },
-                { Key: "kepalaNama", Value: document.getElementById('inpKepala').value },
-                { Key: "kepalald", Value: document.getElementById('inpNip').value },
-                { Key: "waTemplate", Value: document.getElementById('inpTemplate').value }
+                { Key: "instansiNama", Value: document.getElementById('inpInstansi').value.trim() },
+                { Key: "instansiAlamat", Value: document.getElementById('inpAlamat').value.trim() },
+                { Key: "kepalaNama", Value: document.getElementById('inpKepala').value.trim() },
+                { Key: "kepalald", Value: document.getElementById('inpNip').value.trim() }, // Menggunakan 'kepalald' sesuai Sheets
+                { Key: "waTemplate", Value: document.getElementById('inpTemplate').value.trim() } // Menambahkan data template agar ikut terkirim
             ];
 
             fetch(GAS_URL, {
@@ -656,12 +656,15 @@
                 body: JSON.stringify({ action: "updatePengaturan", data: payloadData })
             })
             .then(res => res.json())
-            .then(() => {
+            .then(res => {
                 payloadData.forEach(item => { CONFIG_PENGATURAN[item.Key] = item.Value; });
                 document.getElementById('dashSchoolName').innerText = CONFIG_PENGATURAN.instansiNama;
-                Swal.fire('Tersimpan', 'Profil pengaturan berhasil diupdate di database cloud!', 'success');
+                Swal.fire('Tersimpan', 'Profil pengaturan berhasil disinkronkan ke Google Sheets!', 'success');
             })
-            .catch(() => Swal.fire('Gagal', 'Terjadi kesalahan jaringan.', 'error'));
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Gagal Menyimpan', 'Terjadi gangguan jaringan atau kegagalan pemrosesan skrip di Google Sheets.', 'error');
+            });
         }
 
         function downloadSemuaQR() {
