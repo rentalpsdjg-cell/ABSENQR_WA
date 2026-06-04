@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kehadiran QR & WA Gateway PRO</title>
+    <title>Sistem Kehadiran QR & WA Gateway PRO - Live Database</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,7 +31,7 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;700;800;900&display=swap');
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #F3F4F9; font-family: 'Nunito', sans-serif; color: #2D3748; }
         .bg-blogger-override { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background: #F3F4F9; overflow-y: auto; overflow-x: hidden;}
         .hide { display: none !important; }
@@ -51,14 +51,14 @@
 
     <div id="initialLoader" class="fixed inset-0 bg-brand-blue flex flex-col items-center justify-center z-[60]">
         <i class="fas fa-circle-notch fa-spin text-5xl text-white mb-4"></i>
-        <p class="text-white font-bold">Memuat Sistem Kehadiran PRO...</p>
+        <p class="text-white font-bold">Menghubungkan ke Google Sheets...</p>
     </div>
 
     <div id="loginScreen" class="fixed inset-0 bg-[#F3F4F9] flex items-center justify-center z-50 hide">
         <div class="bg-white p-10 rounded-4xl shadow-soft w-11/12 max-w-md text-center">
-            <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-brand-blue text-4xl"><i class="fas fa-shield-alt"></i></div>
+            <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-brand-blue text-4xl"><i class="fas fa-lock"></i></div>
             <h2 class="text-3xl font-black mb-1">Sistem Presensi</h2>
-            <p class="text-brand-textMuted text-sm mb-8">Silakan masuk ke panel administrasi</p>
+            <p class="text-brand-textMuted text-sm mb-8">Data Terbuka Menggunakan Akun Google Sheets Anda</p>
             <form onsubmit="handleLogin(event)" class="text-left">
                 <div class="mb-5">
                     <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">Username</label>
@@ -66,10 +66,10 @@
                 </div>
                 <div class="mb-8">
                     <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase">Password</label>
-                    <input type="password" id="password" class="w-full px-5 py-4 bg-slate-50 border rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue" required value="admin">
+                    <input type="password" id="password" class="w-full px-5 py-4 bg-slate-50 border rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue" required value="admin2026">
                 </div>
                 <button type="submit" class="w-full bg-brand-blue hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition shadow-lg shadow-blue-200">
-                    Masuk Sekarang
+                    Verifikasi Akun
                 </button>
             </form>
         </div>
@@ -77,9 +77,9 @@
 
     <nav id="mainNav" class="hide bg-white w-full md:w-64 md:min-h-screen flex md:flex-col fixed md:relative bottom-0 z-40 shadow-sm md:rounded-r-[2.5rem]">
         <div class="p-6 hidden md:flex flex-col items-center text-center mt-2 mb-4">
-            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-brand-blue text-2xl"><i class="fas fa-qrcode"></i></div>
-            <h1 class="text-xl font-black text-brand-textMain">Presensi QR</h1>
-            <span class="text-xs font-bold px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full mt-1">PRO Version</span>
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-brand-blue text-2xl"><i class="fas fa-database"></i></div>
+            <h1 class="text-xl font-black text-brand-textMain" id="adminName">Admin</h1>
+            <span class="text-xs font-bold px-3 py-1 bg-blue-100 text-brand-blue rounded-full mt-1">Live Database</span>
         </div>
         <div class="flex md:flex-col w-full px-2 md:px-5 gap-2">
             <button onclick="switchMenu('dashboard')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-5 rounded-2xl text-brand-textMuted font-bold hover:bg-slate-50" data-target="dashboard">
@@ -92,7 +92,7 @@
                 <i class="fas fa-user-graduate md:mr-4 text-xl"></i><span class="text-[10px] md:text-sm">Data Peserta</span>
             </button>
             <button onclick="switchMenu('rekap')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-5 rounded-2xl text-brand-textMuted font-bold hover:bg-slate-50" data-target="rekap">
-                <i class="fas fa-calendar-alt md:mr-4 text-xl"></i><span class="text-[10px] md:text-sm">Buku Log Log</span>
+                <i class="fas fa-calendar-alt md:mr-4 text-xl"></i><span class="text-[10px] md:text-sm">Buku Log</span>
             </button>
             <button onclick="switchMenu('settings')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-5 rounded-2xl text-brand-textMuted font-bold hover:bg-slate-50" data-target="settings">
                 <i class="fas fa-cog md:mr-4 text-xl"></i><span class="text-[10px] md:text-sm">WA Gateway</span>
@@ -153,7 +153,7 @@
                 <div class="w-full lg:w-1/2 card-figma p-10 flex flex-col items-center justify-center text-center transition-all" id="scanResult">
                     <i class="fas fa-qrcode text-7xl text-brand-blue mb-4 animate-pulse"></i>
                     <h3 class="text-xl font-bold">Arahkan Kode QR ke Kamera</h3>
-                    <p class="text-slate-400 text-sm mt-1">Sistem akan otomatis mencatat kehadiran & mengirim WhatsApp</p>
+                    <p class="text-slate-400 text-sm mt-1">Sistem memvalidasi & mengirim notifikasi WhatsApp otomatis</p>
                 </div>
             </div>
         </section>
@@ -187,7 +187,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr class="text-slate-400 text-xs border-b">
-                                <th class="pb-4 p-2">ID</th><th class="pb-4">Nama</th><th class="pb-4">Tanggal</th><th class="pb-4">Waktu</th><th class="pb-4 text-center">Status</th><th class="pb-4 text-center">Aksi</th>
+                                <th class="pb-4 p-2">ID</th><th class="pb-4">Nama</th><th class="pb-4">Tanggal</th><th class="pb-4">Waktu</th><th class="pb-4 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="tableDataRekap" class="text-sm"></tbody>
@@ -199,17 +199,15 @@
         <section id="menu-settings" class="menu-section hide">
             <h2 class="text-3xl font-black mb-8">Pengaturan WA Gateway & System</h2>
             <div class="card-figma p-8 max-w-2xl">
-                <h3 class="text-xl font-bold mb-4 text-brand-textMain"><i class="fab fa-whatsapp mr-2 text-emerald-500"></i>Konfigurasi Fonnte / Gateway API</h3>
-                <p class="text-sm text-slate-500 mb-6">Aplikasi ini mengirim pesan real-time langsung melalui endpoint API client-side Anda.</p>
+                <h3 class="text-xl font-bold mb-4 text-brand-textMain"><i class="fab fa-whatsapp mr-2 text-emerald-500"></i>Konfigurasi Token Gateway</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">API Token Gateway</label>
-                        <input type="text" id="waToken" placeholder="Masukkan token API Fonnte Anda" class="w-full p-4 bg-slate-50 border rounded-2xl font-semibold text-sm">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">API Token Fonnte</label>
+                        <input type="text" id="waToken" placeholder="Masukkan token API Fonnte" class="w-full p-4 bg-slate-50 border rounded-2xl font-semibold text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Custom Template Pesan</label>
-                        <textarea id="waTemplate" rows="4" class="w-full p-4 bg-slate-50 border rounded-2xl font-semibold text-sm">Halo [NAMA], konfirmasi presensi Anda pada [TANGGAL] jam [WAKTU] dicatat dengan status: [STATUS]. Terima kasih.</textarea>
-                        <p class="text-[11px] text-slate-400 mt-1">Gunakan tag: <code class="bg-slate-100 px-1 rounded">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded">[STATUS]</code></p>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Template Pesan Notifikasi</label>
+                        <textarea id="waTemplate" rows="4" class="w-full p-4 bg-slate-50 border rounded-2xl font-semibold text-sm"></textarea>
                     </div>
                     <button onclick="saveSettings()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-4 rounded-2xl text-sm w-full transition">Simpan Konfigurasi</button>
                 </div>
@@ -221,16 +219,15 @@
         <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-11/12 max-w-md">
             <h3 class="text-2xl font-black mb-6" id="modalTitle">Tambah Peserta</h3>
             <form id="formPeserta" onsubmit="savePeserta(event)">
-                <input type="hidden" id="formMode" value="add">
                 <div class="space-y-4 mb-6">
-                    <input type="text" id="inputId" placeholder="ID/NIM Peserta (cth: A001)" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
+                    <input type="text" id="inputId" placeholder="ID Peserta (cth: A001)" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
                     <input type="text" id="inputNama" placeholder="Nama Lengkap" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
-                    <input type="text" id="inputKategori" placeholder="Kategori / Kelas / Jabatan" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
+                    <input type="text" id="inputKategori" placeholder="Kategori / Kelas" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
                     <input type="text" id="inputWa" placeholder="Nomor WA (cth: 6281234567)" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold text-sm" required>
                 </div>
                 <div class="flex gap-3">
                     <button type="button" onclick="closeModalPeserta()" class="flex-1 bg-slate-100 py-4 rounded-full font-black">Batal</button>
-                    <button type="submit" class="flex-1 bg-brand-blue text-white py-4 rounded-full font-black">Simpan Data</button>
+                    <button type="submit" class="flex-1 bg-brand-blue text-white py-4 rounded-full font-black">Simpan ke Sheets</button>
                 </div>
             </form>
         </div>
@@ -239,53 +236,75 @@
     </div>
 
     <script>
+        // BACKEND URL SUDAH TERHUBUNG KE APPS SCRIPT ANDA
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx85Y0oBIKFWyrKTGQgdHv13_iP2gGAiGXn4zReqU2jnL0EQur_to33bAvP7hxCQsRs/exec";
+
         let globalPeserta = [];
         let globalAbsensi = [];
         let html5QrCode = null;
+        let gatewayToken = "";
+        let gatewayTemplate = "";
 
         window.onload = function() {
-            // Setup LocalStorage agar 100% full production ready
-            if(!localStorage.getItem('peserta')) {
-                localStorage.setItem('peserta', JSON.stringify([]));
-            }
-            if(!localStorage.getItem('absensi')) {
-                localStorage.setItem('absensi', JSON.stringify([]));
-            }
-            if(!localStorage.getItem('wa_token')) {
-                localStorage.setItem('wa_token', '');
-            }
-            if(!localStorage.getItem('wa_template')) {
-                localStorage.setItem('wa_template', 'Halo [NAMA], konfirmasi presensi Anda pada [TANGGAL] jam [WAKTU] dicatat dengan status: [STATUS]. Terima kasih.');
-            }
-
-            globalPeserta = JSON.parse(localStorage.getItem('peserta'));
-            globalAbsensi = JSON.parse(localStorage.getItem('absensi'));
-            
-            document.getElementById('waToken').value = localStorage.getItem('wa_token');
-            document.getElementById('waTemplate').value = localStorage.getItem('wa_template');
-
             document.getElementById('initialLoader').classList.add('hide');
             document.getElementById('loginScreen').classList.remove('hide');
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            if(user === 'admin' && pass === 'admin') {
-                document.getElementById('loginScreen').classList.add('hide');
-                document.getElementById('mainNav').classList.remove('hide');
-                document.getElementById('mainContent').classList.remove('hide');
-                switchMenu('dashboard');
-            } else {
-                Swal.fire('Gagal', 'Kredensial login salah!', 'error');
+        async function fetchAPI(action, data = {}) {
+            data.action = action;
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch(e) {
+                console.error(e);
+                return {success: false, error: 'Koneksi database terputus'};
             }
         }
 
-        function switchMenu(target) {
-            if(html5QrCode) {
-                stopScanner();
+        async function handleLogin(e) {
+            e.preventDefault();
+            Swal.fire({title: 'Memverifikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            let u = document.getElementById('username').value;
+            let p = document.getElementById('password').value;
+            
+            let res = await fetchAPI('login', {username: u, password: p});
+            Swal.close();
+            
+            if(res.success) {
+                document.getElementById('loginScreen').classList.add('hide');
+                document.getElementById('mainNav').classList.remove('hide');
+                document.getElementById('mainContent').classList.remove('hide');
+                if(res.nama) document.getElementById('adminName').innerText = res.nama;
+                
+                await refreshSemuaData();
+                switchMenu('dashboard');
+            } else {
+                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password pada Google Sheets salah!', 'error');
             }
+        }
+
+        async function refreshSemuaData() {
+            let resP = await fetchAPI('getPeserta');
+            if(resP.success) globalPeserta = resP.data;
+
+            let resA = await fetchAPI('getAbsensi');
+            if(resA.success) globalAbsensi = resA.data;
+            
+            let resS = await fetchAPI('getPengaturan');
+            if(resS.success) {
+                gatewayToken = resS.token;
+                gatewayTemplate = resS.template;
+                document.getElementById('waToken').value = gatewayToken;
+                document.getElementById('waTemplate').value = gatewayTemplate;
+            }
+        }
+
+        async function switchMenu(target) {
+            if(html5QrCode) stopScanner();
             document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hide'));
             document.getElementById('menu-' + target).classList.remove('hide');
             
@@ -302,14 +321,9 @@
             if(target === 'rekap') renderTableRekap();
         }
 
-        /* DATA MANAGEMENT PESERTA */
         function renderTablePeserta() {
             let tbody = document.getElementById('tableDataPeserta');
             tbody.innerHTML = '';
-            if(globalPeserta.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-5 text-center text-slate-400 font-bold">Belum ada data peserta. Klik tombol Tambah.</td></tr>`;
-                return;
-            }
             globalPeserta.forEach(p => {
                 tbody.innerHTML += `
                     <tr>
@@ -317,18 +331,15 @@
                         <td class="p-5 font-bold text-slate-700">${p.nama}</td>
                         <td class="p-5 text-slate-500">${p.kategori}</td>
                         <td class="p-5 text-slate-500">${p.wa}</td>
-                        <td class="p-5 text-center flex justify-center gap-2">
+                        <td class="p-5 text-center">
                             <button onclick="hapusPeserta('${p.id}')" class="text-rose-500 bg-rose-50 p-2 rounded-xl hover:bg-rose-500 hover:text-white transition"><i class="fas fa-trash"></i></button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
-        function openModalPeserta(mode) {
-            document.getElementById('formMode').value = mode;
+        function openModalPeserta() {
             document.getElementById('formPeserta').reset();
-            document.getElementById('modalTitle').innerText = "Tambah Peserta Baru";
             document.getElementById('modalPeserta').classList.remove('hide');
         }
 
@@ -336,102 +347,59 @@
             document.getElementById('modalPeserta').classList.add('hide');
         }
 
-        function savePeserta(e) {
+        async function savePeserta(e) {
             e.preventDefault();
+            Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
             let id = document.getElementById('inputId').value.trim().toUpperCase();
             let nama = document.getElementById('inputNama').value.trim();
             let kategori = document.getElementById('inputKategori').value.trim();
             let wa = document.getElementById('inputWa').value.trim().replace(/[^0-9]/g, '');
 
             if(globalPeserta.some(p => p.id === id)) {
-                Swal.fire('Gagal', 'ID Peserta ini sudah terdaftar!', 'error');
+                Swal.fire('Gagal', 'ID ini sudah digunakan!', 'error');
                 return;
             }
 
-            globalPeserta.push({id, nama, kategori, wa});
-            localStorage.setItem('peserta', JSON.stringify(globalPeserta));
-            
-            closeModalPeserta();
-            renderTablePeserta();
-            Swal.fire('Berhasil', 'Peserta berhasil disimpan!', 'success');
+            let res = await fetchAPI('addPeserta', {id, nama, kategori, wa});
+            Swal.close();
+            if(res.success) {
+                closeModalPeserta();
+                await refreshSemuaData();
+                renderTablePeserta();
+                Swal.fire('Berhasil', 'Peserta ditambahkan ke Google Sheets!', 'success');
+            }
         }
 
-        function hapusPeserta(id) {
+        async function hapusPeserta(id) {
             Swal.fire({
                 title: 'Hapus Peserta?',
-                text: "Langkah ini tidak menghapus riwayat kehadiran yang sudah tercatat.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#FF6B7D',
                 confirmButtonText: 'Ya, Hapus!'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    globalPeserta = globalPeserta.filter(p => p.id !== id);
-                    localStorage.setItem('peserta', JSON.stringify(globalPeserta));
+                    Swal.fire({title: 'Menghapus...', didOpen: () => Swal.showLoading()});
+                    await fetchAPI('deletePeserta', {id: id});
+                    await refreshSemuaData();
                     renderTablePeserta();
-                    Swal.fire('Terhapus!', 'Data peserta dibuang.', 'success');
+                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
                 }
             });
         }
 
-        /* ZIP EXPORTER SYSTEM ENGINE */
-        function downloadSemuaQR() {
-            if(globalPeserta.length === 0) {
-                Swal.fire('Info', 'Tidak ada data peserta untuk diunduh.', 'info');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Memproses QR Code...',
-                text: 'Mohon tunggu berkas kompresi ZIP sedang dibuat.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            let zip = new JSZip();
-            let terproses = 0;
-
-            globalPeserta.forEach(p => {
-                let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${p.id}`;
-                fetch(qrUrl)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        let namaFile = `${p.id}_${p.nama.replace(/\s+/g, '_')}.png`;
-                        zip.file(namaFile, blob);
-                        terproses++;
-
-                        if(terproses === globalPeserta.length) {
-                            zip.generateAsync({type:"blob"}).then(function(content) {
-                                Swal.close();
-                                saveAs(content, "Kumpulan_QR_Absensi_Peserta.zip");
-                            });
-                        }
-                    })
-                    .catch(() => {
-                        terproses++;
-                        if(terproses === globalPeserta.length) {
-                            zip.generateAsync({type:"blob"}).then(function(content) {
-                                Swal.close();
-                                saveAs(content, "Kumpulan_QR_Absensi_Peserta.zip");
-                            });
-                        }
-                    });
-            });
-        }
-
-        /* SCANNER ENGINE & CORE ACTIONS */
         function startScanner() {
             document.getElementById('btnStartScan').classList.add('hide');
             document.getElementById('btnStopScan').classList.remove('hide');
-            
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                { fps: 15, qrbox: 250 },
+                { fps: 10, qrbox: 250 },
                 (text) => { prosesAbsensi(text); },
                 () => {}
-            ).catch(err => {
-                Swal.fire('Kamera Gagal', 'Mohon izinkan akses kamera perangkat.', 'error');
+            ).catch(() => {
+                Swal.fire('Kamera Gagal', 'Pastikan izin kamera diberikan.', 'error');
                 stopScanner();
             });
         }
@@ -444,68 +412,57 @@
             }
         }
 
-        function prosesAbsensi(id) {
+        async function prosesAbsensi(id) {
             let p = globalPeserta.find(item => item.id === id.trim().toUpperCase());
             let box = document.getElementById('scanResult');
             let tgl = new Date().toISOString().split('T')[0];
             let jam = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':');
 
             if(!p) {
-                box.innerHTML = `<div class="text-rose-500 text-6xl mb-4"><i class="fas fa-times-circle"></i></div><h3 class="text-xl font-bold">ID Tidak Terdaftar (${id})</h3>`;
+                box.innerHTML = `<div class="text-rose-500 text-6xl mb-4"><i class="fas fa-times-circle"></i></div><h3 class="text-xl font-bold">ID Tidak Valid (${id})</h3>`;
                 return;
             }
 
-            if(globalAbsensi.some(a => a.id === p.id && a.tanggal === tgl)) {
+            if(globalAbsensi.some(a => a.id === p.id && a.tanggal.toString().includes(tgl))) {
                 box.innerHTML = `<div class="text-amber-500 text-6xl mb-4"><i class="fas fa-exclamation-circle"></i></div><h3 class="text-xl font-bold">${p.nama} Sudah Absen Hari Ini!</h3>`;
                 return;
             }
 
-            let logBaru = { id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: jam, status: "Hadir" };
-            globalAbsensi.unshift(logBaru);
-            localStorage.setItem('absensi', JSON.stringify(globalAbsensi));
+            box.innerHTML = `<i class="fas fa-spinner fa-spin text-5xl text-brand-blue mb-4"></i><h3 class="text-xl font-bold">Mengunggah Kehadiran...</h3>`;
 
-            box.innerHTML = `<div class="text-emerald-500 text-6xl mb-4"><i class="fas fa-check-circle"></i></div><h3 class="text-xl font-bold">Berhasil Hadir!</h3><p class="text-slate-600 font-semibold mt-2">${p.nama}</p><p class="text-xs text-slate-400">${p.kategori}</p>`;
+            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: jam, status: "Hadir"});
             
-            // Trigger kirim pesan WhatsApp otomatis
-            kirimWhatsApp(p, logBaru);
+            if(res.success) {
+                box.innerHTML = `<div class="text-emerald-500 text-6xl mb-4"><i class="fas fa-check-circle"></i></div><h3 class="text-xl font-bold">Berhasil Hadir!</h3><p class="text-slate-600 font-semibold mt-2">${p.nama}</p>`;
+                await refreshSemuaData();
+                kirimWhatsApp(p, {nama: p.nama, tanggal: tgl, waktu: jam, status: "Hadir"});
+            } else {
+                box.innerHTML = `<div class="text-rose-500 text-6xl mb-4"><i class="fas fa-times-circle"></i></div><h3 class="text-xl font-bold">Gagal Sinkronisasi Sheets</h3>`;
+            }
         }
 
-        /* INTEGRASI GATEWAY WHATSAPP REAL */
         function kirimWhatsApp(peserta, log) {
-            const token = localStorage.getItem('wa_token');
-            if(!token || token.trim() === '') return; // Abaikan jika token belum diisi
-
-            let template = localStorage.getItem('wa_template');
-            let pesan = template
+            if(!gatewayToken || gatewayToken === "") return;
+            let pesan = gatewayTemplate
                 .replace('[NAMA]', log.nama)
                 .replace('[TANGGAL]', log.tanggal)
                 .replace('[WAKTU]', log.waktu)
                 .replace('[STATUS]', log.status);
 
-            var myHeaders = new Headers();
-            myHeaders.append("Authorization", token);
+            let fd = new FormData();
+            fd.append("target", peserta.wa);
+            fd.append("message", pesan);
 
-            var formdata = new FormData();
-            formdata.append("target", peserta.wa);
-            formdata.append("message", pesan);
-
-            var requestOptions = {
+            fetch("https://api.fonnte.com/send", {
                 method: 'POST',
-                headers: myHeaders,
-                body: formdata,
-                redirect: 'follow'
-            };
-
-            fetch("https://api.fonnte.com/send", requestOptions)
-                .then(response => response.text())
-                .then(result => console.log("WA Sent Success:", result))
-                .catch(error => console.log('WA Sent Error:', error));
+                headers: {"Authorization": gatewayToken},
+                body: fd
+            }).then(r => r.text()).then(res => console.log(res)).catch(e => console.error(e));
         }
 
-        /* RENDER DASHBOARD DATA */
         function loadDashboardData() {
             let tgl = new Date().toISOString().split('T')[0];
-            let hariIni = globalAbsensi.filter(a => a.tanggal === tgl);
+            let hariIni = globalAbsensi.filter(a => a.tanggal.toString().includes(tgl));
 
             document.getElementById('countHadir').innerText = hariIni.filter(a => a.status === 'Hadir').length;
             document.getElementById('countIzin').innerText = hariIni.filter(a => a.status === 'Izin').length;
@@ -514,64 +471,52 @@
 
             let tbody = document.getElementById('tableDashboardTerbaru');
             tbody.innerHTML = '';
-            if(hariIni.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada aktivitas sirkulasi presensi hari ini.</td></tr>`;
-                return;
-            }
-            hariIni.slice(0, 8).forEach(a => {
-                tbody.innerHTML += `<tr><td class="py-3 font-bold text-slate-400">${a.waktu}</td><td class="font-bold text-slate-700">${a.nama}</td><td>${a.kategori || '-'}</td><td class="text-center text-emerald-500 font-bold">${a.status}</td></tr>`;
+            hariIni.slice(0, 5).forEach(a => {
+                tbody.innerHTML += `<tr><td class="py-3 font-bold text-slate-400">${a.waktu}</td><td class="font-bold">${a.nama}</td><td>${a.kategori}</td><td class="text-center text-emerald-500 font-bold">${a.status}</td></tr>`;
             });
         }
 
-        /* REKAP LOG ABSENSI MANAGEMENT ACTIONS */
         function renderTableRekap() {
             let tbody = document.getElementById('tableDataRekap');
             tbody.innerHTML = '';
-            if(globalAbsensi.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 font-bold">Belum ada log absensi masuk.</td></tr>`;
-                return;
-            }
-            globalAbsensi.forEach((a, index) => {
-                tbody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-4 font-bold text-slate-400">${a.id}</td>
-                        <td class="p-4 font-bold text-slate-700">${a.nama}</td>
-                        <td class="p-4 text-slate-500">${a.tanggal}</td>
-                        <td class="p-4 text-slate-500">${a.waktu}</td>
-                        <td class="p-4 text-center">
-                            <select onchange="updateStatusAbsen(${index}, this.value)" class="bg-slate-50 border border-slate-200 rounded-xl p-1 font-bold text-xs text-brand-blue">
-                                <option value="Hadir" ${a.status === 'Hadir' ? 'selected' : ''}>Hadir</option>
-                                <option value="Izin" ${a.status === 'Izin' ? 'selected' : ''}>Izin</option>
-                                <option value="Sakit" ${a.status === 'Sakit' ? 'selected' : ''}>Sakit</option>
-                                <option value="Alfa" ${a.status === 'Alfa' ? 'selected' : ''}>Alfa</option>
-                            </select>
-                        </td>
-                        <td class="p-4 text-center">
-                            <button onclick="hapusLogAbsen(${index})" class="text-rose-400 hover:text-rose-600"><i class="fas fa-times-circle"></i></button>
-                        </td>
-                    </tr>`;
+            globalAbsensi.forEach(a => {
+                let fmtTgl = a.tanggal;
+                if(typeof a.tanggal === "string" && a.tanggal.includes("T")) fmtTgl = a.tanggal.split("T")[0];
+                tbody.innerHTML += `<tr class="border-b"><td class="p-4 font-bold text-slate-400">${a.id}</td><td class="p-4 font-bold">${a.nama}</td><td class="p-4">${fmtTgl}</td><td class="p-4">${a.waktu}</td><td class="p-4 text-center font-bold text-brand-blue">${a.status}</td></tr>`;
             });
         }
 
-        function updateStatusAbsen(index, statusBaru) {
-            globalAbsensi[index].status = statusBaru;
-            localStorage.setItem('absensi', JSON.stringify(globalAbsensi));
-            Swal.fire('Updated', 'Status kehadiran berhasil disesuaikan manual.', 'success');
+        async function saveSettings() {
+            Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            let tok = document.getElementById('waToken').value.trim();
+            let temp = document.getElementById('waTemplate').value;
+            
+            let res = await fetchAPI('savePengaturan', {token: tok, template: temp});
+            Swal.close();
+            if(res.success) {
+                gatewayToken = tok;
+                gatewayTemplate = temp;
+                Swal.fire('Sukses', 'Konfigurasi disimpan langsung ke Cloud Sheets!', 'success');
+            }
         }
 
-        function hapusLogAbsen(index) {
-            globalAbsensi.splice(index, 1);
-            localStorage.setItem('absensi', JSON.stringify(globalAbsensi));
-            renderTableRekap();
-        }
-
-        /* GATEWAY SETTING CORE */
-        function saveSettings() {
-            const token = document.getElementById('waToken').value.trim();
-            const template = document.getElementById('waTemplate').value;
-            localStorage.setItem('wa_token', token);
-            localStorage.setItem('wa_template', template);
-            Swal.fire('Tersimpan', 'Pengaturan API Gateway WhatsApp berhasil disimpan!', 'success');
+        function downloadSemuaQR() {
+            if(globalPeserta.length === 0) { return Swal.fire('Info', 'Tidak ada data peserta.', 'info'); }
+            Swal.fire({title: 'Memproses ZIP QR...', didOpen: () => Swal.showLoading()});
+            let zip = new JSZip(); let terproses = 0;
+            globalPeserta.forEach(p => {
+                let url = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${p.id}`;
+                fetch(url).then(r => r.blob()).then(blob => {
+                    zip.file(`${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, blob);
+                    terproses++;
+                    if(terproses === globalPeserta.length) {
+                        zip.generateAsync({type:"blob"}).then(c => { Swal.close(); saveAs(c, "Kumpulan_QR_LiveSheets.zip"); });
+                    }
+                }).catch(() => {
+                    terproses++;
+                    if(terproses === globalPeserta.length) zip.generateAsync({type:"blob"}).then(c => { Swal.close(); saveAs(c, "Kumpulan_QR_LiveSheets.zip"); });
+                });
+            });
         }
 
         function logout() {
