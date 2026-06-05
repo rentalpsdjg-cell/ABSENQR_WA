@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kehadiran QR & WA Gateway PRO - Superlengkap</title>
+    <title>Sistem Kehadiran QR & WA Gateway PRO</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -62,7 +62,7 @@
     <div id="loginScreen" class="fixed inset-0 bg-[#F3F6F9] flex items-center justify-center z-50 hide">
         <div class="bg-white p-10 rounded-4xl shadow-soft w-11/12 max-w-md text-center border border-slate-100">
             <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-brand-blue text-4xl shadow-sm"><i class="fas fa-shield-alt"></i></div>
-            <h2 class="text-3xl font-extrabold tracking-tight mb-1">Sistem Presensi Pro</h2>
+            <h2 class="text-3xl font-extrabold tracking-tight mb-1" id="loginAppTitle">Sistem Presensi Pro</h2>
             <p class="text-brand-textMuted text-sm mb-8">Gunakan akun kredensial tab 'Users' Anda</p>
             <form onsubmit="handleLogin(event)" class="text-left">
                 <div class="mb-5">
@@ -81,11 +81,12 @@
     </div>
 
     <nav id="mainNav" class="hide bg-white w-full md:w-64 md:min-h-screen flex md:flex-col fixed md:relative bottom-0 z-40 border-r border-slate-200">
-        <div class="p-6 hidden md:flex flex-col items-center text-center">
-            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border mb-2 overflow-hidden">
-                <i class="fas fa-graduation-cap text-3xl text-emerald-600"></i>
+        <div class="p-6 hidden md:flex flex-col items-center text-center border-b border-slate-100">
+            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border mb-3 overflow-hidden p-2">
+                <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/2991/2991184.png" class="w-full h-full object-contain" alt="Logo">
             </div>
-            <h1 class="text-sm font-black text-slate-700 tracking-wide uppercase">Absen QR WA Auto</h1>
+            <h1 class="text-xs font-black text-slate-700 tracking-wide uppercase dynamic-app-name" id="navAppName">Absen QR WA Auto</h1>
+            <p class="text-[9px] text-slate-400 font-bold mt-1 tracking-tight" id="navInstansiName">SMKN1 SINGKIL UTARA</p>
         </div>
         
         <div class="flex md:flex-col w-full p-2 md:p-4 gap-1 overflow-x-auto md:overflow-x-visible">
@@ -297,7 +298,7 @@
                 <div class="card-custom p-6 md:col-span-2">
                     <h3 class="text-sm font-bold text-slate-700 mb-4 text-center md:text-left">Statistik Akumulasi Kehadiran</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="max-w-[200px] mx-auto md:mx-0">
+                        <div class="max-w-[200px] mx-auto md:mx-0 flex items-center justify-center">
                             <canvas id="chartPieProfile"></canvas>
                         </div>
                         <div class="flex flex-col justify-center space-y-3">
@@ -326,7 +327,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Template Pesan WhatsApp</label>
                         <textarea id="waTemplate" rows="4" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
-                        <p class="text-[10px] text-slate-400 mt-1">Gunakan tag dinamis: <code class="bg-slate-100 px-1 rounded text-rose-500">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[STATUS]</code></p>
+                        <p class="text-[10px] text-slate-400 mt-1">Gunakan tag dinamis: <code class="bg-slate-100 px-1 rounded text-rose-500">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">([ID])</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[STATUS]</code></p>
                     </div>
                     <button onclick="saveSettings()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-xl text-sm w-full shadow-sm transition">Simpan Parameter</button>
                 </div>
@@ -334,6 +335,7 @@
         </section>
     </main>
 
+    <!-- Modal Form Peserta -->
     <div id="modalPeserta" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 hide">
         <div class="bg-white p-6 rounded-3xl shadow-xl w-11/12 max-w-md">
             <h3 class="text-xl font-black mb-4">Registrasi Peserta Baru</h3>
@@ -350,14 +352,16 @@
         </div>
     </div>
 
+    <!-- Container Tersembunyi untuk Render Cetak ID CARD / QR PDF -->
     <div id="hiddenIdCardTemplate" class="fixed -top-[9999px] -left-[9999px]">
         <div id="idCardRenderBox" style="width: 350px; background: white; border: 2px dashed #CBD5E1; border-radius: 20px; padding: 25px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
             <div style="font-size: 11px; font-weight: 800; color: #3B82F6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">KARTU IDENTITAS QR</div>
-            <div style="font-size: 14px; font-weight: bold; color: #1E293B; margin-bottom: 15px;" id="pdfCardTitle">SISTEM PRESENSIPRO</div>
+            <div style="font-size: 14px; font-weight: bold; color: #1E293B; margin-bottom: 15px;" id="pdfCardTitle">ABSEN QR WA AUTO</div>
             <div style="display: flex; justify-content: center; margin-bottom: 15px;" id="pdfCardQr"></div>
             <div style="font-size: 16px; font-weight: 800; color: #1E293B;" id="pdfCardName">-</div>
             <div style="font-size: 12px; font-weight: 600; color: #64748B; margin-top: 2px;" id="pdfCardId">-</div>
             <div style="font-size: 11px; font-weight: bold; background: #F1F5F9; color: #475569; display: inline-block; padding: 4px 12px; border-radius: 99px; margin-top: 10px;" id="pdfCardCategory">-</div>
+            <div style="font-size: 9px; font-weight: bold; color: #94A3B8; margin-top: 15px; border-top: 1px solid #E2E8F0; padding-top: 8px;" id="pdfCardInstansi">SMKN1 SINGKIL UTARA</div>
         </div>
     </div>
 
@@ -373,12 +377,37 @@
         let gatewayTemplate = "";
         let chartInstance = null;
 
+        // Metadata Instansi Sesuai image_d0f0a7.png
+        let instansiConfig = {
+            appNama: "ABSEN QR WA AUTO",
+            instansiNama: "SMKN1 SINGKIL UTARA",
+            instansiLogo: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpfWv21MsQaF9O2Csc9LbdObheJUmryXKbp-SbYTT1rGrT082jqTCP22lwra1ruGqZ8Fz8zB0I_Z_MhR4g8v-hU4jHof5T63Y-Pex8zZk-E8x7wL0g3b_9yG7Y_g6bWlXU-4fG0Y5p/s1600/logo.png",
+            instansiAlamat: "JL. SINGKIL - RIMO KM 12 Gosong Telaga Barat",
+            kepalaJabatan: "Kepala Sekolah",
+            kepalaNama: "Sakinah, SPt",
+            kepalaJenisId: "NIP",
+            kepalaId: "Nip 1800528 200604 2 004"
+        };
+
         window.onload = function() {
             document.getElementById('initialLoader').classList.add('hide');
             document.getElementById('loginScreen').classList.remove('hide');
             
             document.getElementById('manualTanggal').value = new Date().toISOString().split('T')[0];
             document.getElementById('manualWaktu').value = new Date().toTimeString().slice(0,5);
+            
+            applyInstansiMetadata();
+        }
+
+        function applyInstansiMetadata() {
+            document.getElementById('loginAppTitle').innerText = instansiConfig.appNama;
+            document.getElementById('navAppName').innerText = instansiConfig.appNama;
+            document.getElementById('navInstansiName').innerText = instansiConfig.instansiNama;
+            document.getElementById('pdfCardTitle').innerText = instansiConfig.appNama;
+            document.getElementById('pdfCardInstansi').innerText = instansiConfig.instansiNama;
+            if(instansiConfig.instansiLogo) {
+                document.getElementById('navLogo').src = instansiConfig.instansiLogo;
+            }
         }
 
         async function fetchAPI(action, data = {}) {
@@ -434,10 +463,19 @@
             
             let resS = await fetchAPI('getPengaturan');
             if(resS.success) {
-                gatewayToken = resS.token;
-                gatewayTemplate = resS.template;
+                // Override konfigurasi statis jika database memuat konfigurasi terbaru
+                if(resS.appNama) instansiConfig.appNama = resS.appNama;
+                if(resS.instansiNama) instansiConfig.instansiNama = resS.instansiNama;
+                if(resS.instansiAlamat) instansiConfig.instansiAlamat = resS.instansiAlamat;
+                if(resS.kepalaNama) instansiConfig.kepalaNama = resS.kepalaNama;
+                if(resS.kepalald) instansiConfig.kepalaId = resS.kepalald;
+                
+                gatewayToken = resS.waToken || "";
+                gatewayTemplate = resS.waTemplate || "Yth. Bapak/Ibu, peserta atas nama [NAMA] ([ID]) telah [STATUS] pada [WAKTU]. Terima kasih.";
+                
                 document.getElementById('waToken').value = gatewayToken;
                 document.getElementById('waTemplate').value = gatewayTemplate;
+                applyInstansiMetadata();
             }
         }
 
@@ -666,7 +704,7 @@
         async function hapusPeserta(id) {
             let confirm = await Swal.fire({
                 title: 'Konfirmasi Hapus',
-                text: `Apakah Anda yakin ingin melenyapkan data peserta dengan ID [${id}]?`,
+                text: `Apakah Anda yakin ingin menghapus data peserta dengan ID [${id}]?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#EF4444',
@@ -739,17 +777,26 @@
 
             if(chartInstance) chartInstance.destroy();
             const ctx = document.getElementById('chartPieProfile').getContext('2d');
+            
+            // Konfigurasi Chart Pie sesuai mockup image_d0f02d.png jika data masih kosong
+            let chartData = totalSemua === 0 ? [100, 0, 0, 0] : [totalHadir, totalIzin, totalSakit, totalAlfa];
+            let chartColors = totalSemua === 0 ? ['#E2E8F0', '#F59E0B', '#8B5CF6', '#EF4444'] : ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
+            
             chartInstance = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['Hadir', 'Izin', 'Sakit', 'Alfa'],
                     datasets: [{
-                        data: [totalHadir, totalIzin, totalSakit, totalAlfa],
-                        backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'],
+                        data: chartData,
+                        backgroundColor: chartColors,
                         borderWidth: 0
                     }]
                 },
-                options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: true }
+                options: { 
+                    plugins: { legend: { display: false } }, 
+                    responsive: true, 
+                    maintainAspectRatio: false 
+                }
             });
         }
 
@@ -762,7 +809,7 @@
             Swal.close();
 
             if(res.success) {
-                Swal.fire('Berhasil Disimpan', 'Konfigurasi paramater Fonnte API Gateway diperbarui.', 'success');
+                Swal.fire('Berhasil Disimpan', 'Konfigurasi parameter Fonnte API Gateway diperbarui.', 'success');
                 gatewayToken = token;
                 gatewayTemplate = temp;
             } else {
@@ -773,8 +820,11 @@
         function kirimNotifikasiWhatsApp(p, tgl, wkt, status) {
             if(!gatewayToken || !p.whatsapp) return;
             
+            // Penggantian Tag Dinamis disesuaikan dengan Mockup Lembar Kerja Pengaturan
             let msg = gatewayTemplate
                 .replace(/\[NAMA\]/g, p.nama)
+                .replace(/\(\[ID\]\)/g, `(${p.id})`)
+                .replace(/\[ID\]/g, p.id)
                 .replace(/\[TANGGAL\]/g, tgl)
                 .replace(/\[WAKTU\]/g, wkt)
                 .replace(/\[STATUS\]/g, status);
@@ -788,14 +838,13 @@
             }).catch(e => console.error('Fonnte WhatsApp Network Error:', e));
         }
 
-        // ==================== FITUR PRINT PDF KARTU ID (HTML2PDF) ====================
+        // ==================== CO-BRANDING ID CARD PDF (HTML2PDF) ====================
         function cetakKartuPDF(idPeserta) {
             let p = globalPeserta.find(item => String(item.id) === String(idPeserta));
             if(!p) return;
 
             Swal.fire({title: 'Menyiapkan Dokumen PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
 
-            // Isikan data ke template tersembunyi
             document.getElementById('pdfCardName').innerText = p.nama.toUpperCase();
             document.getElementById('pdfCardId').innerText = "ID: " + p.id;
             document.getElementById('pdfCardCategory').innerText = p.kategori;
@@ -803,7 +852,6 @@
             let qrContainer = document.getElementById('pdfCardQr');
             qrContainer.innerHTML = "";
             
-            // Render QR Code baru ke kontainer cetak
             new QRCode(qrContainer, {
                 text: String(p.id).trim(),
                 width: 140,
@@ -813,7 +861,6 @@
                 correctLevel : QRCode.CorrectLevel.H
             });
 
-            // Jalankan html2pdf setelah penundaan singkat untuk render QR gambar
             setTimeout(() => {
                 let element = document.getElementById('idCardRenderBox');
                 let opt = {
@@ -833,33 +880,45 @@
             }, 600);
         }
 
-        // ==================== FITUR PRINT REKAP TABLE KESELURUHAN (JSPDF) ====================
+        // ==================== CETAK REKAP LAPORAN DENGAN KOP SURAT FORMAL ====================
         function cetakRekapPDF() {
             if(globalAbsensi.length === 0) {
                 Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
                 return;
             }
 
-            Swal.fire({title: 'Membuat Laporan PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            Swal.fire({title: 'Membuat Laporan PDF Resmi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Header Judul Laporan
+            // --- KOP SURAT INSTANSI DINAMIS ---
             doc.setFont("Helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text("LAPORAN REKAPITULASI PRESENSI", 14, 15);
+            doc.setFontSize(14);
+            doc.text(instansiConfig.instansiNama, 45, 16);
             
-            doc.setFontSize(10);
             doc.setFont("Helvetica", "normal");
-            doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${globalAbsensi.length} Baris`, 14, 21);
-            
-            // Garis pembatas header
-            doc.setDrawColor(226, 232, 240);
-            doc.setLineWidth(0.5);
-            doc.line(14, 25, 196, 25);
+            doc.setFontSize(9);
+            doc.text(instansiConfig.instansiAlamat, 45, 21);
+            doc.text(`Sistem Aplikasi: ${instansiConfig.appNama}`, 45, 26);
 
-            // Mapping data array untuk jsPDF autotable
+            // Garis Ganda Kop Surat
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.6);
+            doc.line(14, 30, 196, 30);
+            doc.setLineWidth(0.2);
+            doc.line(14, 31, 196, 31);
+
+            // Judul Laporan
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("LAPORAN REKAPITULASI PRESENSI KEHADIRAN", 14, 40);
+            
+            doc.setFontSize(9);
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${globalAbsensi.length} Baris`, 14, 45);
+
+            // Mapping Data untuk Table
             const tableBody = globalAbsensi.map(a => [
                 a.id || '-',
                 a.nama || '-',
@@ -869,20 +928,51 @@
                 a.status || '-'
             ]);
 
-            // Buat Tabel Otomatis
+            // Render Table
             doc.autoTable({
-                startY: 28,
-                head: [['ID Anggota', 'Nama Lengkap', 'Kategori / Jabatan', 'Tanggal', 'Waktu', 'Status']],
+                startY: 49,
+                head: [['ID Anggota', 'Nama Lengkap', 'Kategori', 'Tanggal', 'Waktu', 'Status']],
                 body: tableBody,
-                headStyles: { fillColor: [59, 130, 246], fontSize: 10, fontStyle: 'bold' },
-                bodyStyles: { fontSize: 9 },
+                headStyles: { fillColor: [37, 99, 235], fontSize: 9, fontStyle: 'bold' },
+                bodyStyles: { fontSize: 8 },
                 alternateRowStyles: { fillColor: [248, 250, 252] },
-                margin: { left: 14, right: 14 }
+                margin: { left: 14, right: 14 },
+                didDrawPage: function(data) {
+                    // Cek Posisi Akhir Halaman untuk Tanda Tangan Pembuka
+                    let finalY = data.cursor.y + 15;
+                    if (finalY > 240) {
+                        doc.addPage();
+                        finalY = 30;
+                    }
+                    
+                    // --- BLOCK TANDA TANGAN KEPALA SEKOLAH ---
+                    doc.setFont("Helvetica", "normal");
+                    doc.setFontSize(10);
+                    doc.text("Mengetahui,", 140, finalY);
+                    doc.text(instansiConfig.kepalaJabatan, 140, finalY + 5);
+                    
+                    doc.setFont("Helvetica", "bold", "underline");
+                    doc.text(instansiConfig.kepalaNama, 140, finalY + 25);
+                    
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(`${instansiConfig.kepalaJenisId}. ${instansiConfig.kepalaId.replace(/[^0-9 ]/g, '')}`, 140, finalY + 30);
+                }
             });
 
-            // Simpan file
-            doc.save(`REKAP_PRESENSI_${new Date().toISOString().split('T')[0]}.pdf`);
-            Swal.close();
+            // Memuat Gambar Logo Instansi Ke Dalam Kop Surat PDF
+            let img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = function() {
+                doc.addImage(img, 'PNG', 15, 10, 25, 18);
+                doc.save(`LAPORAN_REKAP_${instansiConfig.instansiNama.replace(/\s+/g, '_')}.pdf`);
+                Swal.close();
+            };
+            img.onerror = function() {
+                // Tetap simpan dokumen jika logo eksternal gagal di-load
+                doc.save(`LAPORAN_REKAP_${instansiConfig.instansiNama.replace(/\s+/g, '_')}.pdf`);
+                Swal.close();
+            };
+            img.src = instansiConfig.instansiLogo;
         }
 
         async function downloadSemuaQR() {
