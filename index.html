@@ -46,6 +46,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://shadowalchemist.github.io/html2pdf.js/dist/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.autotable.min.js"></script>
 </head>
 <body>
     <div class="bg-app-container flex flex-col md:flex-row">
@@ -230,7 +234,7 @@
         <section id="menu-peserta" class="menu-section hide">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <input type="text" id="searchPeserta" oninput="filterPeserta()" placeholder="Cari ID, nama atau kategori..." class="w-full md:w-80 p-3 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue">
-                <div class="flex gap-2 w-full sm:w-auto">
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button onclick="downloadSemuaQR()" class="flex-1 sm:flex-none bg-brand-amber text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-download mr-1"></i> Unduh Semua QR (ZIP)</button>
                     <button onclick="openModalPeserta()" class="flex-1 sm:flex-none bg-brand-blue text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-plus mr-1"></i> Tambah Anggota</button>
                 </div>
@@ -252,7 +256,7 @@
 
         <section id="menu-rekap" class="menu-section hide">
             <div class="flex flex-wrap gap-2 mb-4 items-center justify-between">
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <input type="text" id="searchRekap" oninput="filterRekap()" placeholder="Cari nama/ID..." class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-48">
                     <input type="date" id="filterTanggalRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-40">
                     <select id="filterStatusRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-36">
@@ -263,12 +267,15 @@
                         <option value="Alfa">Alfa</option>
                     </select>
                 </div>
-                <button onclick="eksporKeCSV()" class="bg-brand-emerald text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm w-full sm:w-auto"><i class="fas fa-file-excel mr-1"></i> Ekspor CSV (Excel)</button>
+                <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                    <button onclick="cetakRekapPDF()" class="bg-rose-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex-1 sm:flex-none"><i class="fas fa-file-pdf mr-1"></i> Cetak PDF</button>
+                    <button onclick="eksporKeCSV()" class="bg-brand-emerald text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex-1 sm:flex-none"><i class="fas fa-file-excel mr-1"></i> Ekspor CSV</button>
+                </div>
             </div>
 
             <div class="card-custom overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table class="w-full text-left text-sm" id="mainTableRekap">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-xs font-bold border-b">
                                 <th class="p-4">ID</th><th class="p-4">Nama</th><th class="p-4">Kategori</th><th class="p-4">Tanggal</th><th class="p-4">Waktu</th><th class="p-4 text-center">Status</th>
@@ -340,6 +347,17 @@
                     <button type="submit" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm">Simpan ke Sheets</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="hiddenIdCardTemplate" class="fixed -top-[9999px] -left-[9999px]">
+        <div id="idCardRenderBox" style="width: 350px; background: white; border: 2px dashed #CBD5E1; border-radius: 20px; padding: 25px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
+            <div style="font-size: 11px; font-weight: 800; color: #3B82F6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">KARTU IDENTITAS QR</div>
+            <div style="font-size: 14px; font-weight: bold; color: #1E293B; margin-bottom: 15px;" id="pdfCardTitle">SISTEM PRESENSIPRO</div>
+            <div style="display: flex; justify-content: center; margin-bottom: 15px;" id="pdfCardQr"></div>
+            <div style="font-size: 16px; font-weight: 800; color: #1E293B;" id="pdfCardName">-</div>
+            <div style="font-size: 12px; font-weight: 600; color: #64748B; margin-top: 2px;" id="pdfCardId">-</div>
+            <div style="font-size: 11px; font-weight: bold; background: #F1F5F9; color: #475569; display: inline-block; padding: 4px 12px; border-radius: 99px; margin-top: 10px;" id="pdfCardCategory">-</div>
         </div>
     </div>
 
@@ -436,7 +454,6 @@
             document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hide'));
             document.getElementById('menu-' + target).classList.remove('hide');
             
-            // Perbarui Judul Halaman Sesuai Menu Klik
             let titleMap = {
                 'dashboard': 'Dashboard', 'scan': 'Scan QR', 'input-manual': 'Input Manual',
                 'peserta': 'Data Peserta', 'rekap': 'Rekap Absensi', 'profil': 'Profil Admin', 'settings': 'WA Gateway'
@@ -471,122 +488,40 @@
             
             let reversedAktivitas = [...hariIni].reverse().slice(0, 5);
             if(reversedAktivitas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">BelUp ada log aktivitas masuk hari ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">Belum ada log aktivitas masuk hari ini.</td></tr>`;
                 return;
             }
 
             reversedAktivitas.forEach(a => {
-                let style = a.status === "Hadir" ? "text-emerald-600 bg-emerald-50" : a.status === "Izin" ? "text-amber-600 bg-amber-50" : a.status === "Sakit" ? "text-purple-600 bg-purple-50" : "text-rose-600 bg-rose-50";
+                let badgeColor = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                                 a.status === 'Izin' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                                 a.status === 'Sakit' ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-rose-50 text-rose-600 border border-rose-200';
                 tbody.innerHTML += `
                     <tr>
-                        <td class="py-3 text-slate-400 font-medium font-mono">${a.waktu}</td>
-                        <td class="font-bold text-slate-700">${a.nama}</td>
-                        <td class="text-slate-500">${a.kategori}</td>
-                        <td class="text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${style}">${a.status}</span></td>
-                    </tr>`;
+                        <td class="py-3 font-medium text-xs text-slate-500">${a.waktu || '-'}</td>
+                        <td class="py-3 font-bold text-slate-700">${a.nama || '-'}</td>
+                        <td class="py-3 text-xs text-slate-400">${a.kategori || '-'}</td>
+                        <td class="py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeColor}">${a.status}</span></td>
+                    </tr>
+                `;
             });
-        }
-
-        function renderTablePeserta(data) {
-            let tbody = document.getElementById('tableDataPeserta');
-            tbody.innerHTML = '';
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data peserta ditemukan.</td></tr>`;
-                return;
-            }
-            data.forEach(p => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-4 font-bold text-brand-blue font-mono">${p.id}</td>
-                        <td class="p-4 font-bold text-slate-700">${p.nama}</td>
-                        <td class="p-4 text-slate-500">${p.kategori}</td>
-                        <td class="p-4 text-slate-500 font-mono">${p.wa}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="hapusPeserta('${p.id}')" class="text-rose-500 bg-rose-50 p-2 rounded-xl hover:bg-rose-500 hover:text-white transition shadow-sm"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        function filterPeserta() {
-            let s = document.getElementById('searchPeserta').value.toLowerCase().trim();
-            let filtered = globalPeserta.filter(p => p.id.toLowerCase().includes(s) || p.nama.toLowerCase().includes(s) || p.kategori.toLowerCase().includes(s));
-            renderTablePeserta(filtered);
-        }
-
-        function renderTableRekap(data) {
-            let tbody = document.getElementById('tableDataRekap');
-            tbody.innerHTML = '';
-            
-            let sorted = [...data].reverse();
-            if(sorted.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Arsip data absensi kosong.</td></tr>`;
-                return;
-            }
-
-            sorted.forEach(a => {
-                let style = a.status === "Hadir" ? "text-emerald-600 bg-emerald-50" : a.status === "Izin" ? "text-amber-600 bg-amber-50" : a.status === "Sakit" ? "text-purple-600 bg-purple-50" : "text-rose-600 bg-rose-50";
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-4 font-bold text-slate-400 font-mono">${a.id}</td>
-                        <td class="p-4 font-bold text-slate-700">${a.nama}</td>
-                        <td class="p-4 text-slate-500">${a.kategori}</td>
-                        <td class="p-4 font-mono">${a.tanggal}</td>
-                        <td class="p-4 font-mono">${a.waktu}</td>
-                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${style}">${a.status}</span></td>
-                    </tr>`;
-            });
-        }
-
-        function filterRekap() {
-            let s = document.getElementById('searchRekap').value.toLowerCase().trim();
-            let tgl = document.getElementById('filterTanggalRekap').value;
-            let stat = document.getElementById('filterStatusRekap').value;
-
-            let filtered = globalAbsensi.filter(a => {
-                let matchSearch = a.id.toLowerCase().includes(s) || a.nama.toLowerCase().includes(s);
-                let matchTgl = tgl === "" ? true : (a.tanggal && a.tanggal.includes(tgl));
-                let matchStat = stat === "" ? true : a.status === stat;
-                return matchSearch && matchTgl && matchStat;
-            });
-            renderTableRekap(filtered);
-        }
-
-        async function handleInputManual(e) {
-            e.preventDefault();
-            let id = document.getElementById('manualSelectPeserta').value;
-            let tanggal = document.getElementById('manualTanggal').value;
-            let waktu = document.getElementById('manualWaktu').value;
-            let status = document.querySelector('input[name="manualStatus"]:checked').value;
-
-            if(!id) return Swal.fire('Gagal', 'Pilih salah satu peserta.', 'error');
-
-            Swal.fire({title: 'Memproses entri manual...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let p = globalPeserta.find(item => item.id === id);
-
-            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal, waktu, status});
-            Swal.close();
-
-            if(res.success) {
-                await refreshSemuaData();
-                Swal.fire('Sukses', `Data absensi ${p.nama} berhasil dimasukkan!`, 'success');
-                kirimWhatsApp(p, {nama: p.nama, tanggal, waktu, status});
-            } else {
-                Swal.fire('Error', 'Gagal menulis ke server cloud.', 'error');
-            }
         }
 
         function startScanner() {
             document.getElementById('btnStartScan').classList.add('hide');
             document.getElementById('btnStopScan').classList.remove('hide');
+            document.getElementById('scanResult').innerHTML = `
+                <div class="flex flex-col items-center"><i class="fas fa-spinner fa-spin text-4xl text-brand-blue mb-2"></i><p class="text-sm font-semibold text-slate-500">Menginisialisasi Kamera...</p></div>
+            `;
+
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 12, qrbox: 220 },
-                (text) => { prosesAbsensi(text); },
+                { facingMode: "environment" },
+                { fps: 15, qrbox: { width: 250, height: 250 } },
+                (decodedText) => { processQrCodePresensi(decodedText); },
                 () => {}
             ).catch(() => {
-                Swal.fire('Gagal Akses', 'Periksa izin kamera perangkat Anda.', 'error');
+                Swal.fire('Kamera Error', 'Gagal mengakses modul kamera perangkat.', 'error');
                 stopScanner();
             });
         }
@@ -594,196 +529,405 @@
         function stopScanner() {
             document.getElementById('btnStartScan').classList.remove('hide');
             document.getElementById('btnStopScan').classList.add('hide');
+            document.getElementById('scanResult').innerHTML = `
+                <i class="fas fa-qrcode text-6xl text-slate-300 mb-4 animate-pulse"></i>
+                <h3 class="text-lg font-bold text-slate-600">Kamera Siap Memindai</h3>
+                <p class="text-slate-400 text-xs mt-1">Posisikan barcode / QR Code Peserta di area kamera.</p>
+            `;
             if(html5QrCode) {
-                html5QrCode.stop().then(() => { html5QrCode = null; }).catch(() => {});
+                html5QrCode.stop().then(() => { html5QrCode = null; }).catch(err => console.error(err));
             }
         }
 
-        async function prosesAbsensi(id) {
-            let p = globalPeserta.find(item => item.id === id.trim().toUpperCase());
-            let box = document.getElementById('scanResult');
-            let tgl = new Date().toISOString().split('T')[0];
-            let jam = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':');
-
+        async function processQrCodePresensi(idPeserta) {
+            let p = globalPeserta.find(item => String(item.id).trim() === String(idPeserta).trim());
             if(!p) {
-                box.innerHTML = `<div class="text-rose-500 text-5xl mb-2"><i class="fas fa-times-circle"></i></div><h3 class="text-md font-bold">ID QR Tidak Terdaftar (${id})</h3>`;
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="w-20 h-20 bg-rose-50 border border-rose-200 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3"><i class="fas fa-times-circle"></i></div>
+                    <h3 class="text-xl font-black text-rose-600">ID TIDAK DIKENAL</h3>
+                    <p class="text-slate-400 text-xs mt-1">Data dengan ID [${idPeserta}] gagal diverifikasi sistem.</p>
+                `;
                 return;
             }
 
-            if(globalAbsensi.some(a => a.id === p.id && a.tanggal && a.tanggal.includes(tgl))) {
-                box.innerHTML = `<div class="text-amber-500 text-5xl mb-2"><i class="fas fa-exclamation-triangle"></i></div><h3 class="text-md font-bold">${p.nama}</h3><p class="text-xs text-slate-400">Sudah absen hari ini</p>`;
-                return;
-            }
+            document.getElementById('scanResult').innerHTML = `
+                <div class="flex flex-col items-center"><i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500 mb-2"></i><p class="text-sm font-bold text-slate-600">Memproses kehadiran ${p.nama}...</p></div>
+            `;
 
-            box.innerHTML = `<i class="fas fa-spinner fa-spin text-4xl text-brand-blue mb-2"></i><h3 class="text-md font-bold">Sinkronisasi Cloud...</h3>`;
+            let now = new Date();
+            let tgl = now.toISOString().split('T')[0];
+            let wkt = now.toTimeString().slice(0,5);
 
-            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: jam, status: "Hadir"});
+            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: 'Hadir'});
             
             if(res.success) {
-                box.innerHTML = `<div class="text-emerald-500 text-5xl mb-2"><i class="fas fa-check-circle"></i></div><h3 class="text-md font-black text-slate-700">Berhasil Hadir!</h3><p class="text-xs text-slate-500 mt-1">${p.nama} (${p.id})</p>`;
-                await refreshSemuaData();
-                kirimWhatsApp(p, {nama: p.nama, tanggal: tgl, waktu: jam, status: "Hadir"});
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="w-20 h-20 bg-emerald-50 border border-emerald-200 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 animate-bounce"><i class="fas fa-check-circle"></i></div>
+                    <h3 class="text-2xl font-black text-emerald-600">BERHASIL HADIR</h3>
+                    <p class="text-slate-700 font-bold text-md mt-1">${p.nama}</p>
+                    <p class="text-slate-400 text-xs">${p.id} - ${p.kategori}</p>
+                    <div class="mt-3 text-[11px] bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-mono inline-block">${tgl} | ${wkt} WIB</div>
+                `;
+                kirimNotifikasiWhatsApp(p, tgl, wkt, 'Hadir');
+                refreshSemuaData();
             } else {
-                box.innerHTML = `<div class="text-rose-500 text-5xl mb-2"><i class="fas fa-exclamation-circle"></i></div><h3 class="text-sm font-bold">Gagal Menyimpan Ke Sheets</h3>`;
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="w-20 h-20 bg-amber-50 border border-amber-200 text-amber-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3 class="text-lg font-black text-amber-600">GAGAL SUBMIT</h3>
+                    <p class="text-slate-500 text-xs">${res.error || 'Terjadi gangguan lembar data.'}</p>
+                `;
             }
         }
 
-        function kirimWhatsApp(peserta, log) {
-            if(!gatewayToken || gatewayToken === "") return;
-            let pesan = gatewayTemplate
-                .replace('[NAMA]', log.nama)
-                .replace('[TANGGAL]', log.tanggal)
-                .replace('[WAKTU]', log.waktu)
-                .replace('[STATUS]', log.status);
+        async function handleInputManual(e) {
+            e.preventDefault();
+            let id = document.getElementById('manualSelectPeserta').value;
+            let tgl = document.getElementById('manualTanggal').value;
+            let wkt = document.getElementById('manualWaktu').value;
+            let status = document.querySelector('input[name="manualStatus"]:checked').value;
 
-            let fd = new FormData();
-            fd.append("target", peserta.wa);
-            fd.append("message", pesan);
+            if(!id) { Swal.fire('Form Belum Lengkap', 'Pilih salah satu anggota peserta dahulu!', 'warning'); return; }
 
-            fetch("https://api.fonnte.com/send", {
-                method: 'POST',
-                headers: {"Authorization": gatewayToken},
-                body: fd
-            }).then(r => r.text()).then(res => console.log('WA Sent:', res)).catch(e => console.error(e));
-        }
-
-        function buildProfileAnalytics() {
-            let total = globalAbsensi.length;
-            document.getElementById('profileTotalLog').innerText = total + " Baris";
+            Swal.fire({title: 'Menyimpan Presensi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            let p = globalPeserta.find(item => String(item.id) === String(id));
             
-            let h = globalAbsensi.filter(a => a.status === 'Hadir').length;
-            let i = globalAbsensi.filter(a => a.status === 'Izin').length;
-            let s = globalAbsensi.filter(a => a.status === 'Sakit').length;
-            let a = globalAbsensi.filter(a => a.status === 'Alfa').length;
+            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: status});
+            Swal.close();
 
-            let rate = total > 0 ? Math.round((h / total) * 100) : 0;
-            document.getElementById('profileRate').innerText = rate + "%";
+            if(res.success) {
+                Swal.fire('Sukses', `Data presensi ${p.nama} status [${status}] berhasil diinput manual.`, 'success');
+                kirimNotifikasiWhatsApp(p, tgl, wkt, status);
+                await refreshSemuaData();
+                switchMenu('dashboard');
+            } else {
+                Swal.fire('Gagal', res.error || 'Terjadi kesalahan sistem database.', 'error');
+            }
+        }
 
-            if(chartInstance) chartInstance.destroy();
-
-            const ctx = document.getElementById('chartPieProfile').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Hadir', 'Izin', 'Sakit', 'Alfa'],
-                    datasets: [{
-                        data: [h, i, s, a],
-                        backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } }
-                }
+        function renderTablePeserta(data) {
+            let tbody = document.getElementById('tableDataPeserta');
+            tbody.innerHTML = '';
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-xs">Tidak ditemukan riwayat data peserta.</td></tr>`;
+                return;
+            }
+            data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="p-4 font-mono font-bold text-xs text-brand-blue">${p.id}</td>
+                        <td class="p-4 font-bold text-slate-800">${p.nama}</td>
+                        <td class="p-4 text-xs font-semibold text-slate-500">${p.kategori}</td>
+                        <td class="p-4 text-xs font-mono text-slate-600">${p.whatsapp || '-'}</td>
+                        <td class="p-4 text-center">
+                            <div class="flex justify-center gap-1">
+                                <button onclick="cetakKartuPDF('${p.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fas fa-file-pdf"></i> Cetak PDF</button>
+                                <button onclick="hapusPeserta('${p.id}')" class="bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 px-2.5 py-1.5 rounded-lg text-xs transition"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
-        function eksporKeCSV() {
-            if(globalAbsensi.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'info');
-            let csvContent = "data:text/csv;charset=utf-8,ID,Nama,Kategori,Tanggal,Waktu,Status\n";
-            globalAbsensi.forEach(r => {
-                csvContent += `"${r.id}","${r.nama}","${r.kategori}","${r.tanggal}","${r.waktu}","${r.status}"\n`;
-            });
-            let encodedUri = encodeURI(csvContent);
-            let link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Rekap_Absensi_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function filterPeserta() {
+            let query = document.getElementById('searchPeserta').value.toLowerCase();
+            let filtered = globalPeserta.filter(p => 
+                String(p.id).toLowerCase().includes(query) || 
+                String(p.nama).toLowerCase().includes(query) || 
+                String(p.kategori).toLowerCase().includes(query)
+            );
+            renderTablePeserta(filtered);
         }
 
-        function openModalPeserta() {
-            document.getElementById('formPeserta').reset();
-            document.getElementById('modalPeserta').classList.remove('hide');
-        }
-
-        function closeModalPeserta() {
-            document.getElementById('modalPeserta').classList.add('hide');
-        }
+        function openModalPeserta() { document.getElementById('modalPeserta').classList.remove('hide'); }
+        function closeModalPeserta() { document.getElementById('modalPeserta').classList.add('hide'); document.getElementById('formPeserta').reset(); }
 
         async function savePeserta(e) {
             e.preventDefault();
-            Swal.fire({title: 'Mendaftarkan Anggota...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            
-            let id = document.getElementById('inputId').value.trim().toUpperCase();
-            let nama = document.getElementById('inputNama').value.trim();
-            let kategori = document.getElementById('inputKategori').value.trim();
-            let wa = document.getElementById('inputWa').value.trim().replace(/[^0-9]/g, '');
+            let id = document.getElementById('inputId').value;
+            let nama = document.getElementById('inputNama').value;
+            let kat = document.getElementById('inputKategori').value;
+            let wa = document.getElementById('inputWa').value;
 
-            if(globalPeserta.some(p => p.id === id)) {
-                Swal.fire('Gagal', 'ID ini sudah digunakan di spreadsheet!', 'error');
-                return;
-            }
-
-            let res = await fetchAPI('addPeserta', {id, nama, kategori, wa});
+            Swal.fire({title: 'Mendaftarkan ke Server...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            let res = await fetchAPI('addPeserta', {id: id, nama: nama, kategori: kat, whatsapp: wa});
             Swal.close();
+
             if(res.success) {
+                Swal.fire('Registrasi Berhasil', 'Data anggota baru berhasil disinkronisasi ke Google Sheets.', 'success');
                 closeModalPeserta();
                 await refreshSemuaData();
                 renderTablePeserta(globalPeserta);
-                Swal.fire('Berhasil', 'Peserta baru berhasil sinkron ke cloud!', 'success');
+            } else {
+                Swal.fire('Pendaftaran Gagal', res.error || 'Terjadi kegagalan komunikasi API.', 'error');
             }
         }
 
         async function hapusPeserta(id) {
-            Swal.fire({
-                title: 'Hapus Peserta?',
-                text: "Data pada Google Sheets akan terhapus permanen.",
+            let confirm = await Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin melenyapkan data peserta dengan ID [${id}]?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#EF4444',
-                confirmButtonText: 'Ya, Hapus'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({title: 'Menghapus data...', didOpen: () => Swal.showLoading()});
-                    await fetchAPI('deletePeserta', {id: id});
-                    await refreshSemuaData();
-                    renderTablePeserta(globalPeserta);
-                    Swal.fire('Terhapus', 'Peserta berhasil dihapus dari sistem.', 'success');
-                }
+                confirmButtonText: 'Ya, Hapus!'
+            });
+            if(!confirm.isConfirmed) return;
+
+            Swal.fire({title: 'Menghapus data...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            let res = await fetchAPI('deletePeserta', {id: id});
+            Swal.close();
+
+            if(res.success) {
+                Swal.fire('Terhapus', 'Anggota berhasil ditiadakan dari sistem.', 'success');
+                await refreshSemuaData();
+                renderTablePeserta(globalPeserta);
+            } else {
+                Swal.fire('Gagal', res.error || 'Gagal menghapus data.', 'error');
+            }
+        }
+
+        function renderTableRekap(data) {
+            let tbody = document.getElementById('tableDataRekap');
+            tbody.innerHTML = '';
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium text-xs">Tidak ada log data rekap presensi.</td></tr>`;
+                return;
+            }
+            data.forEach(a => {
+                let badgeColor = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                 a.status === 'Izin' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                 a.status === 'Sakit' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-rose-50 text-rose-600 border border-rose-100';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="p-4 font-mono text-xs text-slate-500">${a.id || '-'}</td>
+                        <td class="p-4 font-bold text-slate-700">${a.nama || '-'}</td>
+                        <td class="p-4 text-xs font-semibold text-slate-400">${a.kategori || '-'}</td>
+                        <td class="p-4 text-xs font-medium text-slate-600">${a.tanggal ? a.tanggal.split('T')[0] : '-'}</td>
+                        <td class="p-4 text-xs font-mono text-slate-500">${a.waktu || '-'}</td>
+                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeColor}">${a.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterRekap() {
+            let q = document.getElementById('searchRekap').value.toLowerCase();
+            let tgl = document.getElementById('filterTanggalRekap').value;
+            let st = document.getElementById('filterStatusRekap').value;
+
+            let filtered = globalAbsensi.filter(a => {
+                let matchQ = !q || (String(a.id).toLowerCase().includes(q) || String(a.nama).toLowerCase().includes(q));
+                let matchTgl = !tgl || (a.tanggal && a.tanggal.includes(tgl));
+                let matchSt = !st || (a.status === st);
+                return matchQ && matchTgl && matchSt;
+            });
+            renderTableRekap(filtered);
+        }
+
+        function buildProfileAnalytics() {
+            document.getElementById('profileTotalLog').innerText = globalAbsensi.length + " Baris";
+            
+            let totalHadir = globalAbsensi.filter(a => a.status === 'Hadir').length;
+            let totalIzin = globalAbsensi.filter(a => a.status === 'Izin').length;
+            let totalSakit = globalAbsensi.filter(a => a.status === 'Sakit').length;
+            let totalAlfa = globalAbsensi.filter(a => a.status === 'Alfa').length;
+            let totalSemua = globalAbsensi.length;
+
+            let rate = totalSemua > 0 ? Math.round((totalHadir / totalSemua) * 100) : 0;
+            document.getElementById('profileRate').innerText = rate + "%";
+
+            if(chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('chartPieProfile').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Hadir', 'Izin', 'Sakit', 'Alfa'],
+                    datasets: [{
+                        data: [totalHadir, totalIzin, totalSakit, totalAlfa],
+                        backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: true }
             });
         }
 
         async function saveSettings() {
-            Swal.fire({title: 'Menyimpan Konfigurasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let tok = document.getElementById('waToken').value.trim();
+            let token = document.getElementById('waToken').value;
             let temp = document.getElementById('waTemplate').value;
-            
-            let res = await fetchAPI('savePengaturan', {token: tok, template: temp});
+
+            Swal.fire({title: 'Menyimpan Konfigurasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            let res = await fetchAPI('savePengaturan', {token: token, template: temp});
             Swal.close();
+
             if(res.success) {
-                gatewayToken = tok;
+                Swal.fire('Berhasil Disimpan', 'Konfigurasi paramater Fonnte API Gateway diperbarui.', 'success');
+                gatewayToken = token;
                 gatewayTemplate = temp;
-                Swal.fire('Berhasil', 'Konfigurasi parameter WhatsApp terupdate.', 'success');
+            } else {
+                Swal.fire('Gagal Menyimpan', res.error || 'Server menolak request data.', 'error');
             }
         }
 
-        function downloadSemuaQR() {
-            if(globalPeserta.length === 0) return Swal.fire('Info', 'Tidak ada data peserta.', 'info');
-            Swal.fire({title: 'Mengompilasi ZIP QR...', didOpen: () => Swal.showLoading()});
-            let zip = new JSZip(); let terproses = 0;
-            globalPeserta.forEach(p => {
-                let url = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${p.id}`;
-                fetch(url).then(r => r.blob()).then(blob => {
-                    zip.file(`${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, blob);
-                    terproses++;
-                    if(terproses === globalPeserta.length) {
-                        zip.generateAsync({type:"blob"}).then(c => { Swal.close(); saveAs(c, "Paket_QR_Peserta.zip"); });
-                    }
-                }).catch(() => {
-                    terproses++;
-                    if(terproses === globalPeserta.length) zip.generateAsync({type:"blob"}).then(c => { Swal.close(); saveAs(c, "Paket_QR_Peserta.zip"); });
+        function kirimNotifikasiWhatsApp(p, tgl, wkt, status) {
+            if(!gatewayToken || !p.whatsapp) return;
+            
+            let msg = gatewayTemplate
+                .replace(/\[NAMA\]/g, p.nama)
+                .replace(/\[TANGGAL\]/g, tgl)
+                .replace(/\[WAKTU\]/g, wkt)
+                .replace(/\[STATUS\]/g, status);
+
+            fetch('https://api.fonnte.com/send', {
+                method: 'POST',
+                headers: { 'Authorization': gatewayToken },
+                body: new URLSearchParams({ 'target': p.whatsapp, 'message': msg })
+            }).then(r => r.json()).then(res => {
+                console.log('Fonnte WhatsApp Status:', res);
+            }).catch(e => console.error('Fonnte WhatsApp Network Error:', e));
+        }
+
+        // ==================== FITUR PRINT PDF KARTU ID (HTML2PDF) ====================
+        function cetakKartuPDF(idPeserta) {
+            let p = globalPeserta.find(item => String(item.id) === String(idPeserta));
+            if(!p) return;
+
+            Swal.fire({title: 'Menyiapkan Dokumen PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+
+            // Isikan data ke template tersembunyi
+            document.getElementById('pdfCardName').innerText = p.nama.toUpperCase();
+            document.getElementById('pdfCardId').innerText = "ID: " + p.id;
+            document.getElementById('pdfCardCategory').innerText = p.kategori;
+
+            let qrContainer = document.getElementById('pdfCardQr');
+            qrContainer.innerHTML = "";
+            
+            // Render QR Code baru ke kontainer cetak
+            new QRCode(qrContainer, {
+                text: String(p.id).trim(),
+                width: 140,
+                height: 140,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // Jalankan html2pdf setelah penundaan singkat untuk render QR gambar
+            setTimeout(() => {
+                let element = document.getElementById('idCardRenderBox');
+                let opt = {
+                    margin:       10,
+                    filename:     `KARTU_QR_${p.id}_${p.nama.replace(/\s+/g, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    Swal.close();
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('Gagal', 'Terjadi kesalahan saat memproses ekspor PDF.', 'error');
                 });
+            }, 600);
+        }
+
+        // ==================== FITUR PRINT REKAP TABLE KESELURUHAN (JSPDF) ====================
+        function cetakRekapPDF() {
+            if(globalAbsensi.length === 0) {
+                Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
+                return;
+            }
+
+            Swal.fire({title: 'Membuat Laporan PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            // Header Judul Laporan
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("LAPORAN REKAPITULASI PRESENSI", 14, 15);
+            
+            doc.setFontSize(10);
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${globalAbsensi.length} Baris`, 14, 21);
+            
+            // Garis pembatas header
+            doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
+            doc.line(14, 25, 196, 25);
+
+            // Mapping data array untuk jsPDF autotable
+            const tableBody = globalAbsensi.map(a => [
+                a.id || '-',
+                a.nama || '-',
+                a.kategori || '-',
+                a.tanggal ? a.tanggal.split('T')[0] : '-',
+                a.waktu || '-',
+                a.status || '-'
+            ]);
+
+            // Buat Tabel Otomatis
+            doc.autoTable({
+                startY: 28,
+                head: [['ID Anggota', 'Nama Lengkap', 'Kategori / Jabatan', 'Tanggal', 'Waktu', 'Status']],
+                body: tableBody,
+                headStyles: { fillColor: [59, 130, 246], fontSize: 10, fontStyle: 'bold' },
+                bodyStyles: { fontSize: 9 },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                margin: { left: 14, right: 14 }
+            });
+
+            // Simpan file
+            doc.save(`REKAP_PRESENSI_${new Date().toISOString().split('T')[0]}.pdf`);
+            Swal.close();
+        }
+
+        async function downloadSemuaQR() {
+            if(globalPeserta.length === 0) { Swal.fire('Gagal', 'Tidak ada data peserta untuk diunduh.', 'warning'); return; }
+            Swal.fire({title: 'Membuat Arsip ZIP QR...', text:'Mohon tunggu proses selesai...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            let zip = new JSZip();
+            let div = document.createElement('div');
+            
+            for(let i=0; i<globalPeserta.length; i++) {
+                let p = globalPeserta[i];
+                div.innerHTML = "";
+                new QRCode(div, { text: String(p.id).trim(), width: 300, height: 300 });
+                await new Promise(r => setTimeout(r, 100));
+                let img = div.querySelector('img');
+                if(img) {
+                    let base64 = img.src.split(',')[1];
+                    zip.file(`${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, base64, {base64: true});
+                }
+            }
+            
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                saveAs(content, `QR_CODE_SEMUA_PESERTA.zip`);
+                Swal.close();
             });
         }
 
+        function eksporKeCSV() {
+            if(globalAbsensi.length === 0) { Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'warning'); return; }
+            let csvContent = "\uFEFFID,Nama,Kategori,Tanggal,Waktu,Status\n";
+            globalAbsensi.forEach(a => {
+                let tgl = a.tanggal ? a.tanggal.split('T')[0] : '-';
+                csvContent += `"${a.id}","${a.nama}","${a.kategori}","${tgl}","${a.waktu}","${a.status}"\n`;
+            });
+            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            saveAs(blob, `REKAP_PRESENSI_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
         function logout() {
-            stopScanner();
-            document.getElementById('mainNav').classList.add('hide');
-            document.getElementById('mainContent').classList.add('hide');
-            document.getElementById('loginScreen').classList.remove('hide');
+            Swal.fire({
+                title: 'Logout', text: "Keluar dari sesi manajemen presensi pro?", icon: 'question',
+                showCancelButton: true, confirmButtonText: 'Ya, Keluar'
+            }).then((res) => {
+                if(res.isConfirmed) { window.location.reload(); }
+            });
         }
     </script>
 </body>
