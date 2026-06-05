@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kehadiran QR & WA Gateway PRO</title>
+    <title>Sistem Presensi QR & WA Gateway Pro - SMKN 1 Singkil Utara</title>
     
+    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -14,33 +15,29 @@
                 extend: {
                     colors: {
                         brand: {
-                            bg: '#F3F6F9',
-                            blue: '#3B82F6',
-                            emerald: '#10B981',
-                            amber: '#F59E0B',
-                            rose: '#EF4444',
-                            purple: '#8B5CF6',
-                            textMain: '#1E293B',
-                            textMuted: '#64748B'
+                            bg: '#F8FAFC',
+                            blue: '#2563EB',
+                            emerald: '#00A65A',
+                            amber: '#D97706',
+                            rose: '#E11D48',
+                            dark: '#0F172A'
                         }
                     },
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'Nunito', 'sans-serif'] },
-                    borderRadius: { '4xl': '2rem' },
-                    boxShadow: { 'soft': '0 10px 40px -10px rgba(0,0,0,0.03)' }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
                 }
             }
         }
     </script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #F3F6F9; font-family: 'Plus Jakarta Sans', sans-serif; color: #1E293B; }
-        .bg-app-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; background: #F3F6F9; overflow: auto;}
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #0F172A; }
+        .sidebar-btn.active { background-color: #EEF2F6; color: #2563EB; border-right: 4px solid #2563EB; }
         .hide { display: none !important; }
-        .card-custom { background: #FFFFFF; border-radius: 1.5rem; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.02); border: 1px solid #E2E8F0; }
-        #reader { border: none !important; border-radius: 1.5rem; overflow: hidden; background: #fff;}
-        #reader video { border-radius: 1.2rem; width: 100% !important; object-fit: cover; }
+        #reader video { border-radius: 1rem; width: 100% !important; object-fit: cover; }
     </style>
 
+    <!-- Core Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -50,216 +47,223 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.autotable.min.js"></script>
 </head>
-<body>
-    <div class="bg-app-container flex flex-col md:flex-row">
+<body class="bg-brand-bg min-h-screen flex flex-col md:flex-row">
 
-    <div id="initialLoader" class="fixed inset-0 bg-brand-blue flex flex-col items-center justify-center z-[60]">
-        <i class="fas fa-circle-notch fa-spin text-5xl text-white mb-4"></i>
-        <p class="text-white font-bold tracking-wide">Menghubungkan ke Live Database...</p>
-    </div>
-
-    <div id="loginScreen" class="fixed inset-0 bg-[#F3F6F9] flex items-center justify-center z-50 hide">
-        <div class="bg-white p-10 rounded-4xl shadow-soft w-11/12 max-w-md text-center border border-slate-100">
-            <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-brand-blue text-4xl shadow-sm"><i class="fas fa-shield-alt"></i></div>
-            <h2 class="text-3xl font-extrabold tracking-tight mb-1" id="loginAppTitle">Sistem Presensi Pro</h2>
-            <p class="text-brand-textMuted text-sm mb-8">Gunakan akun kredensial tab 'Users' Anda</p>
-            <form onsubmit="handleLogin(event)" class="text-left">
-                <div class="mb-5">
-                    <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase tracking-wider">Username</label>
-                    <input type="text" id="username" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue" required value="admin">
+    <!-- SIDEBAR NAVIGATION -->
+    <nav class="bg-white w-full md:w-72 flex md:flex-col justify-between border-r border-slate-200 sticky top-0 md:h-screen z-40 shadow-sm">
+        <div>
+            <!-- Header Brand / Logo Instansi -->
+            <div class="p-6 flex items-center gap-3 border-b border-slate-100 bg-slate-50/50">
+                <div class="w-12 h-12 bg-white rounded-xl shadow-sm border p-1.5 flex items-center justify-center overflow-hidden">
+                    <img id="metaNavLogo" src="" class="object-contain w-full h-full" alt="Logo">
                 </div>
-                <div class="mb-8">
-                    <label class="block text-brand-textMuted text-xs font-bold mb-2 uppercase tracking-wider">Password</label>
-                    <input type="password" id="password" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue" required value="admin2026">
-                </div>
-                <button type="submit" class="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-200">
-                    Masuk ke Sistem
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <nav id="mainNav" class="hide bg-white w-full md:w-64 md:min-h-screen flex md:flex-col fixed md:relative bottom-0 z-40 border-r border-slate-200">
-        <div class="p-6 hidden md:flex flex-col items-center text-center border-b border-slate-100">
-            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border mb-3 overflow-hidden p-2">
-                <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/2991/2991184.png" class="w-full h-full object-contain" alt="Logo">
-            </div>
-            <h1 class="text-xs font-black text-slate-700 tracking-wide uppercase" id="navAppName">Absen QR WA Auto</h1>
-            <p class="text-[9px] text-slate-400 font-bold mt-1 tracking-tight" id="navInstansiName">SMKN1 SINGKIL UTARA</p>
-        </div>
-        
-        <div class="flex md:flex-col w-full p-2 md:p-4 gap-1 overflow-x-auto md:overflow-x-visible">
-            <button onclick="switchMenu('dashboard')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="dashboard">
-                <i class="fas fa-home md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Dashboard</span>
-            </button>
-            <button onclick="switchMenu('scan')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="scan">
-                <i class="fas fa-camera md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Scan QR</span>
-            </button>
-            <button onclick="switchMenu('input-manual')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="input-manual">
-                <i class="fas fa-keyboard md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Input Manual</span>
-            </button>
-            <button onclick="switchMenu('peserta')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="peserta">
-                <i class="fas fa-user-graduate md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Peserta</span>
-            </button>
-            <button onclick="switchMenu('rekap')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="rekap">
-                <i class="fas fa-calendar-alt md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Rekap</span>
-            </button>
-            <button onclick="switchMenu('profil')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="profil">
-                <i class="fas fa-id-card md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Profil</span>
-            </button>
-            <button onclick="switchMenu('settings')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="settings">
-                <i class="fas fa-cog md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">WA Gateway</span>
-            </button>
-            <button onclick="logout()" class="flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-rose-500 font-semibold hover:bg-rose-50 transition md:mt-10">
-                <i class="fas fa-sign-out-alt md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Logout</span>
-            </button>
-        </div>
-    </nav>
-
-    <main id="mainContent" class="hide flex-1 p-4 md:p-8 pb-24 w-full max-h-screen overflow-y-auto">
-        
-        <div class="flex justify-between items-center mb-6 bg-transparent">
-            <div><h2 id="pageTitle" class="text-3xl font-extrabold text-slate-800">Dashboard</h2></div>
-            <div class="bg-white px-4 py-2 rounded-full border border-slate-200 flex items-center shadow-sm">
-                <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center mr-2 text-slate-500"><i class="fas fa-user text-xs"></i></div>
-                <span class="text-xs font-bold text-slate-600" id="adminName">Administrator Utama</span>
-            </div>
-        </div>
-
-        <section id="menu-dashboard" class="menu-section">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#4DBBFF] to-[#2563EB] text-white shadow-sm">
-                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Total Hadir</p>
-                    <h3 class="text-4xl font-black mt-1" id="countHadir">0</h3>
-                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
-                </div>
-                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#FF7F93] to-[#E11D48] text-white shadow-sm">
-                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Izin / Cuti</p>
-                    <h3 class="text-4xl font-black mt-1" id="countIzin">0</h3>
-                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
-                </div>
-                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#FFAD42] to-[#D97706] text-white shadow-sm">
-                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Sakit</p>
-                    <h3 class="text-4xl font-black mt-1" id="countSakit">0</h3>
-                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
-                </div>
-                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#987CFF] to-[#6D28D9] text-white shadow-sm">
-                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Alfa</p>
-                    <h3 class="text-4xl font-black mt-1" id="countAlpa">0</h3>
-                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
+                <div>
+                    <h1 id="metaNavApp" class="text-xs font-black text-slate-800 tracking-wider uppercase">Loading...</h1>
+                    <p id="metaNavInstansi" class="text-[10px] text-slate-400 font-bold mt-0.5 tracking-tight truncate w-44">Loading...</p>
                 </div>
             </div>
             
-            <div class="card-custom p-6">
+            <!-- Menu Items -->
+            <div class="flex md:flex-col p-3 gap-1 overflow-x-auto md:overflow-x-visible w-full">
+                <button onclick="switchMenu('dashboard')" class="sidebar-btn active w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-chart-pie text-lg fa-fw"></i> <span>Dashboard</span>
+                </button>
+                <button onclick="switchMenu('scan')" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-qrcode text-lg fa-fw"></i> <span>Scan QR Code</span>
+                </button>
+                <button onclick="switchMenu('manual')" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-keyboard text-lg fa-fw"></i> <span>Input Manual</span>
+                </button>
+                <button onclick="switchMenu('peserta')" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-user-graduate text-lg fa-fw"></i> <span>Data Peserta</span>
+                </button>
+                <button onclick="switchMenu('rekap')" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-file-invoice text-lg fa-fw"></i> <span>Rekap Absensi</span>
+                </button>
+                <button onclick="switchMenu('profil')" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-xl text-slate-500 font-semibold text-sm transition hover:bg-slate-50 gap-3">
+                    <i class="fas fa-sliders-h text-lg fa-fw"></i> <span>Profil & Sistem</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer Admin Info -->
+        <div class="p-4 border-t border-slate-100 hidden md:block bg-slate-50/30">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-brand-blue rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-100">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-slate-700" id="metaNavKepala">Sakinah, SPt</h4>
+                    <p class="text-[9px] text-slate-400 font-bold" id="metaNavKepalaId">NIP. 19800528 200604 2 004</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN APP WRAPPER -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-h-screen w-full pb-24 md:pb-8">
+        
+        <!-- TOP APP BAR -->
+        <div class="flex justify-between items-center mb-8 bg-transparent">
+            <div>
+                <h2 id="pageTitle" class="text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Utama</h2>
+                <p class="text-xs text-slate-400 font-semibold mt-0.5" id="liveClock">Memuat waktu sistem...</p>
+            </div>
+            <div class="bg-white px-4 py-2 rounded-full border shadow-sm flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-slate-600">Database Engine Local-Active</span>
+            </div>
+        </div>
+
+        <!-- SECTION: DASHBOARD -->
+        <section id="menu-dashboard" class="menu-section space-y-6">
+            <!-- Statistik Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white border rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hadir</p>
+                        <h3 class="text-3xl font-black text-brand-blue mt-1" id="statHadir">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-brand-blue rounded-xl flex items-center justify-center text-xl"><i class="fas fa-check-double"></i></div>
+                </div>
+                <div class="bg-white border rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Izin</p>
+                        <h3 class="text-3xl font-black text-amber-500 mt-1" id="statIzin">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-envelope"></i></div>
+                </div>
+                <div class="bg-white border rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sakit</p>
+                        <h3 class="text-3xl font-black text-purple-500 mt-1" id="statSakit">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-heartbeat"></i></div>
+                </div>
+                <div class="bg-white border rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Alfa</p>
+                        <h3 class="text-3xl font-black text-brand-rose mt-1" id="statAlfa">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-rose-50 text-brand-rose rounded-xl flex items-center justify-center text-xl"><i class="fas fa-user-times"></i></div>
+                </div>
+            </div>
+
+            <!-- Log Terbaru -->
+            <div class="bg-white border rounded-2xl shadow-sm p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-md font-bold text-slate-700">Aktivitas Absensi Terbaru</h3>
-                    <button onclick="switchMenu('rekap')" class="text-xs text-brand-blue font-bold hover:underline">Lihat Semua ></button>
+                    <h4 class="font-bold text-slate-800">Aktivitas Log Presensi Hari Ini</h4>
+                    <span class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full" id="liveDateStr"></span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="text-slate-400 text-xs border-b pb-2">
-                                <th class="pb-3">Waktu</th><th>Nama Peserta</th><th>Kategori</th><th class="text-center">Status</th>
+                            <tr class="border-b text-slate-400 text-xs font-bold uppercase bg-slate-50/50">
+                                <th class="p-3">Waktu</th><th class="p-3">ID Anggota</th><th class="p-3">Nama</th><th class="p-3">Kategori</th><th class="p-3 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="tableDashboardTerbaru" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="dashLogTable" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <section id="menu-scan" class="menu-section hide">
-            <div class="flex flex-col lg:flex-row gap-6">
-                <div class="w-full lg:w-5/12 card-custom p-6">
-                    <div id="reader" class="w-full mb-4 bg-slate-50"></div>
-                    <div class="flex gap-3">
-                        <button id="btnStartScan" onclick="startScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm shadow-sm">Aktifkan Kamera</button>
-                        <button id="btnStopScan" onclick="stopScanner()" class="flex-1 bg-rose-500 text-white py-3 rounded-xl font-bold text-sm hide">Matikan</button>
+        <!-- SECTION: SCAN QR -->
+        <section id="menu-scan" class="menu-section space-y-6 hide">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="lg:col-span-5 bg-white border p-6 rounded-2xl shadow-sm">
+                    <div id="reader" class="w-full overflow-hidden bg-slate-900 rounded-xl border-4 border-slate-100 shadow-inner"></div>
+                    <div class="flex gap-2 mt-4">
+                        <button id="btnStart" onclick="initScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-blue-100"><i class="fas fa-play mr-1"></i> Aktifkan Kamera</button>
+                        <button id="btnStop" onclick="killScanner()" class="flex-1 bg-slate-700 text-white py-3 rounded-xl font-bold text-sm hide"><i class="fas fa-stop mr-1"></i> Matikan</button>
                     </div>
                 </div>
-                <div class="w-full lg:w-7/12 card-custom p-8 flex flex-col items-center justify-center text-center min-h-[300px]" id="scanResult">
-                    <i class="fas fa-qrcode text-6xl text-slate-300 mb-4 animate-pulse"></i>
-                    <h3 class="text-lg font-bold text-slate-600">Kamera Siap Memindai</h3>
-                    <p class="text-slate-400 text-xs mt-1">Posisikan barcode / QR Code Peserta di area kamera.</p>
+                <div id="scanResultPane" class="lg:col-span-7 bg-white border p-12 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[360px]">
+                    <i class="fas fa-qrcode text-7xl text-slate-200 mb-4 animate-pulse"></i>
+                    <h3 class="text-xl font-bold text-slate-600">Sistem Scanner Siap Terbuka</h3>
+                    <p class="text-slate-400 text-xs mt-1 max-w-sm mx-auto">Nyalakan modul kamera di sebelah kiri untuk mulai membaca barcode / QR Code ID milik peserta presensi secara live.</p>
                 </div>
             </div>
         </section>
 
-        <section id="menu-input-manual" class="menu-section hide">
-            <div class="card-custom p-6 max-w-xl mx-auto">
-                <h3 class="text-md font-bold mb-4 text-slate-700 border-b pb-2"><i class="fas fa-keyboard mr-2 text-brand-blue"></i>Input Log Kehadiran Manual</h3>
-                <form onsubmit="handleInputManual(event)" class="space-y-4">
+        <!-- SECTION: INPUT MANUAL -->
+        <section id="menu-manual" class="menu-section hide">
+            <div class="max-w-xl mx-auto bg-white border rounded-2xl shadow-sm p-6">
+                <h3 class="text-lg font-bold border-b pb-3 mb-4 text-slate-800"><i class="fas fa-keyboard text-brand-blue mr-2"></i>Override Input Presensi Manual</h3>
+                <form onsubmit="submitPresensiManual(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Pilih Peserta</label>
-                        <select id="manualSelectPeserta" class="w-full p-3 bg-slate-50 border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
-                            <option value="">-- Cari / Pilih Anggota --</option>
-                        </select>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Anggota / Peserta</label>
+                        <select id="formManualPeserta" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required></select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tanggal</label>
-                            <input type="date" id="manualTanggal" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tanggal</label>
+                            <input type="date" id="formManualTanggal" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-sm focus:outline-none" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Waktu</label>
-                            <input type="time" id="manualWaktu" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Waktu Log</label>
+                            <input type="time" id="formManualWaktu" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-sm focus:outline-none" required>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Status Penetapan</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Status Log Kehadiran</label>
                         <div class="grid grid-cols-4 gap-2">
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="manualStatus" value="Hadir" checked class="mb-1">
-                                <span class="text-xs font-bold text-emerald-600">Hadir</span>
+                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="radioStatus" value="Hadir" checked class="mb-1 accent-brand-blue">
+                                <span class="text-xs font-bold text-brand-blue">Hadir</span>
                             </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="manualStatus" value="Izin" class="mb-1">
-                                <span class="text-xs font-bold text-amber-600">Izin</span>
+                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="radioStatus" value="Izin" class="mb-1 accent-amber-500">
+                                <span class="text-xs font-bold text-amber-500">Izin</span>
                             </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="manualStatus" value="Sakit" class="mb-1">
-                                <span class="text-xs font-bold text-purple-600">Sakit</span>
+                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="radioStatus" value="Sakit" class="mb-1 accent-purple-500">
+                                <span class="text-xs font-bold text-purple-500">Sakit</span>
                             </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="manualStatus" value="Alfa" class="mb-1">
-                                <span class="text-xs font-bold text-rose-600">Alfa</span>
+                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="radioStatus" value="Alfa" class="mb-1 accent-brand-rose">
+                                <span class="text-xs font-bold text-brand-rose">Alfa</span>
                             </label>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition">Simpan Presensi</button>
+                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-blue-100">Simpan Log Presensi</button>
                 </form>
             </div>
         </section>
 
-        <section id="menu-peserta" class="menu-section hide">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                <input type="text" id="searchPeserta" oninput="filterPeserta()" placeholder="Cari ID, nama atau kategori..." class="w-full md:w-80 p-3 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue">
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button onclick="downloadSemuaQR()" class="flex-1 sm:flex-none bg-brand-amber text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-download mr-1"></i> Unduh Semua QR (ZIP)</button>
-                    <button onclick="openModalPeserta()" class="flex-1 sm:flex-none bg-brand-blue text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-plus mr-1"></i> Tambah Anggota</button>
+        <!-- SECTION: DATA PESERTA -->
+        <section id="menu-peserta" class="menu-section space-y-4 hide">
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div class="relative flex-1 max-w-xs">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchPesertaInput" oninput="filterTablePeserta()" placeholder="Cari ID, nama, kategori..." class="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue shadow-sm">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="downloadAllQrZip()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5"><i class="fas fa-file-archive"></i> Export All QR (ZIP)</button>
+                    <button onclick="openPesertaModal()" class="bg-brand-blue hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5"><i class="fas fa-plus"></i> Tambah Anggota</button>
                 </div>
             </div>
 
-            <div class="card-custom overflow-hidden">
+            <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase border-b">
-                                <th class="p-4">ID</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kategori</th><th class="p-4">WhatsApp</th><th class="p-4 text-center">Aksi</th>
+                            <tr class="bg-slate-50 border-b text-slate-500 text-xs font-black uppercase tracking-wider">
+                                <th class="p-4">ID Anggota</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kategori</th><th class="p-4">No WhatsApp</th><th class="p-4 text-center">Aksi Dokumen</th>
                             </tr>
                         </thead>
-                        <tbody id="tableDataPeserta" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="pesertaTableBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <section id="menu-rekap" class="menu-section hide">
-            <div class="flex flex-wrap gap-2 mb-4 items-center justify-between">
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <input type="text" id="searchRekap" oninput="filterRekap()" placeholder="Cari nama/ID..." class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-48">
-                    <input type="date" id="filterTanggalRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-40">
-                    <select id="filterStatusRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-36">
+        <!-- SECTION: REKAP ABSENSI -->
+        <section id="menu-rekap" class="menu-section space-y-4 hide">
+            <div class="flex flex-wrap gap-2 justify-between items-center bg-white p-4 border rounded-2xl shadow-sm">
+                <div class="flex flex-wrap gap-2 items-center w-full lg:w-auto">
+                    <input type="date" id="rekapFilterTgl" onchange="filterTableRekap()" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-bold text-slate-600 focus:outline-none">
+                    <select id="rekapFilterStatus" onchange="filterTableRekap()" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-bold text-slate-600 focus:outline-none">
                         <option value="">Semua Status</option>
                         <option value="Hadir">Hadir</option>
                         <option value="Izin">Izin</option>
@@ -267,411 +271,381 @@
                         <option value="Alfa">Alfa</option>
                     </select>
                 </div>
-                <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                    <button onclick="cetakRekapPDF()" class="bg-rose-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex-1 sm:flex-none"><i class="fas fa-file-pdf mr-1"></i> Cetak PDF</button>
-                    <button onclick="eksporKeCSV()" class="bg-brand-emerald text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex-1 sm:flex-none"><i class="fas fa-file-excel mr-1"></i> Ekspor CSV</button>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="exportRekapPDF()" class="flex-1 sm:flex-none bg-brand-rose hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fas fa-file-pdf"></i> Cetak PDF Laporan</button>
+                    <button onclick="exportRekapCSV()" class="flex-1 sm:flex-none bg-brand-emerald hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fas fa-file-excel"></i> Ekspor CSV</button>
                 </div>
             </div>
 
-            <div class="card-custom overflow-hidden">
+            <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm" id="mainTableRekap">
+                    <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-xs font-bold border-b">
-                                <th class="p-4">ID</th><th class="p-4">Nama</th><th class="p-4">Kategori</th><th class="p-4">Tanggal</th><th class="p-4">Waktu</th><th class="p-4 text-center">Status</th>
+                            <tr class="bg-slate-50 border-b text-slate-500 text-xs font-black uppercase tracking-wider">
+                                <th class="p-4">ID Anggota</th><th class="p-4">Nama</th><th class="p-4">Kategori</th><th class="p-4">Tanggal</th><th class="p-4">Waktu</th><th class="p-4 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="tableDataRekap" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="rekapTableBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- Penyesuaian Sempurna Menu Profil Sesuai Gambar image_d0f02d.png -->
-        <section id="menu-profil" class="menu-section hide">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- SECTION: PROFIL & SYSTEM SPEK DEWA -->
+        <section id="menu-profil" class="menu-section space-y-6 hide">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <!-- Kotak Profil Kiri -->
-                <div class="card-custom p-8 text-center flex flex-col items-center justify-center min-h-[340px]">
-                    <div class="w-28 h-28 bg-[#EBF3FF] border border-slate-100 rounded-full flex items-center justify-center text-[#2F80ED] text-4xl mb-6 relative">
-                        <div class="flex flex-col items-center">
-                            <i class="fas fa-user mb-0.5"></i>
-                            <i class="fas fa-shield-alt text-base absolute bottom-7 right-7 bg-[#EBF3FF] px-1 rounded-full text-[#2F80ED]"></i>
+                <!-- Kartu Identitas Utama -->
+                <div class="lg:col-span-4 bg-white border p-6 rounded-2xl shadow-sm text-center flex flex-col items-center">
+                    <div class="w-24 h-24 bg-blue-50 border rounded-full flex items-center justify-center text-brand-blue text-3xl mb-4 shadow-inner relative">
+                        <i class="fas fa-school"></i>
+                        <span class="w-4 h-4 bg-emerald-500 border-2 border-white rounded-full absolute bottom-1 right-2"></span>
+                    </div>
+                    <h3 id="profileBoxInstansi" class="text-lg font-black text-slate-800 leading-tight">SMKN1 SINGKIL UTARA</h3>
+                    <p id="profileBoxApp" class="text-xs text-brand-blue font-bold mt-1 uppercase tracking-wider">ABSEN QR WA AUTO</p>
+                    
+                    <div class="w-full border-t border-dashed my-4"></div>
+                    
+                    <div class="text-left w-full space-y-2">
+                        <div>
+                            <span class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Pimpinan / Kepala</span>
+                            <p id="profileBoxKepala" class="text-xs font-bold text-slate-700">Sakinah, SPt</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Identitas NIP</span>
+                            <p id="profileBoxKepalaId" class="text-xs font-mono font-bold text-slate-500">Nip 19800528 200604 2 004</p>
                         </div>
                     </div>
-                    <h3 class="text-2xl font-bold text-[#1F2937]" id="profileAdminName">Administrator Utama</h3>
-                    <div class="mt-4">
-                        <span class="text-[11px] font-bold text-[#10B981] bg-[#E6F4EA] border border-[#A3E635]/0 px-5 py-1.5 rounded-full uppercase tracking-wider">LEVEL: ADMIN UTAMA</span>
-                    </div>
                 </div>
-                
-                <!-- Kotak Statistik Kanan -->
-                <div class="card-custom p-8 lg:col-span-2 min-h-[340px] flex flex-col justify-start">
-                    <h3 class="text-[15px] font-bold text-[#1F2937] mb-6">Statistik Akumulasi Kehadiran</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full items-center">
-                        <!-- Area Kosong Sisi Kiri Grafik Sesuai image_d0f02d.png -->
-                        <div class="md:col-span-1"></div>
-                        
-                        <!-- List Informasi Data Utama -->
-                        <div class="md:col-span-2 flex flex-col justify-center space-y-4 w-full">
-                            <div class="p-5 bg-[#F8FAFC] rounded-2xl border border-slate-100/50">
-                                <span class="text-xs text-[#64748B] block font-medium tracking-wide">Tingkat Kehadiran Bersih</span>
-                                <span class="text-3xl font-bold text-[#00A65A] mt-1 block" id="profileRate">0%</span>
-                            </div>
-                            <div class="p-5 bg-[#F8FAFC] rounded-2xl border border-slate-100/50">
-                                <span class="text-xs text-[#64748B] block font-medium tracking-wide">Total Log Terdata</span>
-                                <span class="text-3xl font-bold text-[#2563EB] mt-1 block" id="profileTotalLog">0 Baris</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </section>
 
-        <section id="menu-settings" class="menu-section hide">
-            <div class="card-custom p-6 max-w-xl mx-auto">
-                <h3 class="text-md font-bold mb-4 text-slate-700 border-b pb-2"><i class="fab fa-whatsapp mr-2 text-emerald-500"></i>Konfigurasi Fonnte API Gateway</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fonnte API Token</label>
-                        <input type="text" id="waToken" placeholder="Masukkan token Fonnte" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                <!-- Live Configuration Editor Database Grid Grid 100% Identik image_d0e545.png -->
+                <div class="lg:col-span-8 bg-white border rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4 bg-slate-50/80 border-b flex justify-between items-center">
+                        <h4 class="font-extrabold text-xs text-slate-700 uppercase tracking-wider"><i class="fas fa-database text-brand-blue mr-1"></i> Live Settings Grid Engine (image_d0e545.png)</h4>
+                        <span class="text-[10px] bg-blue-100 text-brand-blue font-bold px-2 py-0.5 rounded">Editable Cells</span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Template Pesan WhatsApp</label>
-                        <textarea id="waTemplate" rows="4" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
-                        <p class="text-[10px] text-slate-400 mt-1">Gunakan tag dinamis: <code class="bg-slate-100 px-1 rounded text-rose-500">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">([ID])</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[STATUS]</code></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-[#D9EAD3] text-slate-800 font-bold border-b border-slate-200">
+                                    <th class="p-3 border-r w-1/4">Key</th>
+                                    <th class="p-3">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sysConfigTableBody" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                <!-- Generated Dynamically -->
+                            </tbody>
+                        </table>
                     </div>
-                    <button onclick="saveSettings()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-xl text-sm w-full shadow-sm transition">Simpan Parameter</button>
+                    <div class="p-4 bg-slate-50 border-t flex justify-end">
+                        <button onclick="commitConfigChanges()" class="bg-brand-emerald hover:bg-emerald-700 text-white px-5 py-2 rounded-xl font-bold text-xs shadow-md"><i class="fas fa-save mr-1"></i> Commit & Sync Config</button>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Modal Form Peserta -->
-    <div id="modalPeserta" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 hide">
-        <div class="bg-white p-6 rounded-3xl shadow-xl w-11/12 max-w-md">
-            <h3 class="text-xl font-black mb-4">Registrasi Peserta Baru</h3>
-            <form id="formPeserta" onsubmit="savePeserta(event)" class="space-y-3">
-                <input type="text" id="inputId" placeholder="ID Unik / NISN / NIP" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
-                <input type="text" id="inputNama" placeholder="Nama Lengkap" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
-                <input type="text" id="inputKategori" placeholder="Kategori / Kelas / Jabatan" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
-                <input type="text" id="inputWa" placeholder="No WhatsApp (Contoh: 6281234567)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
+    <!-- MODAL REGISTRASI ANGGOTA -->
+    <div id="pesertaModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hide">
+        <div class="bg-white rounded-3xl p-6 w-11/12 max-w-md shadow-2xl border">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-md font-black text-slate-800"><i class="fas fa-user-plus text-brand-blue mr-1"></i> Registrasi Anggota Baru</h3>
+                <button onclick="closePesertaModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formAddPeserta" onsubmit="saveNewPeserta(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">ID Unik / NISN / NIP</label>
+                    <input type="text" id="addId" class="w-full p-2.5 bg-slate-50 border rounded-xl font-bold text-sm focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Lengkap</label>
+                    <input type="text" id="addNama" class="w-full p-2.5 bg-slate-50 border rounded-xl font-semibold text-sm focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / Kelas / Jabatan</label>
+                    <input type="text" id="addKategori" class="w-full p-2.5 bg-slate-50 border rounded-xl font-semibold text-sm focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">No WhatsApp (Gunakan Kode Negara)</label>
+                    <input type="text" id="addWa" placeholder="Contoh: 62812345678" class="w-full p-2.5 bg-slate-50 border rounded-xl font-mono text-sm focus:outline-none" required>
+                </div>
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeModalPeserta()" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-sm">Batal</button>
-                    <button type="submit" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm">Simpan ke Sheets</button>
+                    <button type="button" onclick="closePesertaModal()" class="flex-1 bg-slate-100 font-bold py-3 rounded-xl text-xs">Batal</button>
+                    <button type="submit" class="flex-1 bg-brand-blue text-white font-bold py-3 rounded-xl text-xs shadow-md">Simpan Anggota</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Container Tersembunyi untuk Render Cetak ID CARD / QR PDF -->
-    <div id="hiddenIdCardTemplate" class="fixed -top-[9999px] -left-[9999px]">
-        <div id="idCardRenderBox" style="width: 350px; background: white; border: 2px dashed #CBD5E1; border-radius: 20px; padding: 25px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
-            <div style="font-size: 11px; font-weight: 800; color: #3B82F6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">KARTU IDENTITAS QR</div>
-            <div style="font-size: 14px; font-weight: bold; color: #1E293B; margin-bottom: 15px;" id="pdfCardTitle">ABSEN QR WA AUTO</div>
-            <div style="display: flex; justify-content: center; margin-bottom: 15px;" id="pdfCardQr"></div>
-            <div style="font-size: 16px; font-weight: 800; color: #1E293B;" id="pdfCardName">-</div>
-            <div style="font-size: 12px; font-weight: 600; color: #64748B; margin-top: 2px;" id="pdfCardId">-</div>
-            <div style="font-size: 11px; font-weight: bold; background: #F1F5F9; color: #475569; display: inline-block; padding: 4px 12px; border-radius: 99px; margin-top: 10px;" id="pdfCardCategory">-</div>
-            <div style="font-size: 9px; font-weight: bold; color: #94A3B8; margin-top: 15px; border-top: 1px solid #E2E8F0; padding-top: 8px;" id="pdfCardInstansi">SMKN1 SINGKIL UTARA</div>
+    <!-- RENDERING CANVAS STANDALONE FOR ID CARDS (HIDDEN) -->
+    <div class="fixed -top-[9999px] -left-[9999px]">
+        <div id="idCardPrintBox" style="width: 360px; background: white; border: 3px double #CBD5E1; border-radius: 24px; padding: 25px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #2563EB; text-transform: uppercase; letter-spacing: 1px;" id="pdfMetaApp">ABSEN QR WA AUTO</div>
+            <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 15px;" id="pdfMetaInstansi">SMKN1 SINGKIL UTARA</div>
+            <div style="display: flex; justify-content: center; margin-bottom: 15px;" id="renderQrArea"></div>
+            <div style="font-size: 16px; font-weight: 800; color: #0F172A;" id="pdfMetaName">-</div>
+            <div style="font-size: 12px; font-weight: 700; color: #64748B; margin-top: 2px;" id="pdfMetaId">-</div>
+            <div style="font-size: 10px; font-weight: bold; background: #EEF2F6; color: #2563EB; display: inline-block; padding: 4px 12px; border-radius: 99px; margin-top: 10px;" id="pdfMetaKategori">-</div>
         </div>
     </div>
 
-    </div>
-
+    <!-- CORE BUSINESS LOGIC ENGINE -->
     <script>
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx85Y0oBIKFWyrKTGQgdHv13_iP2gGAiGXn4zReqU2jnL0EQur_to33bAvP7hxCQsRs/exec";
-
-        let globalPeserta = [];
-        let globalAbsensi = [];
-        let html5QrCode = null;
-        let gatewayToken = "";
-        let gatewayTemplate = "";
-
-        // Metadata Instansi Sesuai data image_d0e545.png
-        let instansiConfig = {
+        // CONFIG MASTER 100% SESUAI GAMBAR image_d0e545.png
+        let sysConfig = {
+            waUrl: "https://api.fonnte.com/send",
+            waToken: "PASTE_YOUR_FONNTE_TOKEN_HERE",
+            waTemplate: "Yth. Bapak/Ibu, peserta atas nama [NAMA] ([ID]) telah [STATUS] pada [WAKTU]. Terima kasih.",
             appNama: "ABSEN QR WA AUTO",
             instansiNama: "SMKN1 SINGKIL UTARA",
-            instansiLogo: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpfWv21MsQaF9O2Csc9LbdObheJUmryXKbp-SbYTT1rGrT082jqTCP22lwra1ruGqZ8Fz8zB0I_Z_MhR4g8v-hU4jHof5T63Y-Pex8zZk-E8x7wL0g3b_9yG7Y_g6bWlXU-4fG0Y5p/s1600/logo.png",
+            instansiLogo: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpfWv21MsQaF9O2Csc9LBdObheJUmryXKbp-SbYTT1rGrT082jqTCP22Iwra1ru2_cSKbXzcCb0EwXZdZ-IklWXSwzE-XoUtuWR5AxMV7dpXXxXF5izUgcX7_K0uONdPkulsMzMnoZeB4/s1600/SMK+N+1+SIKUT.jpg",
             instansiAlamat: "JL. SINGKIL - RIMO KM 12 Gosong Telaga Barat",
             kepalaJabatan: "Kepala Sekolah",
             kepalaNama: "Sakinah, SPt",
             kepalaJenisId: "NIP",
-            kepalaId: "Nip 1800528 200604 2 004"
+            kepalaId: "Nip 19800528 200604 2 004"
         };
 
+        // Dummy Data Awal untuk Spek Dewa (Disimpan di LocalStorage)
+        let defaultPeserta = [
+            { id: "198005282006042004", nama: "Sakinah, SPt", kategori: "Guru / Kepala", whatsapp: "6281234567890" },
+            { id: "202601001", nama: "Ahmad Dhani", kategori: "Kelas XII TAV", whatsapp: "6282274000000" },
+            { id: "202601002", nama: "Siti Nurhaliza", kategori: "Kelas XII TKJ", whatsapp: "6285361000000" }
+        ];
+
+        let dbPeserta = JSON.parse(localStorage.getItem('db_peserta')) || defaultPeserta;
+        let dbAbsensi = JSON.parse(localStorage.getItem('db_absensi')) || [];
+        let html5QrScanner = null;
+
         window.onload = function() {
-            document.getElementById('initialLoader').classList.add('hide');
-            document.getElementById('loginScreen').classList.remove('hide');
-            
-            document.getElementById('manualTanggal').value = new Date().toISOString().split('T')[0];
-            document.getElementById('manualWaktu').value = new Date().toTimeString().slice(0,5);
-            
-            applyInstansiMetadata();
-        }
-
-        function applyInstansiMetadata() {
-            document.getElementById('loginAppTitle').innerText = instansiConfig.appNama;
-            document.getElementById('navAppName').innerText = instansiConfig.appNama;
-            document.getElementById('navInstansiName').innerText = instansiConfig.instansiNama;
-            document.getElementById('pdfCardTitle').innerText = instansiConfig.appNama;
-            document.getElementById('pdfCardInstansi').innerText = instansiConfig.instansiNama;
-            if(instansiConfig.instansiLogo) {
-                document.getElementById('navLogo').src = instansiConfig.instansiLogo;
+            // Sinkronisasi sistem config dari local storage jika sudah pernah dirubah
+            if(localStorage.getItem('sys_config')) {
+                sysConfig = JSON.parse(localStorage.getItem('sys_config'));
             }
+            applySystemMetadata();
+            startClock();
+            loadDashboard();
+            populateManualSelect();
+        };
+
+        function applySystemMetadata() {
+            // Terapkan metadata ke seluruh sisi aplikasi web
+            document.getElementById('metaNavLogo').src = sysConfig.instansiLogo;
+            document.getElementById('metaNavApp').innerText = sysConfig.appNama;
+            document.getElementById('metaNavInstansi').innerText = sysConfig.instansiNama;
+            document.getElementById('metaNavKepala').innerText = sysConfig.kepalaNama;
+            document.getElementById('metaNavKepalaId').innerText = `${sysConfig.kepalaJenisId}. ${sysConfig.kepalaId.replace(/[^0-9 ]/g, '')}`;
+
+            document.getElementById('profileBoxInstansi').innerText = sysConfig.instansiNama;
+            document.getElementById('profileBoxApp').innerText = sysConfig.appNama;
+            document.getElementById('profileBoxKepala').innerText = sysConfig.kepalaNama;
+            document.getElementById('profileBoxKepalaId').innerText = sysConfig.kepalaId;
+
+            document.getElementById('pdfMetaApp').innerText = sysConfig.appNama;
+            document.getElementById('pdfMetaInstansi').innerText = sysConfig.instansiNama;
         }
 
-        async function fetchAPI(action, data = {}) {
-            data.action = action;
-            try {
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-                return await response.json();
-            } catch(e) {
-                console.error(e);
-                return {success: false, error: 'Hubungan dengan Google Sheets terputus.'};
-            }
+        function startClock() {
+            setInterval(() => {
+                let now = new Date();
+                document.getElementById('liveClock').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " | " + now.toTimeString().split(' ')[0] + " WIB";
+            }, 1000);
+            document.getElementById('liveDateStr').innerText = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
         }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            Swal.fire({title: 'Memvalidasi Akun...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            
-            let u = document.getElementById('username').value;
-            let p = document.getElementById('password').value;
-            
-            let res = await fetchAPI('login', {username: u, password: p});
-            Swal.close();
-            
-            if(res.success) {
-                document.getElementById('loginScreen').classList.add('hide');
-                document.getElementById('mainNav').classList.remove('hide');
-                document.getElementById('mainContent').classList.remove('hide');
-                
-                if(res.nama) {
-                    document.getElementById('adminName').innerText = res.nama;
-                    document.getElementById('profileAdminName').innerText = res.nama;
-                }
-                
-                await refreshSemuaData();
-                switchMenu('dashboard');
-            } else {
-                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password salah!', 'error');
-            }
-        }
-
-        async function refreshSemuaData() {
-            let resP = await fetchAPI('getPeserta');
-            if(resP.success) {
-                globalPeserta = resP.data;
-                populateSelectPesertaManual();
-            }
-
-            let resA = await fetchAPI('getAbsensi');
-            if(resA.success) globalAbsensi = resA.data;
-            
-            let resS = await fetchAPI('getPengaturan');
-            if(resS.success) {
-                if(resS.appNama) instansiConfig.appNama = resS.appNama;
-                if(resS.instansiNama) instansiConfig.instansiNama = resS.instansiNama;
-                if(resS.instansiAlamat) instansiConfig.instansiAlamat = resS.instansiAlamat;
-                if(resS.kepalaNama) instansiConfig.kepalaNama = resS.kepalaNama;
-                if(resS.kepalald) instansiConfig.kepalaId = resS.kepalald;
-                
-                gatewayToken = resS.waToken || "";
-                gatewayTemplate = resS.waTemplate || "Yth. Bapak/Ibu, peserta atas nama [NAMA] ([ID]) telah [STATUS] pada [WAKTU]. Terima kasih.";
-                
-                document.getElementById('waToken').value = gatewayToken;
-                document.getElementById('waTemplate').value = gatewayTemplate;
-                applyInstansiMetadata();
-            }
-        }
-
-        function populateSelectPesertaManual() {
-            let select = document.getElementById('manualSelectPeserta');
-            select.innerHTML = '<option value="">-- Cari / Pilih Anggota --</option>';
-            globalPeserta.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.id} - ${p.nama} [${p.kategori}]</option>`;
-            });
-        }
-
-        async function switchMenu(target) {
-            if(html5QrCode) stopScanner();
+        function switchMenu(target) {
+            killScanner();
             document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hide'));
             document.getElementById('menu-' + target).classList.remove('hide');
             
-            let titleMap = {
-                'dashboard': 'Dashboard', 'scan': 'Scan QR', 'input-manual': 'Input Manual',
-                'peserta': 'Data Peserta', 'rekap': 'Rekap Absensi', 'profil': 'Profil Admin', 'settings': 'WA Gateway'
-            };
-            document.getElementById('pageTitle').innerText = titleMap[target] || 'Sistem';
-
-            document.querySelectorAll('.menu-btn').forEach(b => {
-                if(b.getAttribute('data-target') === target) {
-                    b.classList.add('text-brand-blue', 'bg-blue-50', 'border-r-4', 'border-brand-blue');
-                } else {
-                    b.classList.remove('text-brand-blue', 'bg-blue-50', 'border-r-4', 'border-brand-blue');
-                }
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                if(btn.setAttribute('onclick', `switchMenu('${target}')`)) btn.classList.add('active');
+                btn.classList.remove('active');
             });
+            event.currentTarget.classList.add('active');
 
-            if(target === 'dashboard') loadDashboardData();
-            if(target === 'peserta') renderTablePeserta(globalPeserta);
-            if(target === 'rekap') renderTableRekap(globalAbsensi);
-            if(target === 'profil') buildProfileAnalytics();
+            let titleMap = { 'dashboard': 'Dashboard Utama', 'scan': 'Scan Barcode QR', 'manual': 'Input Log Manual', 'peserta': 'Database Peserta', 'rekap': 'Rekapitulasi Presensi', 'profil': 'Profil & Sistem Data' };
+            document.getElementById('pageTitle').innerText = titleMap[target];
+
+            if(target === 'dashboard') loadDashboard();
+            if(target === 'peserta') renderTablePeserta(dbPeserta);
+            if(target === 'rekap') renderTableRekap(dbAbsensi);
+            if(target === 'profil') renderConfigTable();
         }
 
-        function loadDashboardData() {
+        // ================= DASHBOARD ENGINE =================
+        function loadDashboard() {
             let tgl = new Date().toISOString().split('T')[0];
-            let hariIni = globalAbsensi.filter(a => a.tanggal && a.tanggal.includes(tgl));
+            let logHariIni = dbAbsensi.filter(a => a.tanggal === tgl);
 
-            document.getElementById('countHadir').innerText = hariIni.filter(a => a.status === 'Hadir').length;
-            document.getElementById('countIzin').innerText = hariIni.filter(a => a.status === 'Izin').length;
-            document.getElementById('countSakit').innerText = hariIni.filter(a => a.status === 'Sakit').length;
-            document.getElementById('countAlpa').innerText = hariIni.filter(a => a.status === 'Alfa').length;
+            document.getElementById('statHadir').innerText = logHariIni.filter(a => a.status === 'Hadir').length;
+            document.getElementById('statIzin').innerText = logHariIni.filter(a => a.status === 'Izin').length;
+            document.getElementById('statSakit').innerText = logHariIni.filter(a => a.status === 'Sakit').length;
+            document.getElementById('statAlfa').innerText = logHariIni.filter(a => a.status === 'Alfa').length;
 
-            let tbody = document.getElementById('tableDashboardTerbaru');
+            let tbody = document.getElementById('dashLogTable');
             tbody.innerHTML = '';
-            
-            let reversedAktivitas = [...hariIni].reverse().slice(0, 5);
-            if(reversedAktivitas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">Belum ada log aktivitas masuk hari ini.</td></tr>`;
+
+            let sorted = [...logHariIni].reverse().slice(0, 7);
+            if(sorted.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 text-xs font-semibold">Belum ada aktivitas presensi masuk hari ini.</td></tr>`;
                 return;
             }
 
-            reversedAktivitas.forEach(a => {
-                let badgeColor = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
-                                 a.status === 'Izin' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
-                                 a.status === 'Sakit' ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-rose-50 text-rose-600 border border-rose-200';
+            sorted.forEach(a => {
+                let colorClass = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600' : a.status === 'Izin' ? 'bg-amber-50 text-amber-600' : a.status === 'Sakit' ? 'bg-purple-50 text-purple-600' : 'bg-rose-50 text-rose-600';
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="py-3 font-medium text-xs text-slate-500">${a.waktu || '-'}</td>
-                        <td class="py-3 font-bold text-slate-700">${a.nama || '-'}</td>
-                        <td class="py-3 text-xs text-slate-400">${a.kategori || '-'}</td>
-                        <td class="py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeColor}">${a.status}</span></td>
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="p-3 font-mono font-bold text-slate-500 text-xs">${a.waktu}</td>
+                        <td class="p-3 font-mono text-xs text-brand-blue font-bold">${a.id}</td>
+                        <td class="p-3 font-bold text-slate-700">${a.nama}</td>
+                        <td class="p-3 text-xs font-semibold text-slate-400">${a.kategori}</td>
+                        <td class="p-3 text-center"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${colorClass}">${a.status}</span></td>
                     </tr>
                 `;
             });
         }
 
-        function startScanner() {
-            document.getElementById('btnStartScan').classList.add('hide');
-            document.getElementById('btnStopScan').classList.remove('hide');
-            document.getElementById('scanResult').innerHTML = `
-                <div class="flex flex-col items-center"><i class="fas fa-spinner fa-spin text-4xl text-brand-blue mb-2"></i><p class="text-sm font-semibold text-slate-500">Menginisialisasi Kamera...</p></div>
-            `;
+        // ================= SCANNER ENGINE =================
+        function initScanner() {
+            document.getElementById('btnStart').classList.add('hide');
+            document.getElementById('btnStop').classList.remove('hide');
+            document.getElementById('scanResultPane').innerHTML = `<div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-brand-blue mb-2"></i><p class="text-sm font-bold text-slate-500">Membuka akses camera sensor...</p></div>`;
 
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
+            html5QrScanner = new Html5Qrcode("reader");
+            html5QrScanner.start(
                 { facingMode: "environment" },
-                { fps: 15, qrbox: { width: 250, height: 250 } },
-                (decodedText) => { processQrCodePresensi(decodedText); },
+                { fps: 20, qrbox: { width: 260, height: 260 } },
+                (text) => { executePresensiLogic(text); },
                 () => {}
             ).catch(() => {
-                Swal.fire('Kamera Error', 'Gagal mengakses modul kamera perangkat.', 'error');
-                stopScanner();
+                Swal.fire('Kamera Error', 'Gagal mengakses hardware kamera.', 'error');
+                killScanner();
             });
         }
 
-        function stopScanner() {
-            document.getElementById('btnStartScan').classList.remove('hide');
-            document.getElementById('btnStopScan').classList.add('hide');
-            document.getElementById('scanResult').innerHTML = `
-                <i class="fas fa-qrcode text-6xl text-slate-300 mb-4 animate-pulse"></i>
-                <h3 class="text-lg font-bold text-slate-600">Kamera Siap Memindai</h3>
-                <p class="text-slate-400 text-xs mt-1">Posisikan barcode / QR Code Peserta di area kamera.</p>
+        function killScanner() {
+            document.getElementById('btnStart').classList.remove('hide');
+            document.getElementById('btnStop').classList.add('hide');
+            document.getElementById('scanResultPane').innerHTML = `
+                <i class="fas fa-qrcode text-7xl text-slate-200 mb-4 animate-pulse"></i>
+                <h3 class="text-xl font-bold text-slate-600">Sistem Scanner Siap Terbuka</h3>
+                <p class="text-slate-400 text-xs mt-1">Nyalakan modul kamera di sebelah kiri untuk membaca barcode QR.</p>
             `;
-            if(html5QrCode) {
-                html5QrCode.stop().then(() => { html5QrCode = null; }).catch(err => console.error(err));
+            if(html5QrScanner) {
+                html5QrScanner.stop().then(() => { html5QrScanner = null; }).catch(e => console.error(e));
             }
         }
 
-        async function processQrCodePresensi(idPeserta) {
-            let p = globalPeserta.find(item => String(item.id).trim() === String(idPeserta).trim());
+        function executePresensiLogic(scannedId) {
+            let p = dbPeserta.find(item => String(item.id).trim() === String(scannedId).trim());
+            let pane = document.getElementById('scanResultPane');
+            
             if(!p) {
-                document.getElementById('scanResult').innerHTML = `
-                    <div class="w-20 h-20 bg-rose-50 border border-rose-200 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3"><i class="fas fa-times-circle"></i></div>
-                    <h3 class="text-xl font-black text-rose-600">ID TIDAK DIKENAL</h3>
-                    <p class="text-slate-400 text-xs mt-1">Data dengan ID [${idPeserta}] gagal diverifikasi sistem.</p>
+                pane.innerHTML = `
+                    <div class="w-16 h-16 bg-rose-50 border border-rose-200 text-brand-rose rounded-full flex items-center justify-center text-2xl mb-3"><i class="fas fa-times"></i></div>
+                    <h3 class="text-xl font-black text-brand-rose uppercase">ID Tidak Terdaftar</h3>
+                    <p class="text-slate-400 text-xs mt-1">ID [${scannedId}] gagal dicocokkan dengan lembar database.</p>
                 `;
                 return;
             }
-
-            document.getElementById('scanResult').innerHTML = `
-                <div class="flex flex-col items-center"><i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500 mb-2"></i><p class="text-sm font-bold text-slate-600">Memproses kehadiran ${p.nama}...</p></div>
-            `;
 
             let now = new Date();
             let tgl = now.toISOString().split('T')[0];
             let wkt = now.toTimeString().slice(0,5);
 
-            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: 'Hadir'});
-            
-            if(res.success) {
-                document.getElementById('scanResult').innerHTML = `
-                    <div class="w-20 h-20 bg-emerald-50 border border-emerald-200 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 animate-bounce"><i class="fas fa-check-circle"></i></div>
-                    <h3 class="text-2xl font-black text-emerald-600">BERHASIL HADIR</h3>
-                    <p class="text-slate-700 font-bold text-md mt-1">${p.nama}</p>
-                    <p class="text-slate-400 text-xs">${p.id} - ${p.kategori}</p>
-                    <div class="mt-3 text-[11px] bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-mono inline-block">${tgl} | ${wkt} WIB</div>
+            // Cek Double Scan hari yang sama
+            let isExist = dbAbsensi.find(a => a.id === p.id && a.tanggal === tgl);
+            if(isExist) {
+                pane.innerHTML = `
+                    <div class="w-16 h-16 bg-amber-50 border border-amber-200 text-amber-600 rounded-full flex items-center justify-center text-2xl mb-3"><i class="fas fa-exclamation"></i></div>
+                    <h3 class="text-lg font-black text-amber-600 uppercase">Sudah Presensi</h3>
+                    <p class="text-slate-700 font-bold text-sm mt-1">${p.nama}</p>
+                    <p class="text-slate-400 text-xs">Tercatat masuk pada jam ${isExist.waktu} WIB</p>
                 `;
-                kirimNotifikasiWhatsApp(p, tgl, wkt, 'Hadir');
-                refreshSemuaData();
-            } else {
-                document.getElementById('scanResult').innerHTML = `
-                    <div class="w-20 h-20 bg-amber-50 border border-amber-200 text-amber-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3"><i class="fas fa-exclamation-triangle"></i></div>
-                    <h3 class="text-lg font-black text-amber-600">GAGAL SUBMIT</h3>
-                    <p class="text-slate-500 text-xs">${res.error || 'Terjadi gangguan lembar data.'}</p>
-                `;
+                return;
             }
+
+            let newLog = { id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: 'Hadir' };
+            dbAbsensi.push(newLog);
+            localStorage.setItem('db_absensi', JSON.stringify(dbAbsensi));
+
+            pane.innerHTML = `
+                <div class="w-20 h-20 bg-emerald-50 border border-emerald-200 text-brand-emerald rounded-full flex items-center justify-center text-3xl mb-3 animate-bounce"><i class="fas fa-check"></i></div>
+                <h3 class="text-2xl font-black text-brand-emerald uppercase">Presensi Berhasil</h3>
+                <h4 class="text-slate-800 font-bold text-lg mt-1">${p.nama}</h4>
+                <p class="text-slate-400 text-xs">${p.id} - ${p.kategori}</p>
+                <div class="mt-3 text-xs bg-slate-100 text-slate-600 px-4 py-1 rounded-full font-mono font-bold inline-block">${wkt} WIB</div>
+            `;
+
+            triggerWhatsAppAPI(p, tgl, wkt, 'Hadir');
         }
 
-        async function handleInputManual(e) {
+        // ================= WHATSAPP ENGINE =================
+        function triggerWhatsAppAPI(p, tgl, wkt, status) {
+            if(!sysConfig.waToken || sysConfig.waToken.includes("PASTE_YOUR")) return;
+
+            let pesan = sysConfig.waTemplate
+                .replace(/\[NAMA\]/g, p.nama)
+                .replace(/\(\[ID\]\)/g, `(${p.id})`)
+                .replace(/\[ID\]/g, p.id)
+                .replace(/\[STATUS\]/g, status)
+                .replace(/\[WAKTU\]/g, `${tgl} ${wkt}`);
+
+            fetch(sysConfig.waUrl, {
+                method: 'POST',
+                headers: { 'Authorization': sysConfig.waToken },
+                body: new URLSearchParams({ 'target': p.whatsapp, 'message': pesan })
+            }).then(r => r.json()).then(res => console.log('Fonnte Gateway Response:', res))
+              .catch(err => console.error('Fonnte Network Error:', err));
+        }
+
+        // ================= MANUAL ENGINE =================
+        function populateManualSelect() {
+            let select = document.getElementById('formManualPeserta');
+            select.innerHTML = '';
+            dbPeserta.forEach(p => {
+                select.innerHTML += `<option value="${p.id}">${p.id} - ${p.nama} (${p.kategori})</option>`;
+            });
+            document.getElementById('formManualTanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('formManualWaktu').value = new Date().toTimeString().slice(0,5);
+        }
+
+        function submitPresensiManual(e) {
             e.preventDefault();
-            let id = document.getElementById('manualSelectPeserta').value;
-            let tgl = document.getElementById('manualTanggal').value;
-            let wkt = document.getElementById('manualWaktu').value;
-            let status = document.querySelector('input[name="manualStatus"]:checked').value;
+            let id = document.getElementById('formManualPeserta').value;
+            let tgl = document.getElementById('formManualTanggal').value;
+            let wkt = document.getElementById('formManualWaktu').value;
+            let status = document.querySelector('input[name="radioStatus"]:checked').value;
 
-            if(!id) { Swal.fire('Form Belum Lengkap', 'Pilih salah satu anggota peserta dahulu!', 'warning'); return; }
+            let p = dbPeserta.find(item => item.id === id);
+            dbAbsensi.push({ id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: status });
+            localStorage.setItem('db_absensi', JSON.stringify(dbAbsensi));
 
-            Swal.fire({title: 'Menyimpan Presensi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let p = globalPeserta.find(item => String(item.id) === String(id));
-            
-            let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: status});
-            Swal.close();
-
-            if(res.success) {
-                Swal.fire('Sukses', `Data presensi ${p.nama} status [${status}] berhasil diinput manual.`, 'success');
-                kirimNotifikasiWhatsApp(p, tgl, wkt, status);
-                await refreshSemuaData();
-                switchMenu('dashboard');
-            } else {
-                Swal.fire('Gagal', res.error || 'Terjadi kesalahan sistem database.', 'error');
-            }
+            Swal.fire('Sukses', `Berhasil menginput data presensi manual untuk ${p.nama}`, 'success');
+            triggerWhatsAppAPI(p, tgl, wkt, status);
+            switchMenu('dashboard');
         }
 
+        // ================= DATA PESERTA ENGINE =================
         function renderTablePeserta(data) {
-            let tbody = document.getElementById('tableDataPeserta');
+            let tbody = document.getElementById('pesertaTableBody');
             tbody.innerHTML = '';
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-xs">Tidak ditemukan riwayat data peserta.</td></tr>`;
+            if(data.length === 0){
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-semibold text-xs">Data peserta kosong.</td></tr>`;
                 return;
             }
             data.forEach(p => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition">
+                    <tr class="hover:bg-slate-50/80">
                         <td class="p-4 font-mono font-bold text-xs text-brand-blue">${p.id}</td>
                         <td class="p-4 font-bold text-slate-800">${p.nama}</td>
                         <td class="p-4 text-xs font-semibold text-slate-500">${p.kategori}</td>
-                        <td class="p-4 text-xs font-mono text-slate-600">${p.whatsapp || '-'}</td>
+                        <td class="p-4 font-mono text-xs text-slate-600">${p.whatsapp}</td>
                         <td class="p-4 text-center">
                             <div class="flex justify-center gap-1">
-                                <button onclick="cetakKartuPDF('${p.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fas fa-file-pdf"></i> Cetak PDF</button>
-                                <button onclick="hapusPeserta('${p.id}')" class="bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 px-2.5 py-1.5 rounded-lg text-xs transition"><i class="fas fa-trash-alt"></i></button>
+                                <button onclick="printSingleIDCard('${p.id}')" class="bg-rose-50 hover:bg-rose-100 text-brand-rose text-xs font-bold px-3 py-1.5 rounded-lg transition"><i class="fas fa-id-card mr-1"></i> Cetak PDF</button>
+                                <button onclick="deletePeserta('${p.id}')" class="text-slate-300 hover:text-brand-rose px-2 py-1"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -679,318 +653,220 @@
             });
         }
 
-        function filterPeserta() {
-            let query = document.getElementById('searchPeserta').value.toLowerCase();
-            let filtered = globalPeserta.filter(p => 
-                String(p.id).toLowerCase().includes(query) || 
-                String(p.nama).toLowerCase().includes(query) || 
-                String(p.kategori).toLowerCase().includes(query)
-            );
+        function filterTablePeserta() {
+            let q = document.getElementById('searchPesertaInput').value.toLowerCase();
+            let filtered = dbPeserta.filter(p => p.id.toLowerCase().includes(q) || p.nama.toLowerCase().includes(q) || p.kategori.toLowerCase().includes(q));
             renderTablePeserta(filtered);
         }
 
-        function openModalPeserta() { document.getElementById('modalPeserta').classList.remove('hide'); }
-        function closeModalPeserta() { document.getElementById('modalPeserta').classList.add('hide'); document.getElementById('formPeserta').reset(); }
+        function openPesertaModal() { document.getElementById('pesertaModal').classList.remove('hide'); }
+        function closeModalPeserta() { document.getElementById('pesertaModal').classList.add('hide'); document.getElementById('formAddPeserta').reset(); }
 
-        async function savePeserta(e) {
+        function saveNewPeserta(e) {
             e.preventDefault();
-            let id = document.getElementById('inputId').value;
-            let nama = document.getElementById('inputNama').value;
-            let kat = document.getElementById('inputKategori').value;
-            let wa = document.getElementById('inputWa').value;
+            let id = document.getElementById('addId').value;
+            let nama = document.getElementById('addNama').value;
+            let kat = document.getElementById('addKategori').value;
+            let wa = document.getElementById('addWa').value;
 
-            Swal.fire({title: 'Mendaftarkan ke Server...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let res = await fetchAPI('addPeserta', {id: id, nama: nama, kategori: kat, whatsapp: wa});
-            Swal.close();
+            if(dbPeserta.find(p => p.id === id)) { Swal.fire('Gagal', 'ID Anggota sudah terdaftar sebelumnya!', 'error'); return; }
 
-            if(res.success) {
-                Swal.fire('Registrasi Berhasil', 'Data anggota baru berhasil disinkronisasi ke Google Sheets.', 'success');
-                closeModalPeserta();
-                await refreshSemuaData();
-                renderTablePeserta(globalPeserta);
-            } else {
-                Swal.fire('Pendaftaran Gagal', res.error || 'Terjadi kegagalan komunikasi API.', 'error');
-            }
+            dbPeserta.push({ id: id, nama: nama, kategori: kat, whatsapp: wa });
+            localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
+            
+            Swal.fire('Sukses', 'Anggota baru berhasil dimasukkan ke sistem local.', 'success');
+            closePesertaModal();
+            renderTablePeserta(dbPeserta);
+            populateManualSelect();
         }
 
-        async function hapusPeserta(id) {
-            let confirm = await Swal.fire({
-                title: 'Konfirmasi Hapus',
-                text: `Apakah Anda yakin ingin menghapus data peserta dengan ID [${id}]?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#EF4444',
-                confirmButtonText: 'Ya, Hapus!'
+        function deletePeserta(id) {
+            Swal.fire({ title: 'Hapus Anggota?', text: "Data rekap log tidak akan ikut terhapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#E11D48', confirmButtonText: 'Ya, Hapus' }).then(res => {
+                if(res.isConfirmed) {
+                    dbPeserta = dbPeserta.filter(p => p.id !== id);
+                    localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
+                    renderTablePeserta(dbPeserta);
+                    populateManualSelect();
+                }
             });
-            if(!confirm.isConfirmed) return;
-
-            Swal.fire({title: 'Menghapus data...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let res = await fetchAPI('deletePeserta', {id: id});
-            Swal.close();
-
-            if(res.success) {
-                Swal.fire('Terhapus', 'Anggota berhasil ditiadakan dari sistem.', 'success');
-                await refreshSemuaData();
-                renderTablePeserta(globalPeserta);
-            } else {
-                Swal.fire('Gagal', res.error || 'Gagal menghapus data.', 'error');
-            }
         }
 
+        // ================= REKAP ENGINE =================
         function renderTableRekap(data) {
-            let tbody = document.getElementById('tableDataRekap');
+            let tbody = document.getElementById('rekapTableBody');
             tbody.innerHTML = '';
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium text-xs">Tidak ada log data rekap presensi.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-semibold text-xs">Belum ada riwayat rekaman presensi.</td></tr>`;
                 return;
             }
             data.forEach(a => {
-                let badgeColor = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                 a.status === 'Izin' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                 a.status === 'Sakit' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-rose-50 text-rose-600 border border-rose-100';
+                let badge = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600' : a.status === 'Izin' ? 'bg-amber-50 text-amber-600' : a.status === 'Sakit' ? 'bg-purple-50 text-purple-600' : 'bg-rose-50 text-rose-600';
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition">
-                        <td class="p-4 font-mono text-xs text-slate-500">${a.id || '-'}</td>
-                        <td class="p-4 font-bold text-slate-700">${a.nama || '-'}</td>
-                        <td class="p-4 text-xs font-semibold text-slate-400">${a.kategori || '-'}</td>
-                        <td class="p-4 text-xs font-medium text-slate-600">${a.tanggal ? a.tanggal.split('T')[0] : '-'}</td>
-                        <td class="p-4 text-xs font-mono text-slate-500">${a.waktu || '-'}</td>
-                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeColor}">${a.status}</span></td>
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="p-4 font-mono text-xs text-slate-500">${a.id}</td>
+                        <td class="p-4 font-bold text-slate-800">${a.nama}</td>
+                        <td class="p-4 text-xs font-semibold text-slate-400">${a.kategori}</td>
+                        <td class="p-4 text-xs font-bold text-slate-600">${a.tanggal}</td>
+                        <td class="p-4 font-mono text-xs text-slate-500">${a.waktu}</td>
+                        <td class="p-4 text-center"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badge}">${a.status}</span></td>
                     </tr>
                 `;
             });
         }
 
-        function filterRekap() {
-            let q = document.getElementById('searchRekap').value.toLowerCase();
-            let tgl = document.getElementById('filterTanggalRekap').value;
-            let st = document.getElementById('filterStatusRekap').value;
+        function filterTableRekap() {
+            let tgl = document.getElementById('rekapFilterTgl').value;
+            let status = document.getElementById('rekapFilterStatus').value;
 
-            let filtered = globalAbsensi.filter(a => {
-                let matchQ = !q || (String(a.id).toLowerCase().includes(q) || String(a.nama).toLowerCase().includes(q));
-                let matchTgl = !tgl || (a.tanggal && a.tanggal.includes(tgl));
-                let matchSt = !st || (a.status === st);
-                return matchQ && matchTgl && matchSt;
+            let filtered = dbAbsensi.filter(a => {
+                let matchTgl = !tgl || a.tanggal === tgl;
+                let matchSt = !status || a.status === status;
+                return matchTgl && matchSt;
             });
             renderTableRekap(filtered);
         }
 
-        function buildProfileAnalytics() {
-            document.getElementById('profileTotalLog').innerText = globalAbsensi.length + " Baris";
-            
-            let totalHadir = globalAbsensi.filter(a => a.status === 'Hadir').length;
-            let totalSemua = globalAbsensi.length;
+        // ================= PROFIL & SETTINGS GRID ENGINE =================
+        function renderConfigTable() {
+            let tbody = document.getElementById('sysConfigTableBody');
+            tbody.innerHTML = '';
 
-            let rate = totalSemua > 0 ? Math.round((totalHadir / totalSemua) * 100) : 0;
-            document.getElementById('profileRate').innerText = rate + "%";
+            Object.keys(sysConfig).forEach(key => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="p-3 border-r font-mono bg-slate-50/80 font-bold text-slate-500">${key}</td>
+                        <td class="p-2">
+                            <input type="text" data-key="${key}" value="${sysConfig[key]}" class="w-full bg-transparent px-2 py-1.5 focus:bg-white focus:ring-1 focus:ring-brand-blue rounded-lg font-semibold focus:outline-none transition">
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        async function saveSettings() {
-            let token = document.getElementById('waToken').value;
-            let temp = document.getElementById('waTemplate').value;
-
-            Swal.fire({title: 'Menyimpan Konfigurasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            let res = await fetchAPI('savePengaturan', {token: token, template: temp});
-            Swal.close();
-
-            if(res.success) {
-                Swal.fire('Berhasil Disimpan', 'Konfigurasi parameter Fonnte API Gateway diperbarui.', 'success');
-                gatewayToken = token;
-                gatewayTemplate = temp;
-            } else {
-                Swal.fire('Gagal Menyimpan', res.error || 'Server menolak request data.', 'error');
-            }
-        }
-
-        function kirimNotifikasiWhatsApp(p, tgl, wkt, status) {
-            if(!gatewayToken || !p.whatsapp) return;
-            
-            let msg = gatewayTemplate
-                .replace(/\[NAMA\]/g, p.nama)
-                .replace(/\(\[ID\]\)/g, `(${p.id})`)
-                .replace(/\[ID\]/g, p.id)
-                .replace(/\[TANGGAL\]/g, tgl)
-                .replace(/\[WAKTU\]/g, wkt)
-                .replace(/\[STATUS\]/g, status);
-
-            fetch('https://api.fonnte.com/send', {
-                method: 'POST',
-                headers: { 'Authorization': gatewayToken },
-                body: new URLSearchParams({ 'target': p.whatsapp, 'message': msg })
-            }).then(r => r.json()).then(res => {
-                console.log('Fonnte WhatsApp Status:', res);
-            }).catch(e => console.error('Fonnte WhatsApp Network Error:', e));
-        }
-
-        function cetakKartuPDF(idPeserta) {
-            let p = globalPeserta.find(item => String(item.id) === String(idPeserta));
-            if(!p) return;
-
-            Swal.fire({title: 'Menyiapkan Dokumen PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-
-            document.getElementById('pdfCardName').innerText = p.nama.toUpperCase();
-            document.getElementById('pdfCardId').innerText = "ID: " + p.id;
-            document.getElementById('pdfCardCategory').innerText = p.kategori;
-
-            let qrContainer = document.getElementById('pdfCardQr');
-            qrContainer.innerHTML = "";
-            
-            new QRCode(qrContainer, {
-                text: String(p.id).trim(),
-                width: 140,
-                height: 140,
-                colorDark : "#0f172a",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+        function commitConfigChanges() {
+            let inputs = document.querySelectorAll('#sysConfigTableBody input');
+            inputs.forEach(input => {
+                let key = input.getAttribute('data-key');
+                sysConfig[key] = input.value;
             });
 
-            setTimeout(() => {
-                let element = document.getElementById('idCardRenderBox');
-                let opt = {
-                    margin:       10,
-                    filename:     `KARTU_QR_${p.id}_${p.nama.replace(/\s+/g, '_')}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
-                    jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
-                };
+            localStorage.setItem('sys_config', JSON.stringify(sysConfig));
+            applySystemMetadata();
+            Swal.fire('Config Synced', 'Seluruh sistem parameter database berhasil diperbarui 100%.', 'success');
+            renderConfigTable();
+        }
 
-                html2pdf().set(opt).from(element).save().then(() => {
-                    Swal.close();
-                }).catch(err => {
-                    Swal.close();
-                    Swal.fire('Gagal', 'Terjadi kesalahan saat memproses ekspor PDF.', 'error');
-                });
+        // ================= DOCUMENT AUTOMATION (PDF/ZIP) =================
+        function printSingleIDCard(id) {
+            let p = dbPeserta.find(item => item.id === id);
+            if(!p) return;
+
+            Swal.fire({title: 'Rendering Card Canvas...', didOpen: () => Swal.showLoading(), allowOutsideClick: false});
+
+            document.getElementById('pdfMetaName').innerText = p.nama.toUpperCase();
+            document.getElementById('pdfMetaId').innerText = "ID: " + p.id;
+            document.getElementById('pdfMetaKategori').innerText = p.kategori.toUpperCase();
+
+            let qrArea = document.getElementById('renderQrArea');
+            qrArea.innerHTML = '';
+            new QRCode(qrArea, { text: String(p.id).trim(), width: 140, height: 140, colorDark: "#0f172a", correctLevel: QRCode.CorrectLevel.H });
+
+            setTimeout(() => {
+                let box = document.getElementById('idCardPrintBox');
+                let opt = {
+                    margin: 10,
+                    filename: `ID_CARD_${p.id}_${p.nama.replace(/\s+/g, '_')}.pdf`,
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(box).save().then(() => Swal.close());
             }, 600);
         }
 
-        function cetakRekapPDF() {
-            if(globalAbsensi.length === 0) {
-                Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
-                return;
+        async function downloadAllQrZip() {
+            if(dbPeserta.length === 0) return;
+            Swal.fire({title: 'Generating Batch ZIP...', text:'Silakan tunggu sebentar...', didOpen: () => Swal.showLoading(), allowOutsideClick: false});
+
+            let zip = new JSZip();
+            let hiddenDiv = document.createElement('div');
+
+            for(let i=0; i < dbPeserta.length; i++) {
+                let p = dbPeserta[i];
+                hiddenDiv.innerHTML = '';
+                new QRCode(hiddenDiv, { text: String(p.id).trim(), width: 300, height: 300 });
+                await new Promise(r => setTimeout(r, 100));
+                let img = hiddenDiv.querySelector('img');
+                if(img) {
+                    let base64 = img.src.split(',')[1];
+                    zip.file(`QR_${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, base64, {base64: true});
+                }
             }
 
-            Swal.fire({title: 'Membuat Laporan PDF Resmi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                saveAs(content, `DATABASE_QR_CODE_ALL.zip`);
+                Swal.close();
+            });
+        }
 
+        function exportRekapCSV() {
+            if(dbAbsensi.length === 0) return;
+            let csv = "\uFEFFID Anggota,Nama Lengkap,Kategori,Tanggal,Waktu,Status\n";
+            dbAbsensi.forEach(a => { csv += `"${a.id}","${a.nama}","${a.kategori}","${a.tanggal}","${a.waktu}","${a.status}"\n`; });
+            saveAs(new Blob([csv], {type: 'text/csv;charset=utf-8;'}), `REKAP_PRESENSI_SYSTEM.csv`);
+        }
+
+        function exportRekapPDF() {
+            if(dbAbsensi.length === 0) { Swal.fire('Data Kosong', 'Tidak ada log untuk dicetak!', 'warning'); return; }
+            
+            Swal.fire({title: 'Membangun Surat Laporan Resmi...', didOpen: () => Swal.showLoading()});
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            doc.setFont("Helvetica", "bold");
-            doc.setFontSize(14);
-            doc.text(instansiConfig.instansiNama, 45, 16);
+            // Header Kop Surat Instansi Pro
+            doc.setFont("Helvetica", "bold"); doc.setFontSize(14);
+            doc.text(sysConfig.instansiNama, 42, 16);
+            doc.setFont("Helvetica", "normal"); doc.setFontSize(9);
+            doc.text(sysConfig.instansiAlamat, 42, 21);
+            doc.text(`Engine System: ${sysConfig.appNama}`, 42, 26);
+
+            // Garis Kop Surat Dua Lapis
+            doc.setLineWidth(0.6); doc.line(14, 29, 196, 29);
+            doc.setLineWidth(0.2); doc.line(14, 30, 196, 30);
+
+            doc.setFont("Helvetica", "bold"); doc.setFontSize(12);
+            doc.text("LAPORAN DOKUMEN REKAPITULASI PRESENSI", 14, 39);
+            doc.setFontSize(9); doc.setFont("Helvetica", "normal");
+            doc.text(`Dicetak pada tanggal: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${dbAbsensi.length} Baris`, 14, 44);
+
+            let bodyRows = dbAbsensi.map(a => [a.id, a.nama, a.kategori, a.tanggal, a.waktu, a.status]);
             
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(9);
-            doc.text(instansiConfig.instansiAlamat, 45, 21);
-            doc.text(`Sistem Aplikasi: ${instansiConfig.appNama}`, 45, 26);
-
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.6);
-            doc.line(14, 30, 196, 30);
-            doc.setLineWidth(0.2);
-            doc.line(14, 31, 196, 31);
-
-            doc.setFont("Helvetica", "bold");
-            doc.setFontSize(12);
-            doc.text("LAPORAN REKAPITULASI PRESENSI KEHADIRAN", 14, 40);
-            
-            doc.setFontSize(9);
-            doc.setFont("Helvetica", "normal");
-            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${globalAbsensi.length} Baris`, 14, 45);
-
-            const tableBody = globalAbsensi.map(a => [
-                a.id || '-',
-                a.nama || '-',
-                a.kategori || '-',
-                a.tanggal ? a.tanggal.split('T')[0] : '-',
-                a.waktu || '-',
-                a.status || '-'
-            ]);
-
             doc.autoTable({
-                startY: 49,
+                startY: 48,
                 head: [['ID Anggota', 'Nama Lengkap', 'Kategori', 'Tanggal', 'Waktu', 'Status']],
-                body: tableBody,
-                headStyles: { fillColor: [37, 99, 235], fontSize: 9, fontStyle: 'bold' },
-                bodyStyles: { fontSize: 8 },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
+                body: bodyRows,
+                headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
                 margin: { left: 14, right: 14 },
                 didDrawPage: function(data) {
                     let finalY = data.cursor.y + 15;
-                    if (finalY > 240) {
-                        doc.addPage();
-                        finalY = 30;
-                    }
+                    if(finalY > 230) { doc.addPage(); finalY = 30; }
                     
-                    doc.setFont("Helvetica", "normal");
-                    doc.setFontSize(10);
-                    doc.text("Mengetahui,", 140, finalY);
-                    doc.text(instansiConfig.kepalaJabatan, 140, finalY + 5);
-                    
-                    doc.setFont("Helvetica", "bold", "underline");
-                    doc.text(instansiConfig.kepalaNama, 140, finalY + 25);
-                    
-                    doc.setFont("Helvetica", "normal");
-                    doc.text(`${instansiConfig.kepalaJenisId}. ${instansiConfig.kepalaId.replace(/[^0-9 ]/g, '')}`, 140, finalY + 30);
+                    // Tanda Tangan Kepala Sekolah Otomatis dari Gambar image_d0e545.png
+                    doc.setFont("Helvetica", "normal"); doc.text("Mengetahui,", 140, finalY);
+                    doc.text(sysConfig.kepalaJabatan, 140, finalY + 5);
+                    doc.setFont("Helvetica", "bold"); doc.text(sysConfig.kepalaNama, 140, finalY + 23);
+                    doc.setFont("Helvetica", "normal"); doc.text(`${sysConfig.kepalaJenisId}. ${sysConfig.kepalaId.replace(/[^0-9 ]/g, '')}`, 140, finalY + 28);
                 }
             });
 
-            let img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.onload = function() {
-                doc.addImage(img, 'PNG', 15, 10, 25, 18);
-                doc.save(`LAPORAN_REKAP_${instansiConfig.instansiNama.replace(/\s+/g, '_')}.pdf`);
+            let logoImg = new Image();
+            logoImg.crossOrigin = "Anonymous";
+            logoImg.onload = function() {
+                doc.addImage(logoImg, 'JPEG', 15, 10, 23, 17);
+                doc.save(`LAPORAN_REKAPITULASI_PRESENSI.pdf`);
                 Swal.close();
             };
-            img.onerror = function() {
-                doc.save(`LAPORAN_REKAP_${instansiConfig.instansiNama.replace(/\s+/g, '_')}.pdf`);
-                Swal.close();
-            };
-            img.src = instansiConfig.instansiLogo;
-        }
-
-        async function downloadSemuaQR() {
-            if(globalPeserta.length === 0) { Swal.fire('Gagal', 'Tidak ada data peserta untuk diunduh.', 'warning'); return; }
-            Swal.fire({title: 'Membuat Arsip ZIP QR...', text:'Mohon tunggu proses selesai...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            
-            let zip = new JSZip();
-            let div = document.createElement('div');
-            
-            for(let i=0; i<globalPeserta.length; i++) {
-                let p = globalPeserta[i];
-                div.innerHTML = "";
-                new QRCode(div, { text: String(p.id).trim(), width: 300, height: 300 });
-                await new Promise(r => setTimeout(r, 100));
-                let img = div.querySelector('img');
-                if(img) {
-                    let base64 = img.src.split(',')[1];
-                    zip.file(`${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, base64, {base64: true});
-                }
-            }
-            
-            zip.generateAsync({type:"blob"}).then(function(content) {
-                saveAs(content, `QR_CODE_SEMUA_PESERTA.zip`);
-                Swal.close();
-            });
-        }
-
-        function eksporKeCSV() {
-            if(globalAbsensi.length === 0) { Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'warning'); return; }
-            let csvContent = "\uFEFFID,Nama,Kategori,Tanggal,Waktu,Status\n";
-            globalAbsensi.forEach(a => {
-                let tgl = a.tanggal ? a.tanggal.split('T')[0] : '-';
-                csvContent += `"${a.id}","${a.nama}","${a.kategori}","${tgl}","${a.waktu}","${a.status}"\n`;
-            });
-            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            saveAs(blob, `REKAP_PRESENSI_${new Date().toISOString().split('T')[0]}.csv`);
-        }
-
-        function logout() {
-            Swal.fire({
-                title: 'Logout', text: "Keluar dari sesi manajemen presensi pro?", icon: 'question',
-                showCancelButton: true, confirmButtonText: 'Ya, Keluar'
-            }).then((res) => {
-                if(res.isConfirmed) { window.location.reload(); }
-            });
+            logoImg.onerror = function() { doc.save(`LAPORAN_REKAPITULASI_PRESENSI.pdf`); Swal.close(); };
+            logoImg.src = sysConfig.instansiLogo;
         }
     </script>
 </body>
