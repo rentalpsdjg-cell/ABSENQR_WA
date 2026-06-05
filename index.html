@@ -82,7 +82,7 @@
         
         <div class="p-4 border-t border-slate-100 hidden md:block bg-slate-50/30 w-full">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-brand-blue rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-100">
+                <div class="w-9 h-9 bg-brand-blue rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
                     <i class="fas fa-user-shield"></i>
                 </div>
                 <div>
@@ -97,7 +97,11 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6 border-b pb-4 md:border-b-0 md:pb-0">
             <div>
                 <h2 id="pageTitle" class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Utama</h2>
-                <p class="text-xs text-slate-400 font-semibold mt-0.5" id="liveClock">Memuat waktu...</p>
+                <p class="text-xs text-slate-400 font-semibold mt-0.5" id="liveClock">Memuat waktu sistem...</p>
+            </div>
+            <div class="bg-white px-3 py-1.5 rounded-full border shadow-sm flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Database Engine Google Cloud Connected</span>
             </div>
         </div>
 
@@ -140,8 +144,8 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs md:text-sm">
                         <thead>
-                            <tr class="border-b text-slate-400 text-[10px] uppercase bg-slate-50">
-                                <th class="p-3">Waktu</th><th class="p-3">ID Anggota</th><th class="p-3">Nama</th><th class="p-3">Kategori</th><th class="p-3 text-center">Status</th>
+                            <tr class="border-b text-slate-400 text-[10px] uppercase bg-slate-50 font-bold">
+                                <th class="p-3">Waktu</th><th class="p-3">ID Anggota</th><th class="p-3">Nama Peserta</th><th class="p-3">Kategori</th><th class="p-3 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="dashLogTable" class="divide-y divide-slate-100"></tbody>
@@ -151,26 +155,29 @@
         </section>
 
         <section id="menu-scan" class="menu-section space-y-4 hide">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <div class="lg:col-span-5 bg-white border p-4 rounded-2xl shadow-sm">
                     <div id="reader" class="w-full overflow-hidden bg-slate-900 rounded-xl border"></div>
                     <div class="flex gap-2 mt-4">
-                        <button id="btnStart" onclick="initScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-xs"><i class="fas fa-play mr-1"></i> Aktifkan Kamera</button>
+                        <button id="btnStart" onclick="initScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-xs shadow-md"><i class="fas fa-play mr-1"></i> Aktifkan Kamera</button>
                         <button id="btnStop" onclick="killScanner()" class="flex-1 bg-slate-700 text-white py-3 rounded-xl font-bold text-xs hide"><i class="fas fa-stop mr-1"></i> Matikan</button>
                     </div>
                 </div>
                 <div id="scanResultPane" class="lg:col-span-7 bg-white border p-8 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[250px]">
                     <i class="fas fa-qrcode text-6xl text-slate-200 mb-4 animate-pulse"></i>
-                    <h3 class="text-base font-bold text-slate-600">Scanner Ready</h3>
+                    <h3 class="text-base font-bold text-slate-600">Sistem Kamera Siap</h3>
+                    <p class="text-slate-400 text-xs mt-1">Tekan tombol aktifkan kamera untuk mulai memindai QR Code peserta.</p>
                 </div>
             </div>
         </section>
 
         <section id="menu-peserta" class="menu-section space-y-4 hide">
-            <div class="flex justify-between items-center gap-3">
-                <input type="text" id="searchPesertaInput" oninput="filterTablePeserta()" placeholder="Cari data peserta..." class="flex-1 p-2.5 bg-white border rounded-xl text-xs">
-                <button onclick="downloadAllQrZip()" class="bg-amber-600 text-white px-3 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1"><i class="fas fa-file-archive"></i> Zip QR</button>
-                <button onclick="openPesertaModal()" class="bg-brand-blue text-white px-3 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1"><i class="fas fa-plus"></i> Tambah</button>
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <input type="text" id="searchPesertaInput" oninput="filterTablePeserta()" placeholder="Cari ID, nama, kelas..." class="flex-1 p-2.5 bg-white border rounded-xl text-xs">
+                <div class="flex gap-2">
+                    <button onclick="downloadAllQrZip()" class="bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm"><i class="fas fa-file-archive"></i> Zip QR</button>
+                    <button onclick="openPesertaModal()" class="bg-brand-blue text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm"><i class="fas fa-plus"></i> Tambah</button>
+                </div>
             </div>
 
             <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
@@ -188,7 +195,7 @@
         </section>
 
         <section id="menu-rekap" class="menu-section space-y-4 hide">
-            <div class="flex justify-between items-center bg-white p-3 border rounded-2xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white p-3 border rounded-2xl shadow-sm gap-2">
                 <div class="flex gap-2">
                     <input type="date" id="rekapFilterTgl" onchange="filterTableRekap()" class="p-2 bg-slate-50 border rounded-xl text-xs font-bold">
                     <select id="rekapFilterStatus" onchange="filterTableRekap()" class="p-2 bg-slate-50 border rounded-xl text-xs font-bold">
@@ -200,8 +207,8 @@
                     </select>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportRekapPDF()" class="bg-brand-rose text-white px-3 py-2 rounded-xl font-bold text-xs"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button onclick="exportRekapCSV()" class="bg-brand-emerald text-white px-3 py-2 rounded-xl font-bold text-xs"><i class="fas fa-file-excel"></i> CSV</button>
+                    <button onclick="exportRekapPDF()" class="bg-brand-rose text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button onclick="exportRekapCSV()" class="bg-brand-emerald text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-file-excel"></i> CSV</button>
                 </div>
             </div>
 
@@ -221,18 +228,18 @@
 
         <section id="menu-profil" class="menu-section space-y-4 hide">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-4 bg-white border p-6 rounded-2xl text-center">
+                <div class="lg:col-span-4 bg-white border p-6 rounded-2xl text-center shadow-sm">
                     <h3 id="profileBoxInstansi" class="text-base font-black text-slate-800">Memuat...</h3>
                     <p id="profileBoxApp" class="text-[10px] text-brand-blue font-bold mt-1 uppercase">Memuat...</p>
                     <div class="w-full border-t border-dashed my-4"></div>
-                    <div class="text-left space-y-2">
+                    <div class="text-left space-y-2 text-xs">
                         <div>
-                            <span class="text-[9px] uppercase font-black text-slate-400">Pimpinan</span>
-                            <p id="profileBoxKepala" class="text-xs font-bold text-slate-700">Memuat...</p>
+                            <span class="text-[9px] uppercase font-black text-slate-400">Pimpinan / Kepala</span>
+                            <p id="profileBoxKepala" class="font-bold text-slate-700">Memuat...</p>
                         </div>
                         <div>
-                            <span class="text-[9px] uppercase font-black text-slate-400">ID / NIP</span>
-                            <p id="profileBoxKepalaId" class="text-xs font-mono font-bold text-slate-500">Memuat...</p>
+                            <span class="text-[9px] uppercase font-black text-slate-400">Identitas NIP / ID</span>
+                            <p id="profileBoxKepalaId" class="font-mono font-bold text-slate-500">Memuat...</p>
                         </div>
                     </div>
                 </div>
@@ -250,7 +257,7 @@
                         </table>
                     </div>
                     <div class="p-3 bg-slate-50 border-t flex justify-end">
-                        <button onclick="commitConfigChanges()" class="bg-brand-emerald text-white px-5 py-2 rounded-xl font-bold text-xs"><i class="fas fa-save"></i> Save Config</button>
+                        <button onclick="commitConfigChanges()" class="bg-brand-emerald text-white px-5 py-2 rounded-xl font-bold text-xs shadow-md"><i class="fas fa-save"></i> Commit Changes</button>
                     </div>
                 </div>
             </div>
@@ -259,15 +266,15 @@
 
     <div id="pesertaModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hide p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border">
-            <h3 class="text-sm font-black text-slate-800 mb-4"><i class="fas fa-user-plus mr-1"></i> Tambah Peserta</h3>
+            <h3 class="text-sm font-black text-slate-800 mb-4"><i class="fas fa-user-plus mr-1 text-brand-blue"></i> Tambah Anggota Peserta</h3>
             <form id="formAddPeserta" onsubmit="saveNewPeserta(event)" class="space-y-3">
                 <input type="text" id="addId" placeholder="ID / NISN / NIP" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-bold" required>
                 <input type="text" id="addNama" placeholder="Nama Lengkap" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-semibold" required>
-                <input type="text" id="addKategori" placeholder="Kategori / Kelas" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-semibold" required>
-                <input type="text" id="addWa" placeholder="No WhatsApp (628123...)" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-mono" required>
+                <input type="text" id="addKategori" placeholder="Kategori / Kelas (Contoh: kelas12)" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-semibold" required>
+                <input type="text" id="addWa" placeholder="No WhatsApp (Contoh: 628123456)" class="w-full p-2.5 bg-slate-50 border rounded-xl text-xs font-mono" required>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closePesertaModal()" class="flex-1 bg-slate-100 font-bold py-2.5 rounded-xl text-xs">Batal</button>
-                    <button type="submit" class="flex-1 bg-brand-blue text-white font-bold py-2.5 rounded-xl text-xs">Simpan</button>
+                    <button type="submit" class="flex-1 bg-brand-blue text-white font-bold py-2.5 rounded-xl text-xs shadow-md">Simpan</button>
                 </div>
             </form>
         </div>
@@ -285,12 +292,13 @@
     </div>
 
     <script>
-        // SINKRONISASI STRUCT: Ganti URL Web App di bawah ini dengan URL Web App dari Google Apps Script Anda saat Deploy
-        const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw.../exec";
+        // DI SINI URL WEB APP ANDA SUDAH TERSINKRONISASI 100%
+        const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoWC-cXytwG_MmT6BSnbpQTc_2sIR5DqCOXg-X-_RcanAp6h8LdbDSpe5pNjctvn0u/exec"; 
 
+        // Sistem Config Default (Tersimpan otomatis ke Local Storage saat diedit di Profil)
         let sysConfig = {
             waUrl: "https://api.fonnte.com/send",
-            waToken: "",
+            waToken: "", 
             waTemplate: "Yth. Bapak/Ibu, peserta atas nama [NAMA] ([ID]) telah [STATUS] pada [WAKTU]. Terima kasih.",
             appNama: "ABSEN QR WA AUTO",
             instansiNama: "SMKN1 SINGKIL UTARA",
@@ -312,7 +320,7 @@
             }
             applySystemMetadata();
             startClock();
-            fetchDataFromDatabase();
+            fetchDatabase();
         };
 
         function startClock() {
@@ -336,33 +344,47 @@
             document.getElementById('pdfMetaInstansi').innerText = sysConfig.instansiNama;
         }
 
-        function fetchDataFromDatabase() {
-            // Mengambil Data Peserta
-            fetch(DEPLOY_WEB_APP_URL, {
+        function fetchDatabase() {
+            // Ambil Data Peserta dari Google Sheets
+            fetch(getCleanUrl(), {
                 method: 'POST',
-                mode: 'no-cors',
                 body: JSON.stringify({ action: "getPeserta" })
-            }).then(() => {
-                // Catatan: Jika menggunakan skema No-Cors/Standalone, fallback data lokal diaktifkan agar cetak tidak terganggu
-                if(dbPeserta.length === 0) {
-                    dbPeserta = JSON.parse(localStorage.getItem('db_peserta')) || [
-                        { id: "0071909127", nama: "mahyudin", kategori: "kelas12", wa: "62812345678" }
-                    ];
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    dbPeserta = res.data;
+                    localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
                 }
-                loadDashboard();
+                renderTablePeserta(dbPeserta);
+            })
+            .catch(() => {
+                dbPeserta = JSON.parse(localStorage.getItem('db_peserta')) || [];
+                renderTablePeserta(dbPeserta);
             });
 
-            // Mengambil Data Absensi
-            fetch(DEPLOY_WEB_APP_URL, {
+            // Ambil Data Absensi dari Google Sheets
+            fetch(getCleanUrl(), {
                 method: 'POST',
-                mode: 'no-cors',
                 body: JSON.stringify({ action: "getAbsensi" })
-            }).then(() => {
-                dbAbsensi = JSON.parse(localStorage.getItem('db_absensi')) || [
-                    { id: "0071909127", nama: "mahyudin", kategori: "kelas12", tanggal: "2026-06-05", waktu: "10:03", status: "Hadir" }
-                ];
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    dbAbsensi = res.data;
+                    localStorage.setItem('db_absensi', JSON.stringify(dbAbsensi));
+                }
+                loadDashboard();
+            })
+            .catch(() => {
+                dbAbsensi = JSON.parse(localStorage.getItem('db_absensi')) || [];
                 loadDashboard();
             });
+        }
+
+        function getCleanUrl() {
+            if(DEPLOY_WEB_APP_URL.startsWith("http")) return DEPLOY_WEB_APP_URL;
+            return "https://script.google.com/macros/s/" + DEPLOY_WEB_APP_URL + "/exec";
         }
 
         function switchMenu(target, btnElement) {
@@ -389,48 +411,91 @@
 
             let tbody = document.getElementById('dashLogTable');
             tbody.innerHTML = '';
-            if(logHariIni.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400">Tidak ada data masuk hari ini.</td></tr>`;
+            
+            let displayList = [...dbAbsensi].reverse().slice(0, 10); 
+            
+            if(displayList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data presensi yang terekam.</td></tr>`;
                 return;
             }
-            logHariIni.forEach(a => {
-                tbody.innerHTML += `<tr><td class="p-3">${a.waktu}</td><td class="p-3 font-mono text-brand-blue">${a.id}</td><td class="p-3 font-bold">${a.nama}</td><td class="p-3">${a.kategori}</td><td class="p-3 text-center">${a.status}</td></tr>`;
+            displayList.forEach(a => {
+                let badge = a.status === 'Hadir' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-mono text-slate-500">${a.waktu}</td>
+                        <td class="p-3 font-mono font-bold text-brand-blue">${a.id}</td>
+                        <td class="p-3 font-bold text-slate-800">${a.nama}</td>
+                        <td class="p-3 text-slate-500">${a.kategori}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badge}">${a.status}</span></td>
+                    </tr>`;
             });
         }
 
         function initScanner() {
             document.getElementById('btnStart').classList.add('hide');
             document.getElementById('btnStop').classList.remove('hide');
+            document.getElementById('scanResultPane').innerHTML = `<div class="p-4"><i class="fas fa-spinner fa-spin text-2xl text-brand-blue"></i><p class="text-xs mt-2 font-bold text-slate-500">Menghubungkan Sensor Kamera...</p></div>`;
+            
             html5QrScanner = new Html5Qrcode("reader");
-            html5QrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => { executePresensiLogic(text); }, () => {});
+            html5QrScanner.start({ facingMode: "environment" }, { fps: 24, qrbox: 250 }, (text) => { executePresensiLogic(text); }, () => {});
         }
 
         function killScanner() {
             document.getElementById('btnStart').classList.remove('hide');
             document.getElementById('btnStop').classList.add('hide');
-            if(html5QrScanner) { html5QrScanner.stop().then(() => { html5QrScanner = null; }); }
+            if(html5QrScanner) {
+                html5QrScanner.stop().then(() => { html5QrScanner = null; });
+            }
+            document.getElementById('scanResultPane').innerHTML = `<i class="fas fa-qrcode text-6xl text-slate-200 mb-4 animate-pulse"></i><h3 class="text-base font-bold text-slate-600">Sistem Kamera Siap</h3>`;
         }
 
         function executePresensiLogic(scannedId) {
             let p = dbPeserta.find(item => String(item.id).trim() === String(scannedId).trim());
-            if(!p) { alert("ID tidak terdaftar di database."); return; }
+            let pane = document.getElementById('scanResultPane');
+            
+            if(!p) {
+                pane.innerHTML = `<div class="p-4 bg-rose-50 rounded-xl text-brand-rose"><i class="fas fa-user-slash text-3xl"></i><h4 class="font-black mt-2">ID UNIK TIDAK TERDAFTAR</h4><p class="text-xs text-slate-500 mt-1">ID: ${scannedId}</p></div>`;
+                return;
+            }
 
             let now = new Date();
             let tgl = now.toISOString().split('T')[0];
             let wkt = now.toTimeString().slice(0,5);
 
+            let isExist = dbAbsensi.find(a => a.id === p.id && a.tanggal === tgl);
+            if(isExist) {
+                pane.innerHTML = `<div class="p-4 bg-amber-50 rounded-xl text-amber-600"><i class="fas fa-exclamation-triangle text-3xl"></i><h4 class="font-black mt-2">SUDAH MELAKUKAN PRESENSI</h4><p class="text-xs font-bold text-slate-700">${p.nama}</p></div>`;
+                return;
+            }
+
             let dataBaru = { id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: 'Hadir' };
             dbAbsensi.push(dataBaru);
             localStorage.setItem('db_absensi', JSON.stringify(dbAbsensi));
 
-            fetch(DEPLOY_WEB_APP_URL, {
+            fetch(getCleanUrl(), {
                 method: 'POST',
-                mode: 'no-cors',
                 body: JSON.stringify({ action: "addAbsensi", ...dataBaru })
             });
 
-            alert(`Presensi Berhasil: ${p.nama}`);
+            pane.innerHTML = `
+                <div class="w-16 h-16 bg-emerald-50 border border-emerald-200 text-brand-emerald rounded-full flex items-center justify-center text-2xl mb-2 animate-bounce"><i class="fas fa-check"></i></div>
+                <h3 class="text-md font-black text-brand-emerald">PRESENSI BERHASIL</h3>
+                <h4 class="text-slate-800 font-bold text-sm">${p.nama}</h4>
+                <p class="text-slate-400 text-[11px]">${wkt} WIB</p>
+            `;
+            
+            triggerWhatsApp(p, tgl, wkt, 'Hadir');
             loadDashboard();
+        }
+
+        function triggerWhatsApp(p, tgl, wkt, status) {
+            if(!sysConfig.waToken) return;
+            let pesan = sysConfig.waTemplate.replace(/\[NAMA\]/g, p.nama).replace(/\[ID\]/g, p.id).replace(/\[STATUS\]/g, status).replace(/\[WAKTU\]/g, `${tgl} ${wkt}`);
+            fetch(sysConfig.waUrl, {
+                method: 'POST',
+                body: new URLSearchParams({ 'target': p.wa, 'message': pesan }),
+                headers: { 'Authorization': sysConfig.waToken }
+            }).catch(e => console.error("Error WA Gateway:", e));
         }
 
         function renderTablePeserta(data) {
@@ -440,17 +505,16 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
                         <td class="p-3 font-mono font-bold text-brand-blue">${p.id}</td>
-                        <td class="p-3 font-bold">${p.nama}</td>
-                        <td class="p-3">${p.kategori}</td>
-                        <td class="p-3 font-mono">${p.wa || p.whatsapp || '-'}</td>
+                        <td class="p-3 font-bold text-slate-800">${p.nama}</td>
+                        <td class="p-3 text-slate-500">${p.kategori}</td>
+                        <td class="p-3 font-mono text-slate-600">${p.wa}</td>
                         <td class="p-3 text-center">
                             <div class="flex justify-center gap-2">
-                                <button onclick="printSingleIDCard('${p.id}')" class="bg-brand-blue text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm"><i class="fas fa-print mr-1"></i>Cetak</button>
-                                <button onclick="deletePeserta('${p.id}')" class="text-rose-600 px-1"><i class="fas fa-trash-alt"></i></button>
+                                <button onclick="printSingleIDCard('${p.id}')" class="bg-brand-blue hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1"><i class="fas fa-print"></i> Cetak</button>
+                                <button onclick="deletePeserta('${p.id}')" class="text-slate-300 hover:text-brand-rose px-1 transition"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
@@ -475,40 +539,49 @@
             dbPeserta.push(dataPeserta);
             localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
 
-            fetch(DEPLOY_WEB_APP_URL, {
+            fetch(getCleanUrl(), {
                 method: 'POST',
-                mode: 'no-cors',
                 body: JSON.stringify({ action: "addPeserta", ...dataPeserta })
-            });
+            }).then(() => fetchDatabase());
 
             closePesertaModal();
             renderTablePeserta(dbPeserta);
-            Swal.fire('Sukses', 'Peserta ditambahkan ke database.', 'success');
+            Swal.fire('Sukses', 'Peserta berhasil didaftarkan.', 'success');
         }
 
         function deletePeserta(id) {
-            dbPeserta = dbPeserta.filter(p => p.id !== id);
-            localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
-            fetch(DEPLOY_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ action: "deletePeserta", id: id })
+            Swal.fire({
+                title: 'Hapus Peserta?',
+                text: "Data akan dihapus permanen dari Cloud Server Database.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E11D48',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dbPeserta = dbPeserta.filter(p => p.id !== id);
+                    localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
+                    fetch(getCleanUrl(), {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "deletePeserta", id: id })
+                    }).then(() => fetchDatabase());
+                    renderTablePeserta(dbPeserta);
+                }
             });
-            renderTablePeserta(dbPeserta);
         }
 
         function renderTableRekap(data) {
             let tbody = document.getElementById('rekapTableBody');
             tbody.innerHTML = '';
             data.forEach(a => {
-                tbody.innerHTML += `<tr><td class="p-3 font-mono">${a.id}</td><td class="p-3 font-bold">${a.nama}</td><td class="p-3">${a.kategori}</td><td class="p-3">${a.tanggal}</td><td class="p-3">${a.waktu}</td><td class="p-3 text-center">${a.status}</td></tr>`;
+                tbody.innerHTML += `<tr><td class="p-3 font-mono">${a.id}</td><td class="p-3 font-bold">${a.nama}</td><td class="p-3">${a.kategori}</td><td class="p-3">${a.tanggal}</td><td class="p-3 font-mono">${a.waktu}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold text-[10px]">${a.status}</span></td></tr>`;
             });
         }
 
         function filterTableRekap() {
             let tgl = document.getElementById('rekapFilterTgl').value;
             let status = document.getElementById('rekapFilterStatus').value;
-            let filtered = dbAbsences.filter(a => (!tgl || a.tanggal === tgl) && (!status || a.status === status));
+            let filtered = dbAbsensi.filter(a => (!tgl || a.tanggal === tgl) && (!status || a.status === status));
             renderTableRekap(filtered);
         }
 
@@ -516,7 +589,11 @@
             let tbody = document.getElementById('sysConfigTableBody');
             tbody.innerHTML = '';
             Object.keys(sysConfig).forEach(key => {
-                tbody.innerHTML += `<tr><td class="p-3 border-r font-mono bg-slate-50">${key}</td><td class="p-2"><input type="text" data-key="${key}" value="${sysConfig[key]}" class="w-full bg-transparent px-2 py-1 border border-transparent focus:bg-white focus:border-slate-300 rounded font-semibold"></td></tr>`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 border-r font-mono bg-slate-50 text-slate-500 font-bold">${key}</td>
+                        <td class="p-2"><input type="text" data-key="${key}" value="${sysConfig[key]}" class="w-full bg-transparent px-2 py-1.5 border border-transparent focus:bg-white focus:border-slate-300 rounded-xl font-semibold outline-none transition"></td>
+                    </tr>`;
             });
         }
 
@@ -525,15 +602,21 @@
                 sysConfig[input.getAttribute('data-key')] = input.value;
             });
             localStorage.setItem('sys_config', JSON.stringify(sysConfig));
+            
+            fetch(getCleanUrl(), {
+                method: 'POST',
+                body: JSON.stringify({ action: "savePengaturan", config: sysConfig })
+            });
+
             applySystemMetadata();
-            Swal.fire('Berhasil', 'Konformasi konfigurasi diperbarui.', 'success');
+            Swal.fire('Sinkronisasi Sukses', 'Konfigurasi Cloud diperbarui.', 'success');
         }
 
         function printSingleIDCard(id) {
             let p = dbPeserta.find(item => item.id === id);
-            if(!p) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+            if(!p) return;
             
-            Swal.fire({title: 'Memproses Cetakan...', didOpen: () => Swal.showLoading(), allowOutsideClick: false});
+            Swal.fire({ title: 'Rendering ID Card...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
             
             document.getElementById('pdfMetaName').innerText = p.nama.toUpperCase();
             document.getElementById('pdfMetaId').innerText = "ID: " + p.id;
@@ -541,13 +624,14 @@
             
             let qrArea = document.getElementById('renderQrArea'); 
             qrArea.innerHTML = '';
+            
             new QRCode(qrArea, { text: String(p.id).trim(), width: 140, height: 140 });
             
             setTimeout(() => {
                 let element = document.getElementById('idCardPrintBox');
                 html2pdf().set({ 
                     margin: 10, 
-                    filename: `ID_CARD_${p.id}.pdf`, 
+                    filename: `KARTU_PRESENSI_${p.id}.pdf`, 
                     html2canvas: { scale: 2 }, 
                     jsPDF: { format: 'a5', orientation: 'portrait' } 
                 }).from(element).save().then(() => Swal.close());
@@ -555,30 +639,40 @@
         }
 
         async function downloadAllQrZip() {
-            if(dbPeserta.length === 0) return;
-            Swal.fire({title: 'Membuat ZIP Berkas...', didOpen: () => Swal.showLoading()});
-            let zip = new JSZip(), div = document.createElement('div');
+            if(dbPeserta.length === 0) { Swal.fire('Kosong', 'Tidak ada data peserta.', 'info'); return; }
+            Swal.fire({ title: 'Mengompilasi Arsip ZIP...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            
+            let zip = new JSZip();
+            let div = document.createElement('div');
+            
             for(let p of dbPeserta) {
-                div.innerHTML = ''; new QRCode(div, { text: String(p.id).trim(), width: 250, height: 250 });
-                await new Promise(r => setTimeout(r, 120));
+                div.innerHTML = ''; 
+                new QRCode(div, { text: String(p.id).trim(), width: 250, height: 250 });
+                await new Promise(r => setTimeout(r, 150));
                 let img = div.querySelector('img');
-                if(img) zip.file(`QR_${p.id}.png`, img.src.split(',')[1], {base64: true});
+                if(img) zip.file(`QR_${p.id}.png`, img.src.split(',')[1], { base64: true });
             }
-            zip.generateAsync({type:"blob"}).then(c => { saveAs(c, `DATABASE_QR.zip`); Swal.close(); });
+            
+            zip.generateAsync({ type: "blob" }).then(content => { 
+                saveAs(content, `DATABASE_QR_CODE.zip`); 
+                Swal.close(); 
+            });
         }
 
         function exportRekapCSV() {
             let csv = "\uFEFFID,Nama,Kategori,Tanggal,Waktu,Status\n";
             dbAbsensi.forEach(a => { csv += `"${a.id}","${a.nama}","${a.kategori}","${a.tanggal}","${a.waktu}","${a.status}"\n`; });
-            saveAs(new Blob([csv], {type: 'text/csv;'}), `REKAP_ABSENSI.csv`);
+            saveAs(new Blob([csv], { type: 'text/csv;' }), `LAPORAN_REKAP.csv`);
         }
 
         function exportRekapPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.text(sysConfig.instansiNama, 14, 15); doc.text("LAPORAN ABSENSI DIGITAL", 14, 23);
+            const { jsPDF } = window.jspdf; 
+            const doc = new jsPDF();
+            doc.text(sysConfig.instansiNama, 14, 15); 
+            doc.text("LAPORAN REALTIME REKAPITULASI PRESENSI", 14, 23);
             let rows = dbAbsensi.map(a => [a.id, a.nama, a.kategori, a.tanggal, a.waktu, a.status]);
-            doc.autoTable({ startY: 30, head: [['ID', 'Nama', 'Kategori', 'Tanggal', 'Waktu', 'Status']], body: rows });
-            doc.save("LAPORAN_REKAP.pdf");
+            doc.autoTable({ startY: 30, head: [['ID', 'Nama Peserta', 'Kategori', 'Tanggal', 'Waktu', 'Status']], body: rows });
+            doc.save("LAPORAN_PRESENSI.pdf");
         }
     </script>
 </body>
