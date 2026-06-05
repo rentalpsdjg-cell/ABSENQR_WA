@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Presensi QR & WA Gateway Pro - SMKN 1 Singkil Utara</title>
     
-    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -40,7 +39,6 @@
         #reader video { border-radius: 1rem; width: 100% !important; object-fit: cover; }
     </style>
 
-    <!-- Core Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -52,10 +50,8 @@
 </head>
 <body class="bg-brand-bg min-h-screen flex flex-col md:flex-row mb-20 md:mb-0">
 
-    <!-- DESKTOP SIDEBAR / MOBILE BOTTOM NAV -->
     <nav class="bg-white w-full md:w-72 flex flex-row md:flex-col justify-between border-t md:border-t-0 md:border-r border-slate-200 fixed bottom-0 md:sticky md:top-0 h-16 md:h-screen z-50 shadow-lg md:shadow-sm">
         
-        <!-- Header Brand (Hanya Tampil di Desktop) -->
         <div class="hidden md:flex p-6 items-center gap-3 border-b border-slate-100 bg-slate-50/50 w-full">
             <div class="w-12 h-12 bg-white rounded-xl shadow-sm border p-1.5 flex items-center justify-center overflow-hidden">
                 <img id="metaNavLogo" src="" class="object-contain w-full h-full" alt="Logo">
@@ -66,7 +62,6 @@
             </div>
         </div>
         
-        <!-- Menu Items (Responsive Grid di HP, List di Desktop) -->
         <div class="flex flex-row md:flex-col p-2 md:p-3 gap-1 w-full justify-around md:justify-start items-center overflow-x-auto md:overflow-x-visible">
             <button onclick="switchMenu('dashboard', this)" class="sidebar-btn active flex flex-col md:flex-row items-center py-1 md:py-3 px-3 md:px-4 rounded-xl text-slate-500 font-semibold text-[10px] md:text-sm transition hover:bg-slate-50 gap-1 md:gap-3 flex-1 md:flex-none text-center md:text-left">
                 <i class="fas fa-chart-pie text-lg fa-fw"></i> <span class="truncate">Dashboard</span>
@@ -85,24 +80,21 @@
             </button>
         </div>
         
-        <!-- Footer Admin Info (Hanya Tampil di Desktop) -->
         <div class="p-4 border-t border-slate-100 hidden md:block bg-slate-50/30 w-full">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 bg-brand-blue rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-100">
                     <i class="fas fa-user-shield"></i>
                 </div>
                 <div>
-                    <h4 class="text-xs font-black text-slate-700 truncate w-40" id="metaNavKepala">Sakinah, SPt</h4>
-                    <p class="text-[9px] text-slate-400 font-bold truncate w-40" id="metaNavKepalaId">NIP. 19800528 200604 2 004</p>
+                    <h4 class="text-xs font-black text-slate-700 truncate w-40" id="metaNavKepala">Loading...</h4>
+                    <p class="text-[9px] text-slate-400 font-bold truncate w-40" id="metaNavKepalaId">Loading...</p>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- MAIN APP WRAPPER -->
     <main class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
         
-        <!-- TOP APP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6 border-b pb-4 md:border-b-0 md:pb-0">
             <div>
                 <h2 id="pageTitle" class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Utama</h2>
@@ -114,9 +106,7 @@
             </div>
         </div>
 
-        <!-- SECTION: DASHBOARD -->
         <section id="menu-dashboard" class="menu-section space-y-4 md:space-y-6">
-            <!-- Statistik Grid -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <div class="bg-white border rounded-2xl p-4 md:p-5 shadow-sm flex items-center justify-between">
                     <div>
@@ -148,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- Log Terbaru -->
             <div class="bg-white border rounded-2xl shadow-sm p-4 md:p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h4 class="font-bold text-slate-800 text-sm md:text-base">Aktivitas Log Hari Ini</h4>
@@ -169,7 +158,6 @@
             </div>
         </section>
 
-        <!-- SECTION: SCAN QR -->
         <section id="menu-scan" class="menu-section space-y-4 hide">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 items-start">
                 <div class="lg:col-span-5 bg-white border p-4 md:p-6 rounded-2xl shadow-sm">
@@ -187,7 +175,6 @@
             </div>
         </section>
 
-        <!-- SECTION: DATA PESERTA -->
         <section id="menu-peserta" class="menu-section space-y-4 hide">
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <div class="relative flex-1">
@@ -214,7 +201,6 @@
             </div>
         </section>
 
-        <!-- SECTION: REKAP ABSENSI -->
         <section id="menu-rekap" class="menu-section space-y-4 hide">
             <div class="flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center bg-white p-3 md:p-4 border rounded-2xl shadow-sm">
                 <div class="flex gap-2 items-center flex-1">
@@ -247,34 +233,31 @@
             </div>
         </section>
 
-        <!-- SECTION: PROFIL & CONFIGURATION -->
         <section id="menu-profil" class="menu-section space-y-4 md:space-y-6 hide">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 items-start">
                 
-                <!-- Kartu Identitas Utama -->
                 <div class="lg:col-span-4 bg-white border p-6 rounded-2xl shadow-sm text-center flex flex-col items-center">
                     <div class="w-20 h-20 bg-blue-50 border rounded-full flex items-center justify-center text-brand-blue text-2xl mb-3 shadow-inner relative">
                         <i class="fas fa-school"></i>
                         <span class="w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full absolute bottom-1 right-1"></span>
                     </div>
-                    <h3 id="profileBoxInstansi" class="text-base md:text-lg font-black text-slate-800 leading-tight">SMKN1 SINGKIL UTARA</h3>
-                    <p id="profileBoxApp" class="text-[10px] text-brand-blue font-bold mt-1 uppercase tracking-wider">ABSEN QR WA AUTO</p>
+                    <h3 id="profileBoxInstansi" class="text-base md:text-lg font-black text-slate-800 leading-tight">Loading...</h3>
+                    <p id="profileBoxApp" class="text-[10px] text-brand-blue font-bold mt-1 uppercase tracking-wider">Loading...</p>
                     
                     <div class="w-full border-t border-dashed my-4"></div>
                     
                     <div class="text-left w-full space-y-2">
                         <div>
                             <span class="text-[9px] uppercase font-black text-slate-400 tracking-wider">Pimpinan / Kepala</span>
-                            <p id="profileBoxKepala" class="text-xs font-bold text-slate-700">Sakinah, SPt</p>
+                            <p id="profileBoxKepala" class="text-xs font-bold text-slate-700">Loading...</p>
                         </div>
                         <div>
                             <span class="text-[9px] uppercase font-black text-slate-400 tracking-wider">Identitas NIP</span>
-                            <p id="profileBoxKepalaId" class="text-xs font-mono font-bold text-slate-500">Nip 19800528 200604 2 004</p>
+                            <p id="profileBoxKepalaId" class="text-xs font-mono font-bold text-slate-500">Loading...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Configuration Editor Database Grid -->
                 <div class="lg:col-span-8 bg-white border rounded-2xl shadow-sm overflow-hidden">
                     <div class="p-3 md:p-4 bg-slate-50/80 border-b flex justify-between items-center">
                         <h4 class="font-extrabold text-[10px] md:text-xs text-slate-700 uppercase tracking-wider"><i class="fas fa-database text-brand-blue mr-1"></i> Live Settings Grid Engine</h4>
@@ -299,7 +282,6 @@
         </section>
     </main>
 
-    <!-- MODAL REGISTRASI ANGGOTA -->
     <div id="pesertaModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hide p-4">
         <div class="bg-white rounded-3xl p-5 md:p-6 w-full max-w-md shadow-2xl border">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -331,7 +313,6 @@
         </div>
     </div>
 
-    <!-- CANVAS STANDALONE FOR ID CARDS (HIDDEN) -->
     <div class="fixed -top-[9999px] -left-[9999px]">
         <div id="idCardPrintBox" style="width: 360px; background: white; border: 3px double #CBD5E1; border-radius: 24px; padding: 25px; text-align: center;">
             <div style="font-size: 11px; font-weight: 800; color: #2563EB; text-transform: uppercase; letter-spacing: 1px;" id="pdfMetaApp">ABSEN QR WA AUTO</div>
@@ -343,11 +324,11 @@
         </div>
     </div>
 
-    <!-- CORE BUSINESS LOGIC ENGINE -->
     <script>
+        // Data diambil langsung dari file Spreadsheet Konfigurasi Anda
         let sysConfig = {
             waUrl: "https://api.fonnte.com/send",
-            waToken: "PASTE_YOUR_FONNTE_TOKEN_HERE",
+            waToken: "", // Masukkan token Fonnte Anda di sini lewat menu Profil jika diperlukan
             waTemplate: "Yth. Bapak/Ibu, peserta atas nama [NAMA] ([ID]) telah [STATUS] pada [WAKTU]. Terima kasih.",
             appNama: "ABSEN QR WA AUTO",
             instansiNama: "SMKN1 SINGKIL UTARA",
@@ -521,7 +502,7 @@
         }
 
         function triggerWhatsAppAPI(p, tgl, wkt, status) {
-            if(!sysConfig.waToken || sysConfig.waToken.includes("PASTE_YOUR")) return;
+            if(!sysConfig.waToken || sysConfig.waToken.trim() === "") return;
             let pesan = sysConfig.waTemplate.replace(/\[NAMA\]/g, p.nama).replace(/\[ID\]/g, p.id).replace(/\[STATUS\]/g, status).replace(/\[WAKTU\]/g, `${tgl} ${wkt}`);
             fetch(sysConfig.waUrl, {
                 method: 'POST',
