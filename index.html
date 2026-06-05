@@ -254,6 +254,7 @@
     </div>
 
     <script>
+        // URL WEB APP ENGINE GOOGLE SHEETS
         const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7NgDYWQ-dxiX91hwhwKR43hUjygfwYSQU710Azf9zkFFJJJX-kmkHtYgy6qZ_rvLs/exec"; 
 
         let sysConfig = {
@@ -268,6 +269,7 @@
         };
 
         let dbPeserta = []; let dbAbsensi = []; let html5QrScanner = null; let isScanningActive = false;
+        let currentFilteredAbsensi = []; // Menyimpan data hasil filter rekap aktif
 
         window.onload = function() {
             startClock();
@@ -308,7 +310,11 @@
 
             fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getAbsensi" }) })
             .then(res => res.json()).then(res => {
-                if(res.success) { dbAbsensi = res.data; loadDashboard(); }
+                if(res.success) { 
+                    dbAbsensi = res.data; 
+                    currentFilteredAbsensi = [...dbAbsensi];
+                    loadDashboard(); 
+                }
             });
         }
 
@@ -334,7 +340,12 @@
 
             if(target === 'dashboard') loadDashboard();
             if(target === 'peserta') renderTablePeserta(dbPeserta);
-            if(target === 'rekap') renderTableRekap(dbAbsensi);
+            if(target === 'rekap') {
+                currentFilteredAbsensi = [...dbAbsensi];
+                document.getElementById('rekapFilterTgl').value = '';
+                document.getElementById('rekapFilterStatus').value = '';
+                renderTableRekap(currentFilteredAbsensi);
+            }
             if(target === 'profil') renderConfigTable();
         }
 
@@ -545,44 +556,51 @@
             let filterTgl = document.getElementById('rekapFilterTgl').value;
             let filterStatus = document.getElementById('rekapFilterStatus').value;
             
-            let filtered = dbAbsensi.filter(a => {
+            currentFilteredAbsensi = dbAbsensi.filter(a => {
                 let matchTgl = filterTgl ? a.tanggal === filterTgl : true;
                 let matchStatus = filterStatus ? a.status === filterStatus : true;
                 return matchTgl && matchStatus;
             });
             
-            renderTableRekap(filtered);
+            renderTableRekap(currentFilteredAbsensi);
         }
 
         function exportRekapPDF() {
-            if(dbAbsensi.length === 0) {
-                return Swal.fire('Kosong', 'Tidak ada data rekap presensi untuk diekspor.', 'warning');
+            // Validasi jika data kosong agar tombol tidak macet saat ditekan
+            if(!currentFilteredAbsensi || currentFilteredAbsensi.length === 0) {
+                return Swal.fire('Data Kosong', 'Tidak ada baris data absensi yang tersedia untuk diekspor ke PDF.', 'warning');
             }
 
-            const { jsPDF } = window.jspdf;
-            let doc = new jsPDF();
-            
-            doc.setFont("Helvetica", "bold");
-            doc.setFontSize(14);
-            doc.text(`LAPORAN REKAP PRESENSI - ${sysConfig.instansiNama}`, 14, 15);
-            
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(10);
-            doc.text(`Sistem: ${sysConfig.appNama} | Tanggal Cetak: ${new Date().toLocaleString('id-ID')}`, 14, 22);
-            
-            let rows = [];
-            dbAbsensi.forEach(r => rows.push([r.id, r.nama, r.kategori, r.tanggal, r.waktu, r.status]));
-            
-            doc.autoTable({
-                startY: 28,
-                head: [['ID', 'Nama Peserta', 'Kategori / Kelas', 'Tanggal', 'Waktu', 'Status']],
-                body: rows,
-                theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
-                styles: { fontSize: 9 }
-            });
-            
-            doc.save(`Rekap_Absensi_${new Date().toISOString().split('T')[0]}.pdf`);
+            try {
+                const { jsPDF } = window.jspdf;
+                let doc = new jsPDF();
+                
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text(`LAPORAN REKAP PRESENSI - ${sysConfig.instansiNama}`, 14, 15);
+                
+                doc.setFont("Helvetica", "normal");
+                doc.setFontSize(10);
+                doc.text(`Sistem: ${sysConfig.appNama} | Tanggal Cetak: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+                
+                let rows = [];
+                currentFilteredAbsensi.forEach(r => rows.push([r.id, r.nama, r.kategori, r.tanggal, r.waktu, r.status]));
+                
+                doc.autoTable({
+                    startY: 28,
+                    head: [['ID', 'Nama Peserta', 'Kategori / Kelas', 'Tanggal', 'Waktu', 'Status']],
+                    body: rows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
+                    styles: { fontSize: 9 }
+                });
+                
+                doc.save(`Rekap_Absensi_${new Date().toISOString().split('T')[0]}.pdf`);
+                Swal.fire('Berhasil!', 'File PDF laporan rekap berhasil diunduh.', 'success');
+            } catch (err) {
+                console.error("Gagal cetak PDF:", err);
+                Swal.fire('Gagal Export', 'Terjadi kesalahan sistem internal saat merender file PDF.', 'error');
+            }
         }
 
         function renderConfigTable() {
