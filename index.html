@@ -180,8 +180,7 @@
                     </select>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportRekapPDF()" class="bg-brand-rose text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-file-pdf"></i> Ekspor PDF</button>
-                    <button onclick="exportRekapCSV()" class="bg-brand-emerald text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-file-excel"></i> Ekspor CSV</button>
+                    <button onclick="exportRekapPDF()" class="bg-brand-rose text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5"><i class="fas fa-file-pdf"></i> Ekspor Laporan PDF</button>
                 </div>
             </div>
             <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
@@ -255,7 +254,6 @@
     </div>
 
     <script>
-        // URL WEB APP ANDA YANG SUDAH TERHUBUNG KE ENGINE GOOGLE SHEET
         const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7NgDYWQ-dxiX91hwhwKR43hUjygfwYSQU710Azf9zkFFJJJX-kmkHtYgy6qZ_rvLs/exec"; 
 
         let sysConfig = {
@@ -296,7 +294,6 @@
         }
 
         function fetchDatabase() {
-            // Sinkronisasi Config Instansi dari Google Sheet
             fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getConfig" }) })
             .then(res => res.json()).then(res => {
                 if(res.success && Object.keys(res.data).length > 0) { sysConfig = res.data; }
@@ -304,13 +301,11 @@
                 updateConnectionStatus('connected');
             }).catch(() => { applySystemMetadata(); });
 
-            // Ambil Data Siswa
             fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getPeserta" }) })
             .then(res => res.json()).then(res => {
                 if(res.success) { dbPeserta = res.data; renderTablePeserta(dbPeserta); }
             });
 
-            // Ambil Data History Absensi
             fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getAbsensi" }) })
             .then(res => res.json()).then(res => {
                 if(res.success) { dbAbsensi = res.data; loadDashboard(); }
@@ -413,7 +408,6 @@
             let dataBaru = { id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: 'Hadir' };
             dbAbsensi.push(dataBaru);
 
-            // POST langsung ke DB Google Sheets
             fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "addAbsensi", ...dataBaru }) })
             .then(() => { fetchDatabase(); });
 
@@ -468,11 +462,7 @@
 
         function saveNewPeserta(e) {
             e.preventDefault();
-            Swal.fire({ 
-                title: 'Menyimpan Ke Google Cloud...', 
-                didOpen: () => Swal.showLoading(), 
-                allowOutsideClick: false 
-            });
+            Swal.fire({ title: 'Menyimpan Ke Google Cloud...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
 
             let newSiswa = {
                 id: document.getElementById('addId').value.trim(),
@@ -486,12 +476,8 @@
                 return;
             }
 
-            fetch(DEPLOY_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "addPeserta", ...newSiswa })
-            })
-            .then(res => res.json())
-            .then(res => {
+            fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "addPeserta", ...newSiswa }) })
+            .then(res => res.json()).then(res => {
                 if(res.success) {
                     Swal.fire('Berhasil!', 'Data siswa baru telah disinkronkan.', 'success');
                     closePesertaModal();
@@ -499,11 +485,7 @@
                 } else {
                     Swal.fire('Gagal!', res.message || 'Gagal menyimpan data.', 'error');
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                Swal.fire('Koneksi Error', 'Gagal menghubungi server cloud.', 'error');
-            });
+            }).catch(() => Swal.fire('Koneksi Error', 'Gagal menghubungi server cloud.', 'error'));
         }
 
         function deletePeserta(id) {
@@ -519,13 +501,8 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Menghapus Data...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
-                    
-                    fetch(DEPLOY_WEB_APP_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: "deletePeserta", id: id })
-                    })
-                    .then(res => res.json())
-                    .then(res => {
+                    fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "deletePeserta", id: id }) })
+                    .then(res => res.json()).then(res => {
                         if(res.success) {
                             Swal.fire('Terhapus!', 'Data siswa berhasil dihapus.', 'success');
                             fetchDatabase();
@@ -577,37 +554,32 @@
             renderTableRekap(filtered);
         }
 
-        function exportRekapCSV() {
-            if(dbAbsensi.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor', 'warning');
-            
-            let csvContent = "\uFEFF"; 
-            csvContent += "ID Anggota,Nama Peserta,Kategori/Kelas,Tanggal,Waktu,Status\n";
-            
-            dbAbsensi.forEach(r => {
-                csvContent += `"${r.id}","${r.nama}","${r.kategori}","${r.tanggal}","${r.waktu}","${r.status}"\n`;
-            });
-            
-            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            saveAs(blob, `Rekap_Absensi_${new Date().toISOString().split('T')[0]}.csv`);
-        }
-
         function exportRekapPDF() {
+            if(dbAbsensi.length === 0) {
+                return Swal.fire('Kosong', 'Tidak ada data rekap presensi untuk diekspor.', 'warning');
+            }
+
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
             
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(14);
             doc.text(`LAPORAN REKAP PRESENSI - ${sysConfig.instansiNama}`, 14, 15);
+            
+            doc.setFont("Helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(`Sistem: ${sysConfig.appNama} | Diunduh pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+            doc.text(`Sistem: ${sysConfig.appNama} | Tanggal Cetak: ${new Date().toLocaleString('id-ID')}`, 14, 22);
             
             let rows = [];
             dbAbsensi.forEach(r => rows.push([r.id, r.nama, r.kategori, r.tanggal, r.waktu, r.status]));
             
             doc.autoTable({
                 startY: 28,
-                head: [['ID', 'Nama Peserta', 'Kategori', 'Tanggal', 'Waktu', 'Status']],
+                head: [['ID', 'Nama Peserta', 'Kategori / Kelas', 'Tanggal', 'Waktu', 'Status']],
                 body: rows,
                 theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235] }
+                headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
+                styles: { fontSize: 9 }
             });
             
             doc.save(`Rekap_Absensi_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -641,8 +613,7 @@
                 method: 'POST',
                 body: JSON.stringify({ action: "updateConfig", config: updatedConfig })
             })
-            .then(res => res.json())
-            .then(res => {
+            .then(res => res.json()).then(res => {
                 if(res.success) {
                     sysConfig = updatedConfig;
                     applySystemMetadata();
