@@ -34,11 +34,7 @@
 </head>
 <body class="bg-brandDark text-white font-sans antialiased overflow-hidden flex h-screen w-screen">
 
-  <!-- ========================================== -->
-  <!-- SIDEBAR (PERSIS SEPERTI DI TEMPLATE GAMBAR) -->
-  <!-- ========================================== -->
   <aside class="w-72 h-full flex flex-col border-r border-white/5 bg-[#11133D] shrink-0 p-6 select-none z-20">
-      <!-- Header Brand -->
       <div class="flex items-center gap-4 mb-8">
           <div class="w-12 h-12 rounded-2xl bg-brandActive flex items-center justify-center shadow-lg shadow-brandActive/30">
               <i class="fas fa-th-large text-xl text-white"></i>
@@ -49,7 +45,6 @@
           </div>
       </div>
 
-      <!-- Admin Identity Box -->
       <div class="bg-brandCard p-4 rounded-2xl border border-white/5 flex items-center gap-4 mb-8">
           <div class="w-11 h-11 rounded-xl bg-cyan-500 flex items-center justify-center font-bold text-white text-lg shadow-md shadow-cyan-500/20">A</div>
           <div>
@@ -58,7 +53,6 @@
           </div>
       </div>
 
-      <!-- Navigation Links -->
       <nav class="flex-1 space-y-2 overflow-y-auto pr-1">
           <button id="btn-dashboard" onclick="switchView('dashboard')" class="nav-btn active w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-brandTextMuted hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
               <i class="fas fa-home text-lg w-6 text-center"></i> Dashboard
@@ -81,9 +75,6 @@
       </nav>
   </aside>
 
-  <!-- ========================================== -->
-  <!-- MAIN WORKSPACE -->
-  <!-- ========================================== -->
   <div class="flex-1 h-full flex flex-col overflow-hidden bg-[#0A0B2E]">
       <header class="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-brandDark/40 backdrop-blur-md shrink-0">
           <h2 id="viewTitle" class="text-xl font-bold tracking-wide">Dashboard Utama</h2>
@@ -92,7 +83,6 @@
 
       <main class="flex-1 overflow-y-auto p-8">
           
-          <!-- SEKSI 1: DASHBOARD -->
           <div id="view-dashboard" class="view-section active space-y-8">
               <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div class="bg-brandCard p-6 rounded-2xl border border-white/5 shadow-xl"><p class="text-xs font-bold text-brandTextMuted uppercase tracking-wider">Total Siswa</p><h3 id="dashSiswa" class="text-3xl font-bold mt-2">-</h3></div>
@@ -100,13 +90,12 @@
                   <div class="bg-brandCard p-6 rounded-2xl border border-white/5 shadow-xl"><p class="text-xs font-bold text-amber-400 uppercase tracking-wider">Sakit / Izin</p><h3 id="dashSakitIzin" class="text-3xl font-bold text-amber-400 mt-2">-</h3></div>
                   <div class="bg-brandCard p-6 rounded-2xl border border-white/5 shadow-xl"><p class="text-xs font-bold text-red-400 uppercase tracking-wider">Mangkir (Alpa)</p><h3 id="dashAlpa" class="text-3xl font-bold text-red-400 mt-2">-</h3></div>
               </div>
-              <div class="bg-brandCard p-6 rounded-2xl border border-white/5 max-w-md shadow-xl">
+              <div class="bg-brandCard p-6 rounded-2xl border border-white/5 max-w-sm shadow-xl">
                   <h4 class="text-xs font-bold uppercase tracking-wider text-brandTextMuted mb-4">Visualisasi Kehadiran</h4>
-                  <canvas id="chartPresensi" width="300" height="300"></canvas>
+                  <div class="w-full flex justify-center"><canvas id="chartPresensi" style="max-width:260px; max-height:260px;"></canvas></div>
               </div>
           </div>
 
-          <!-- SEKSI 2: DATA SISWA -->
           <div id="view-siswa" class="view-section space-y-6">
               <div class="flex justify-between items-center bg-brandCard p-4 rounded-2xl border border-white/5 shadow-md">
                   <h3 class="font-semibold text-sm tracking-wide text-brandTextMuted">Registrasi Master Siswa</h3>
@@ -117,7 +106,6 @@
               </div>
           </div>
 
-          <!-- SEKSI 3: DATA GURU -->
           <div id="view-guru" class="view-section space-y-6">
               <div class="flex justify-between items-center bg-brandCard p-4 rounded-2xl border border-white/5 shadow-md">
                   <h3 class="font-semibold text-sm tracking-wide text-brandTextMuted">Registrasi Master Guru</h3>
@@ -128,14 +116,12 @@
               </div>
           </div>
 
-          <!-- SEKSI 4: LAPORAN ABSENSI -->
           <div id="view-laporan" class="view-section space-y-6">
               <div class="bg-brandCard rounded-2xl border border-white/5 overflow-hidden shadow-xl">
                   <table class="w-full text-left border-collapse"><thead class="bg-white/5 text-xs font-bold text-brandTextMuted uppercase tracking-wider"><tr class="border-b border-white/5"><th class="p-4">Waktu Log</th><th class="p-4">Identitas / NISN</th><th class="p-4">Nama Siswa</th><th class="p-4">Status Kehadiran</th></tr></thead><tbody id="tableLaporan" class="text-sm divide-y divide-white/5"></tbody></table>
               </div>
           </div>
 
-          <!-- SEKSI 5: KELOLA ABSEN MANUAL -->
           <div id="view-kelola" class="view-section max-w-xl mx-auto bg-brandCard p-8 rounded-2xl border border-white/5 shadow-2xl space-y-6">
               <h3 class="font-bold text-lg text-center tracking-wide">Input Keterangan Manual</h3>
               <form onsubmit="simpanAbsenManual(event)" class="space-y-4">
@@ -145,7 +131,6 @@
               </form>
           </div>
 
-          <!-- SEKSI 6: SCAN ABSENSI QR -->
           <div id="view-scan" class="view-section max-w-xl mx-auto bg-brandCard p-6 rounded-2xl border border-white/5 shadow-2xl text-center">
               <h3 class="font-bold text-md mb-4 tracking-wide text-brandTextMuted">Arahkan Kartu QR Siswa ke Kamera</h3>
               <div id="reader" class="overflow-hidden rounded-xl bg-brandDark border border-white/5 shadow-inner" style="min-height: 320px;"></div>
@@ -154,30 +139,22 @@
       </main>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODAL FOR INPUT MASTER (SISWA/GURU) -->
-  <!-- ========================================== -->
   <div id="crudModal" class="hidden fixed inset-0 bg-brandDark/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-brandCard border border-white/10 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-4 animate-fade-in">
+      <div class="bg-brandCard border border-white/10 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-4">
           <div class="flex justify-between items-center"><h3 id="modalTitle" class="font-bold text-md">Form Input</h3><button onclick="closeModal()" class="text-brandTextMuted hover:text-white"><i class="fas fa-times text-lg"></i></button></div>
           <form id="modalForm" onsubmit="handleFormSubmit(event)" class="space-y-4"></form>
       </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- LOGIC CONTROLLER APPLICATION -->
-  <!-- ========================================== -->
   <script>
     let activeScanner = null;
     let mainChart = null;
     let currentModalType = '';
 
-    // Jam Realtime
     setInterval(() => {
       document.getElementById('clockDisplay').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }, 1000);
 
-    // Pergantian Tab Tampilan
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -193,7 +170,6 @@
       if (viewId === 'siswa' || viewId === 'guru' || viewId === 'laporan') refreshTableData();
     }
 
-    // Refresh Sinkronisasi Database
     function loadStats() {
       google.script.run.withSuccessHandler(s => {
         document.getElementById('dashSiswa').innerText = s.totalSiswa;
@@ -211,32 +187,28 @@
         type: 'doughnut',
         data: {
           labels: ['Hadir', 'Sakit', 'Izin', 'Alpa'],
-          datasets: [{ data: [h, s, i, a], backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444'], borderWhith: 0, borderColor: 'transparent' }]
+          datasets: [{ data: [h, s, i, a], backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444'], borderWidth: 0, borderColor: 'transparent' }]
         },
-        options: { plugins: { legend: { labels: { color: '#8E91C1' } } } }
+        options: { responsive: true, plugins: { legend: { labels: { color: '#8E91C1' } } } }
       });
     }
 
     function refreshTableData() {
       google.script.run.withSuccessHandler(db => {
-        // Render Siswa
         let htmlSiswa = '';
         db.siswa.forEach(s => { htmlSiswa += `<tr class="hover:bg-white/5"><td class="p-4 font-bold text-brandTextMuted">${s.nisn}</td><td class="p-4">${s.nama}</td><td class="p-4">${s.kelas}</td><td class="p-4 text-center"><button onclick="hapusMaster('Siswa', ${s.row_index})" class="text-red-400 hover:text-red-500 text-xs font-semibold px-3 py-1 rounded-lg border border-red-500/20 hover:bg-red-500/10"><i class="far fa-trash-alt"></i></button></td></tr>`; });
         document.getElementById('tableSiswa').innerHTML = htmlSiswa || '<tr><td colspan="4" class="p-4 text-center text-xs text-brandTextMuted">Data siswa kosong</td></tr>';
         
-        // Render Guru
         let htmlGuru = '';
         db.guru.forEach(g => { htmlGuru += `<tr class="hover:bg-white/5"><td class="p-4 font-bold text-brandTextMuted">${g.nip}</td><td class="p-4">${g.nama_guru}</td><td class="p-4">${g.mata_pelajaran}</td><td class="p-4 text-center"><button onclick="hapusMaster('Guru', ${g.row_index})" class="text-red-400 hover:text-red-500 text-xs font-semibold px-3 py-1 rounded-lg border border-red-500/20 hover:bg-red-500/10"><i class="far fa-trash-alt"></i></button></td></tr>`; });
         document.getElementById('tableGuru').innerHTML = htmlGuru || '<tr><td colspan="4" class="p-4 text-center text-xs text-brandTextMuted">Data guru kosong</td></tr>';
 
-        // Render Laporan
         let htmlLap = '';
-        db.absensi.forEach(a => { htmlLap += `<tr class="hover:bg-white/5"><td class="p-4 text-xs text-brandTextMuted">${a.tanggal_/_waktu}</td><td class="p-4 font-medium">${a.nisn}</td><td class="p-4">${a.nama}</td><td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${a.status === 'Hadir' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${a.status}</span></td></tr>`; });
+        db.absensi.forEach(a => { htmlLap += `<tr class="hover:bg-white/5"><td class="p-4 text-xs text-brandTextMuted">${a.tanggal_waktu}</td><td class="p-4 font-medium">${a.nisn}</td><td class="p-4">${a.nama}</td><td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${a.status === 'Hadir' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${a.status}</span></td></tr>`; });
         document.getElementById('tableLaporan').innerHTML = htmlLap || '<tr><td colspan="4" class="p-4 text-center text-xs text-brandTextMuted">Belum ada riwayat absensi</td></tr>';
       }).getAllData();
     }
 
-    // CRUD Event Handlers
     function openModal(type) {
       currentModalType = type;
       document.getElementById('crudModal').classList.remove('hidden');
@@ -249,6 +221,7 @@
         form.innerHTML = `<div><label class="text-xs font-bold tracking-wider text-brandTextMuted block mb-1">NIP</label><input type="number" id="in1" required class="w-full bg-brandDark border border-white/10 p-3 rounded-xl text-sm text-white"></div><div><label class="text-xs font-bold tracking-wider text-brandTextMuted block mb-1">Nama Guru</label><input type="text" id="in2" required class="w-full bg-brandDark border border-white/10 p-3 rounded-xl text-sm text-white"></div><div><label class="text-xs font-bold tracking-wider text-brandTextMuted block mb-1">Mata Pelajaran</label><input type="text" id="in3" required class="w-full bg-brandDark border border-white/10 p-3 rounded-xl text-sm text-white"></div><button type="submit" class="w-full py-3 bg-brandActive rounded-xl text-sm font-bold tracking-wide">SIMPAN DATA</button>`;
       }
     }
+    
     function closeModal() { document.getElementById('crudModal').classList.add('hidden'); }
 
     function handleFormSubmit(e) {
@@ -287,10 +260,9 @@
       }).inputAbsenManual(nisn, status);
     }
 
-    // Pemindai Kamera QR
     function startScanner() {
       if (activeScanner) return;
-      activeScanner = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 250 });
+      activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
       activeScanner.render((text) => {
         Swal.fire({ title: 'Memproses Absen...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         google.script.run.withSuccessHandler(res => {
@@ -301,7 +273,6 @@
     }
     function stopScanner() { if (activeScanner) { activeScanner.clear(); activeScanner = null; } }
 
-    // Init halaman pertama kali
     window.onload = () => { loadStats(); };
   </script>
 </body>
