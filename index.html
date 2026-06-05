@@ -159,7 +159,7 @@
                 <div class="lg:col-span-5 bg-white border p-4 rounded-2xl shadow-sm">
                     <div id="reader" class="w-full overflow-hidden bg-slate-900 rounded-xl border"></div>
                     <div class="flex gap-2 mt-4">
-                        <button id="btnStart" onclick="initScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-xs shadow-md"><i class="fas fa-play mr-1"></i> Aktifkan Kamera</button>
+                        <button id="btnStart" onclick="initScanner()" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-xs shadow-md"><i class="fas fa-play mr-1"></i> ... Aktifkan Kamera</button>
                         <button id="btnStop" onclick="killScanner()" class="flex-1 bg-slate-700 text-white py-3 rounded-xl font-bold text-xs hide"><i class="fas fa-stop mr-1"></i> Matikan</button>
                     </div>
                 </div>
@@ -281,10 +281,10 @@
     </div>
 
     <div class="fixed -top-[9999px] -left-[9999px]">
-        <div id="idCardPrintBox" style="width: 360px; background: white; border: 3px double #CBD5E1; border-radius: 24px; padding: 25px; text-align: center;">
+        <div id="idCardPrintBox" style="width: 360px; background: white; border: 3px double #CBD5E1; border-radius: 24px; padding: 25px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
             <div style="font-size: 11px; font-weight: 800; color: #2563EB; text-transform: uppercase;" id="pdfMetaApp">ABSEN QR WA AUTO</div>
             <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 15px;" id="pdfMetaInstansi">SMKN1 SINGKIL UTARA</div>
-            <div style="display: flex; justify-content: center; margin-bottom: 15px;" id="renderQrArea"></div>
+            <div style="display: flex; justify-content: center; margin-bottom: 15px; min-height: 140px;" id="renderQrArea"></div>
             <div style="font-size: 16px; font-weight: 800; color: #0F172A;" id="pdfMetaName">-</div>
             <div style="font-size: 12px; font-weight: 700; color: #64748B; margin-top: 2px;" id="pdfMetaId">-</div>
             <div style="font-size: 10px; font-weight: bold; background: #EEF2F6; color: #2563EB; display: inline-block; padding: 4px 12px; border-radius: 99px; margin-top: 10px;" id="pdfMetaKategori">-</div>
@@ -292,10 +292,10 @@
     </div>
 
     <script>
-        // DI SINI URL WEB APP ANDA SUDAH TERSINKRONISASI 100%
+        // URL KONEKSI UTAMA KE WEB APP GOOGLE CLOUD ENGINE
         const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoWC-cXytwG_MmT6BSnbpQTc_2sIR5DqCOXg-X-_RcanAp6h8LdbDSpe5pNjctvn0u/exec"; 
 
-        // Sistem Config Default (Tersimpan otomatis ke Local Storage saat diedit di Profil)
+        // Konfigurasi Default Sistem
         let sysConfig = {
             waUrl: "https://api.fonnte.com/send",
             waToken: "", 
@@ -345,7 +345,6 @@
         }
 
         function fetchDatabase() {
-            // Ambil Data Peserta dari Google Sheets
             fetch(getCleanUrl(), {
                 method: 'POST',
                 body: JSON.stringify({ action: "getPeserta" })
@@ -363,7 +362,6 @@
                 renderTablePeserta(dbPeserta);
             });
 
-            // Ambil Data Absensi dari Google Sheets
             fetch(getCleanUrl(), {
                 method: 'POST',
                 body: JSON.stringify({ action: "getAbsensi" })
@@ -612,30 +610,56 @@
             Swal.fire('Sinkronisasi Sukses', 'Konfigurasi Cloud diperbarui.', 'success');
         }
 
+        // PERBAIKAN UTAMA: FUNGSI CETAK KARTU INSTAN TANPA FREEZE LOGIC
         function printSingleIDCard(id) {
-            let p = dbPeserta.find(item => item.id === id);
+            let p = dbPeserta.find(item => String(item.id).trim() === String(id).trim());
             if(!p) return;
             
-            Swal.fire({ title: 'Rendering ID Card...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            Swal.fire({ 
+                title: 'Rendering ID Card...', 
+                html: 'Mohon tunggu, sedang memproses grafik dan QR Code.',
+                didOpen: () => Swal.showLoading(), 
+                allowOutsideClick: false 
+            });
             
+            // Masukkan data siswa ke template penampung PDF
             document.getElementById('pdfMetaName').innerText = p.nama.toUpperCase();
             document.getElementById('pdfMetaId').innerText = "ID: " + p.id;
             document.getElementById('pdfMetaKategori').innerText = p.kategori.toUpperCase();
             
             let qrArea = document.getElementById('renderQrArea'); 
-            qrArea.innerHTML = '';
-            
-            new QRCode(qrArea, { text: String(p.id).trim(), width: 140, height: 140 });
-            
-            setTimeout(() => {
-                let element = document.getElementById('idCardPrintBox');
-                html2pdf().set({ 
-                    margin: 10, 
-                    filename: `KARTU_PRESENSI_${p.id}.pdf`, 
-                    html2canvas: { scale: 2 }, 
-                    jsPDF: { format: 'a5', orientation: 'portrait' } 
-                }).from(element).save().then(() => Swal.close());
-            }, 800);
+            if (qrArea) {
+                qrArea.innerHTML = ''; // Hapus sisa render QR sebelumnya agar tidak double
+                
+                // Regenerasi QR Code secara lokal dan cepat
+                new QRCode(qrArea, { 
+                    text: String(p.id).trim(), 
+                    width: 140, 
+                    height: 140,
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // Jeda sinkronisasi render grafis komponen gambar (HTML to Canvas)
+                setTimeout(() => {
+                    let element = document.getElementById('idCardPrintBox');
+                    let opt = {
+                        margin:       [10, 10],
+                        filename:     `KARTU_PRESENSI_${p.id}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
+                    };
+                    
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        Swal.close(); // Tutup loading saat berkas siap diunduh otomatis
+                    }).catch(err => {
+                        console.error("PDF Render Error:", err);
+                        Swal.fire('Gagal', 'Gagal memproses ekspor PDF.', 'error');
+                    });
+                }, 600);
+            } else {
+                Swal.fire('Error', 'Sistem gagal menemukan wadah penampung QR Code.', 'error');
+            }
         }
 
         async function downloadAllQrZip() {
