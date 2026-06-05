@@ -30,9 +30,9 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #0F172A; }
-        .sidebar-btn.active { background-color: #EEF2F6; color: #2563EB; border-right: 0px solid #2563EB; }
+        .sidebar-btn.active { background-color: #EEF2F6; color: #2563EB; }
         @media (min-width: 768px) {
             .sidebar-btn.active { border-right: 4px solid #2563EB; }
         }
@@ -73,9 +73,6 @@
             </button>
             <button onclick="switchMenu('scan', this)" class="sidebar-btn flex flex-col md:flex-row items-center py-1 md:py-3 px-3 md:px-4 rounded-xl text-slate-500 font-semibold text-[10px] md:text-sm transition hover:bg-slate-50 gap-1 md:gap-3 flex-1 md:flex-none text-center md:text-left">
                 <i class="fas fa-qrcode text-lg fa-fw"></i> <span class="truncate">Scan QR</span>
-            </button>
-            <button onclick="switchMenu('manual', this)" class="sidebar-btn flex flex-col md:flex-row items-center py-1 md:py-3 px-3 md:px-4 rounded-xl text-slate-500 font-semibold text-[10px] md:text-sm transition hover:bg-slate-50 gap-1 md:gap-3 flex-1 md:flex-none text-center md:text-left">
-                <i class="fas fa-keyboard text-lg fa-fw"></i> <span class="truncate">Manual</span>
             </button>
             <button onclick="switchMenu('peserta', this)" class="sidebar-btn flex flex-col md:flex-row items-center py-1 md:py-3 px-3 md:px-4 rounded-xl text-slate-500 font-semibold text-[10px] md:text-sm transition hover:bg-slate-50 gap-1 md:gap-3 flex-1 md:flex-none text-center md:text-left">
                 <i class="fas fa-user-graduate text-lg fa-fw"></i> <span class="truncate">Peserta</span>
@@ -190,51 +187,6 @@
             </div>
         </section>
 
-        <!-- SECTION: INPUT MANUAL -->
-        <section id="menu-manual" class="menu-section hide">
-            <div class="max-w-xl mx-auto bg-white border rounded-2xl shadow-sm p-4 md:p-6">
-                <h3 class="text-base md:text-lg font-bold border-b pb-3 mb-4 text-slate-800"><i class="fas fa-keyboard text-brand-blue mr-2"></i>Override Input Presensi Manual</h3>
-                <form onsubmit="submitPresensiManual(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Anggota / Peserta</label>
-                        <select id="formManualPeserta" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required></select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tanggal</label>
-                            <input type="date" id="formManualTanggal" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-xs md:text-sm focus:outline-none" required>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Waktu Log</label>
-                            <input type="time" id="formManualWaktu" class="w-full p-3 bg-slate-50 border rounded-xl font-semibold text-xs md:text-sm focus:outline-none" required>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Status Log Kehadiran</label>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="radioStatus" value="Hadir" checked class="mb-1 accent-brand-blue">
-                                <span class="text-xs font-bold text-brand-blue">Hadir</span>
-                            </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="radioStatus" value="Izin" class="mb-1 accent-amber-500">
-                                <span class="text-xs font-bold text-amber-500">Izin</span>
-                            </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="radioStatus" value="Sakit" class="mb-1 accent-purple-500">
-                                <span class="text-xs font-bold text-purple-500">Sakit</span>
-                            </label>
-                            <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="radioStatus" value="Alfa" class="mb-1 accent-brand-rose">
-                                <span class="text-xs font-bold text-brand-rose">Alfa</span>
-                            </label>
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-700 text-white font-bold py-3 md:py-3.5 rounded-xl transition text-xs md:text-sm shadow-md">Simpan Log Presensi</button>
-                </form>
-            </div>
-        </section>
-
         <!-- SECTION: DATA PESERTA -->
         <section id="menu-peserta" class="menu-section space-y-4 hide">
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
@@ -295,7 +247,7 @@
             </div>
         </section>
 
-        <!-- SECTION: PROFIL & SYSTEM SPEK DEWA -->
+        <!-- SECTION: PROFIL & CONFIGURATION -->
         <section id="menu-profil" class="menu-section space-y-4 md:space-y-6 hide">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 items-start">
                 
@@ -322,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- Live Configuration Editor Database Grid 100% Identik image_d0e545.png -->
+                <!-- Live Configuration Editor Database Grid -->
                 <div class="lg:col-span-8 bg-white border rounded-2xl shadow-sm overflow-hidden">
                     <div class="p-3 md:p-4 bg-slate-50/80 border-b flex justify-between items-center">
                         <h4 class="font-extrabold text-[10px] md:text-xs text-slate-700 uppercase tracking-wider"><i class="fas fa-database text-brand-blue mr-1"></i> Live Settings Grid Engine</h4>
@@ -336,9 +288,7 @@
                                     <th class="p-3">Value</th>
                                 </tr>
                             </thead>
-                            <tbody id="sysConfigTableBody" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                <!-- Generated Dynamically -->
-                            </tbody>
+                            <tbody id="sysConfigTableBody" class="divide-y divide-slate-200 font-medium text-slate-700"></tbody>
                         </table>
                     </div>
                     <div class="p-3 md:p-4 bg-slate-50 border-t flex justify-end">
@@ -426,7 +376,6 @@
             applySystemMetadata();
             startClock();
             loadDashboard();
-            populateManualSelect();
         };
 
         function applySystemMetadata() {
@@ -461,7 +410,7 @@
             document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
-            let titleMap = { 'dashboard': 'Dashboard Utama', 'scan': 'Scan Barcode QR', 'manual': 'Input Log Manual', 'peserta': 'Database Peserta', 'rekap': 'Rekapitulasi Presensi', 'profil': 'Profil & Sistem Data' };
+            let titleMap = { 'dashboard': 'Dashboard Utama', 'scan': 'Scan Barcode QR', 'peserta': 'Database Peserta', 'rekap': 'Rekapitulasi Presensi', 'profil': 'Profil & Sistem Data' };
             document.getElementById('pageTitle').innerText = titleMap[target];
 
             if(target === 'dashboard') loadDashboard();
@@ -549,7 +498,7 @@
             let tgl = now.toISOString().split('T')[0];
             let wkt = now.toTimeString().slice(0,5);
 
-            let isExist = dbAbsencing = dbAbsensi.find(a => a.id === p.id && a.tanggal === tgl);
+            let isExist = dbAbsensi.find(a => a.id === p.id && a.tanggal === tgl);
             if(isExist) {
                 pane.innerHTML = `
                     <div class="w-14 h-14 bg-amber-50 border border-amber-200 text-amber-600 rounded-full flex items-center justify-center text-xl mb-2"><i class="fas fa-exclamation"></i></div>
@@ -579,32 +528,6 @@
                 headers: { 'Authorization': sysConfig.waToken },
                 body: new URLSearchParams({ 'target': p.whatsapp, 'message': pesan })
             }).catch(err => console.error(err));
-        }
-
-        function populateManualSelect() {
-            let select = document.getElementById('formManualPeserta');
-            select.innerHTML = '';
-            dbPeserta.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.id} - ${p.nama}</option>`;
-            });
-            document.getElementById('formManualTanggal').value = new Date().toISOString().split('T')[0];
-            document.getElementById('formManualWaktu').value = new Date().toTimeString().slice(0,5);
-        }
-
-        function submitPresensiManual(e) {
-            e.preventDefault();
-            let id = document.getElementById('formManualPeserta').value;
-            let tgl = document.getElementById('formManualTanggal').value;
-            let wkt = document.getElementById('formManualWaktu').value;
-            let status = document.querySelector('input[name="radioStatus"]:checked').value;
-
-            let p = dbPeserta.find(item => item.id === id);
-            dbAbsensi.push({ id: p.id, nama: p.nama, kategori: p.kategori, tanggal: tgl, waktu: wkt, status: status });
-            localStorage.setItem('db_absensi', JSON.stringify(dbAbsensi));
-
-            Swal.fire('Sukses', `Data manual masuk.`, 'success');
-            triggerWhatsAppAPI(p, tgl, wkt, status);
-            switchMenu('dashboard', document.querySelectorAll('.sidebar-btn')[0]);
         }
 
         function renderTablePeserta(data) {
@@ -648,7 +571,6 @@
             localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
             closePesertaModal();
             renderTablePeserta(dbPeserta);
-            populateManualSelect();
             Swal.fire('Sukses', 'Data disimpan.', 'success');
         }
 
@@ -656,7 +578,6 @@
             dbPeserta = dbPeserta.filter(p => p.id !== id);
             localStorage.setItem('db_peserta', JSON.stringify(dbPeserta));
             renderTablePeserta(dbPeserta);
-            populateManualSelect();
         }
 
         function renderTableRekap(data) {
