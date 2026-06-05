@@ -45,7 +45,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://shadowalchemist.github.io/html2pdf.js/dist/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -85,7 +84,7 @@
             <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border mb-3 overflow-hidden p-2">
                 <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/2991/2991184.png" class="w-full h-full object-contain" alt="Logo">
             </div>
-            <h1 class="text-xs font-black text-slate-700 tracking-wide uppercase dynamic-app-name" id="navAppName">Absen QR WA Auto</h1>
+            <h1 class="text-xs font-black text-slate-700 tracking-wide uppercase" id="navAppName">Absen QR WA Auto</h1>
             <p class="text-[9px] text-slate-400 font-bold mt-1 tracking-tight" id="navInstansiName">SMKN1 SINGKIL UTARA</p>
         </div>
         
@@ -288,30 +287,45 @@
             </div>
         </section>
 
+        <!-- Penyesuaian Sempurna Menu Profil Sesuai Gambar image_d0f02d.png -->
         <section id="menu-profil" class="menu-section hide">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card-custom p-6 text-center flex flex-col items-center justify-center">
-                    <div class="w-24 h-24 bg-blue-50 text-brand-blue border border-blue-200 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-user-shield"></i></div>
-                    <h3 class="text-xl font-black text-slate-700" id="profileAdminName">Administrator Utama</h3>
-                    <p class="text-xs font-bold text-emerald-500 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full mt-2 uppercase tracking-wide">Level: Admin Utama</p>
-                </div>
-                <div class="card-custom p-6 md:col-span-2">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center md:text-left">Statistik Akumulasi Kehadiran</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="max-w-[200px] mx-auto md:mx-0 flex items-center justify-center">
-                            <canvas id="chartPieProfile"></canvas>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                
+                <!-- Kotak Profil Kiri -->
+                <div class="card-custom p-8 text-center flex flex-col items-center justify-center min-h-[340px]">
+                    <div class="w-28 h-28 bg-[#EBF3FF] border border-slate-100 rounded-full flex items-center justify-center text-[#2F80ED] text-4xl mb-6 relative">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-user mb-0.5"></i>
+                            <i class="fas fa-shield-alt text-base absolute bottom-7 right-7 bg-[#EBF3FF] px-1 rounded-full text-[#2F80ED]"></i>
                         </div>
-                        <div class="flex flex-col justify-center space-y-3">
-                            <div class="p-4 bg-slate-50 rounded-xl">
-                                <span class="text-xs text-slate-400 block font-semibold">Tingkat Kehadiran Bersih</span>
-                                <span class="text-2xl font-black text-emerald-600" id="profileRate">0%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-[#1F2937]" id="profileAdminName">Administrator Utama</h3>
+                    <div class="mt-4">
+                        <span class="text-[11px] font-bold text-[#10B981] bg-[#E6F4EA] border border-[#A3E635]/0 px-5 py-1.5 rounded-full uppercase tracking-wider">LEVEL: ADMIN UTAMA</span>
+                    </div>
+                </div>
+                
+                <!-- Kotak Statistik Kanan -->
+                <div class="card-custom p-8 lg:col-span-2 min-h-[340px] flex flex-col justify-start">
+                    <h3 class="text-[15px] font-bold text-[#1F2937] mb-6">Statistik Akumulasi Kehadiran</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full items-center">
+                        <!-- Area Kosong Sisi Kiri Grafik Sesuai image_d0f02d.png -->
+                        <div class="md:col-span-1"></div>
+                        
+                        <!-- List Informasi Data Utama -->
+                        <div class="md:col-span-2 flex flex-col justify-center space-y-4 w-full">
+                            <div class="p-5 bg-[#F8FAFC] rounded-2xl border border-slate-100/50">
+                                <span class="text-xs text-[#64748B] block font-medium tracking-wide">Tingkat Kehadiran Bersih</span>
+                                <span class="text-3xl font-bold text-[#00A65A] mt-1 block" id="profileRate">0%</span>
                             </div>
-                            <div class="p-4 bg-slate-50 rounded-xl">
-                                <span class="text-xs text-slate-400 block font-semibold">Total Log Terdata</span>
-                                <span class="text-2xl font-black text-brand-blue" id="profileTotalLog">0 Baris</span>
+                            <div class="p-5 bg-[#F8FAFC] rounded-2xl border border-slate-100/50">
+                                <span class="text-xs text-[#64748B] block font-medium tracking-wide">Total Log Terdata</span>
+                                <span class="text-3xl font-bold text-[#2563EB] mt-1 block" id="profileTotalLog">0 Baris</span>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </section>
@@ -375,9 +389,8 @@
         let html5QrCode = null;
         let gatewayToken = "";
         let gatewayTemplate = "";
-        let chartInstance = null;
 
-        // Metadata Instansi Sesuai image_d0f0a7.png
+        // Metadata Instansi Sesuai data image_d0e545.png
         let instansiConfig = {
             appNama: "ABSEN QR WA AUTO",
             instansiNama: "SMKN1 SINGKIL UTARA",
@@ -447,7 +460,7 @@
                 await refreshSemuaData();
                 switchMenu('dashboard');
             } else {
-                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password pada Google Sheets salah!', 'error');
+                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password salah!', 'error');
             }
         }
 
@@ -463,7 +476,6 @@
             
             let resS = await fetchAPI('getPengaturan');
             if(resS.success) {
-                // Override konfigurasi statis jika database memuat konfigurasi terbaru
                 if(resS.appNama) instansiConfig.appNama = resS.appNama;
                 if(resS.instansiNama) instansiConfig.instansiNama = resS.instansiNama;
                 if(resS.instansiAlamat) instansiConfig.instansiAlamat = resS.instansiAlamat;
@@ -767,37 +779,10 @@
             document.getElementById('profileTotalLog').innerText = globalAbsensi.length + " Baris";
             
             let totalHadir = globalAbsensi.filter(a => a.status === 'Hadir').length;
-            let totalIzin = globalAbsensi.filter(a => a.status === 'Izin').length;
-            let totalSakit = globalAbsensi.filter(a => a.status === 'Sakit').length;
-            let totalAlfa = globalAbsensi.filter(a => a.status === 'Alfa').length;
             let totalSemua = globalAbsensi.length;
 
             let rate = totalSemua > 0 ? Math.round((totalHadir / totalSemua) * 100) : 0;
             document.getElementById('profileRate').innerText = rate + "%";
-
-            if(chartInstance) chartInstance.destroy();
-            const ctx = document.getElementById('chartPieProfile').getContext('2d');
-            
-            // Konfigurasi Chart Pie sesuai mockup image_d0f02d.png jika data masih kosong
-            let chartData = totalSemua === 0 ? [100, 0, 0, 0] : [totalHadir, totalIzin, totalSakit, totalAlfa];
-            let chartColors = totalSemua === 0 ? ['#E2E8F0', '#F59E0B', '#8B5CF6', '#EF4444'] : ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
-            
-            chartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Hadir', 'Izin', 'Sakit', 'Alfa'],
-                    datasets: [{
-                        data: chartData,
-                        backgroundColor: chartColors,
-                        borderWidth: 0
-                    }]
-                },
-                options: { 
-                    plugins: { legend: { display: false } }, 
-                    responsive: true, 
-                    maintainAspectRatio: false 
-                }
-            });
         }
 
         async function saveSettings() {
@@ -820,7 +805,6 @@
         function kirimNotifikasiWhatsApp(p, tgl, wkt, status) {
             if(!gatewayToken || !p.whatsapp) return;
             
-            // Penggantian Tag Dinamis disesuaikan dengan Mockup Lembar Kerja Pengaturan
             let msg = gatewayTemplate
                 .replace(/\[NAMA\]/g, p.nama)
                 .replace(/\(\[ID\]\)/g, `(${p.id})`)
@@ -838,7 +822,6 @@
             }).catch(e => console.error('Fonnte WhatsApp Network Error:', e));
         }
 
-        // ==================== CO-BRANDING ID CARD PDF (HTML2PDF) ====================
         function cetakKartuPDF(idPeserta) {
             let p = globalPeserta.find(item => String(item.id) === String(idPeserta));
             if(!p) return;
@@ -880,7 +863,6 @@
             }, 600);
         }
 
-        // ==================== CETAK REKAP LAPORAN DENGAN KOP SURAT FORMAL ====================
         function cetakRekapPDF() {
             if(globalAbsensi.length === 0) {
                 Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
@@ -892,7 +874,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // --- KOP SURAT INSTANSI DINAMIS ---
             doc.setFont("Helvetica", "bold");
             doc.setFontSize(14);
             doc.text(instansiConfig.instansiNama, 45, 16);
@@ -902,14 +883,12 @@
             doc.text(instansiConfig.instansiAlamat, 45, 21);
             doc.text(`Sistem Aplikasi: ${instansiConfig.appNama}`, 45, 26);
 
-            // Garis Ganda Kop Surat
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.6);
             doc.line(14, 30, 196, 30);
             doc.setLineWidth(0.2);
             doc.line(14, 31, 196, 31);
 
-            // Judul Laporan
             doc.setFont("Helvetica", "bold");
             doc.setFontSize(12);
             doc.text("LAPORAN REKAPITULASI PRESENSI KEHADIRAN", 14, 40);
@@ -918,7 +897,6 @@
             doc.setFont("Helvetica", "normal");
             doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')} | Total Record: ${globalAbsensi.length} Baris`, 14, 45);
 
-            // Mapping Data untuk Table
             const tableBody = globalAbsensi.map(a => [
                 a.id || '-',
                 a.nama || '-',
@@ -928,7 +906,6 @@
                 a.status || '-'
             ]);
 
-            // Render Table
             doc.autoTable({
                 startY: 49,
                 head: [['ID Anggota', 'Nama Lengkap', 'Kategori', 'Tanggal', 'Waktu', 'Status']],
@@ -938,14 +915,12 @@
                 alternateRowStyles: { fillColor: [248, 250, 252] },
                 margin: { left: 14, right: 14 },
                 didDrawPage: function(data) {
-                    // Cek Posisi Akhir Halaman untuk Tanda Tangan Pembuka
                     let finalY = data.cursor.y + 15;
                     if (finalY > 240) {
                         doc.addPage();
                         finalY = 30;
                     }
                     
-                    // --- BLOCK TANDA TANGAN KEPALA SEKOLAH ---
                     doc.setFont("Helvetica", "normal");
                     doc.setFontSize(10);
                     doc.text("Mengetahui,", 140, finalY);
@@ -959,7 +934,6 @@
                 }
             });
 
-            // Memuat Gambar Logo Instansi Ke Dalam Kop Surat PDF
             let img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = function() {
@@ -968,7 +942,6 @@
                 Swal.close();
             };
             img.onerror = function() {
-                // Tetap simpan dokumen jika logo eksternal gagal di-load
                 doc.save(`LAPORAN_REKAP_${instansiConfig.instansiNama.replace(/\s+/g, '_')}.pdf`);
                 Swal.close();
             };
