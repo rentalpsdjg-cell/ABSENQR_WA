@@ -14,7 +14,7 @@
                 extend: {
                     colors: {
                         brand: {
-                            bg: '#F8FAFC',
+                            bg: '#F3F6F9',
                             blue: '#3B82F6',
                             emerald: '#10B981',
                             amber: '#F59E0B',
@@ -33,8 +33,8 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #F8FAFC; font-family: 'Plus Jakarta Sans', sans-serif; color: #1E293B; }
-        .bg-app-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; background: #F8FAFC; overflow: auto;}
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #F3F6F9; font-family: 'Plus Jakarta Sans', sans-serif; color: #1E293B; }
+        .bg-app-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; background: #F3F6F9; overflow: auto;}
         .hide { display: none !important; }
         .card-custom { background: #FFFFFF; border-radius: 1.5rem; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.02); border: 1px solid #E2E8F0; }
         #reader { border: none !important; border-radius: 1.5rem; overflow: hidden; background: #fff;}
@@ -52,10 +52,10 @@
 
     <div id="initialLoader" class="fixed inset-0 bg-brand-blue flex flex-col items-center justify-center z-[60]">
         <i class="fas fa-circle-notch fa-spin text-5xl text-white mb-4"></i>
-        <p class="text-white font-bold tracking-wide">Inisialisasi Sistem Core Dashboard...</p>
+        <p class="text-white font-bold tracking-wide">Menghubungkan ke Live Database...</p>
     </div>
 
-    <div id="loginScreen" class="fixed inset-0 bg-[#F8FAFC] flex items-center justify-center z-50 hide">
+    <div id="loginScreen" class="fixed inset-0 bg-[#F3F6F9] flex items-center justify-center z-50 hide">
         <div class="bg-white p-10 rounded-4xl shadow-soft w-11/12 max-w-md text-center border border-slate-100">
             <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-brand-blue text-4xl shadow-sm"><i class="fas fa-shield-alt"></i></div>
             <h2 class="text-3xl font-extrabold tracking-tight mb-1">Sistem Presensi Pro</h2>
@@ -76,75 +76,86 @@
         </div>
     </div>
 
-    <nav id="mainNav" class="hide bg-white w-full md:w-68 md:min-h-screen flex md:flex-col fixed md:relative bottom-0 z-40 border-r border-slate-200">
-        <div class="p-6 hidden md:flex flex-col items-center text-center border-b border-slate-100">
-            <div class="w-12 h-12 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-brand-blue text-xl"><i class="fas fa-user-shield"></i></div>
-            <h1 class="text-md font-bold text-brand-textMain" id="adminName">Administrator</h1>
-            <span class="text-[10px] font-extrabold px-3 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full mt-1.5 uppercase tracking-wider">Cloud Connected</span>
+    <nav id="mainNav" class="hide bg-white w-full md:w-64 md:min-h-screen flex md:flex-col fixed md:relative bottom-0 z-40 border-r border-slate-200">
+        <div class="p-6 hidden md:flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border mb-2 overflow-hidden">
+                <i class="fas fa-graduation-cap text-3xl text-emerald-600"></i>
+            </div>
+            <h1 class="text-sm font-black text-slate-700 tracking-wide uppercase">Absen QR WA Auto</h1>
         </div>
         
         <div class="flex md:flex-col w-full p-2 md:p-4 gap-1 overflow-x-auto md:overflow-x-visible">
             <button onclick="switchMenu('dashboard')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="dashboard">
-                <i class="fas fa-grid-2 md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Dashboard</span>
+                <i class="fas fa-home md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Dashboard</span>
             </button>
             <button onclick="switchMenu('scan')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="scan">
-                <i class="fas fa-qrcode md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Scan QR</span>
+                <i class="fas fa-camera md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Scan QR</span>
             </button>
             <button onclick="switchMenu('input-manual')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="input-manual">
                 <i class="fas fa-keyboard md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Input Manual</span>
             </button>
             <button onclick="switchMenu('peserta')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="peserta">
-                <i class="fas fa-users md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Data Peserta</span>
+                <i class="fas fa-user-graduate md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Peserta</span>
             </button>
             <button onclick="switchMenu('rekap')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="rekap">
-                <i class="fas fa-history md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Buku Log Log</span>
+                <i class="fas fa-calendar-alt md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Rekap</span>
             </button>
-            <button onclick="switchMenu('analytics')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="analytics">
-                <i class="fas fa-chart-bar md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Statistik</span>
+            <button onclick="switchMenu('profil')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="profil">
+                <i class="fas fa-id-card md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Profil</span>
             </button>
             <button onclick="switchMenu('settings')" class="menu-btn flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-brand-textMuted font-semibold hover:bg-slate-50 transition" data-target="settings">
-                <i class="fas fa-sliders-h md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">WhatsApp</span>
+                <i class="fas fa-cog md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">WA Gateway</span>
             </button>
-            <button onclick="logout()" class="flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-rose-500 font-semibold hover:bg-rose-50 transition md:mt-6">
-                <i class="fas fa-power-off md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Keluar</span>
+            <button onclick="logout()" class="flex-1 md:w-full flex md:justify-start items-center flex-col md:flex-row py-3 px-4 rounded-xl text-rose-500 font-semibold hover:bg-rose-50 transition md:mt-10">
+                <i class="fas fa-sign-out-alt md:mr-3 text-lg fa-fw text-center"></i><span class="text-[10px] md:text-sm">Logout</span>
             </button>
         </div>
     </nav>
 
     <main id="mainContent" class="hide flex-1 p-4 md:p-8 pb-24 w-full max-h-screen overflow-y-auto">
         
-        <section id="menu-dashboard" class="menu-section">
-            <div class="mb-6">
-                <h2 class="text-2xl font-black text-slate-800">Ringkasan Aktivitas</h2>
-                <p class="text-slate-400 text-xs">Kondisi kehadiran real-time hari ini.</p>
+        <div class="flex justify-between items-center mb-6 bg-transparent">
+            <div><h2 id="pageTitle" class="text-3xl font-extrabold text-slate-800">Dashboard</h2></div>
+            <div class="bg-white px-4 py-2 rounded-full border border-slate-200 flex items-center shadow-sm">
+                <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center mr-2 text-slate-500"><i class="fas fa-user text-xs"></i></div>
+                <span class="text-xs font-bold text-slate-600" id="adminName">Administrator Utama</span>
             </div>
-            
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div class="card-custom p-5 border-l-4 border-l-brand-blue flex items-center justify-between">
-                    <div><p class="text-[11px] font-bold text-slate-400 uppercase">Hadir</p><h3 class="text-3xl font-extrabold text-slate-700 mt-1" id="countHadir">0</h3></div>
-                    <div class="text-brand-blue bg-blue-50 p-3 rounded-xl text-xl"><i class="fas fa-check-double"></i></div>
+        </div>
+
+        <section id="menu-dashboard" class="menu-section">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#4DBBFF] to-[#2563EB] text-white shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Total Hadir</p>
+                    <h3 class="text-4xl font-black mt-1" id="countHadir">0</h3>
+                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
                 </div>
-                <div class="card-custom p-5 border-l-4 border-l-brand-amber flex items-center justify-between">
-                    <div><p class="text-[11px] font-bold text-slate-400 uppercase">Izin</p><h3 class="text-3xl font-extrabold text-slate-700 mt-1" id="countIzin">0</h3></div>
-                    <div class="text-brand-amber bg-amber-50 p-3 rounded-xl text-xl"><i class="fas fa-envelope"></i></div>
+                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#FF7F93] to-[#E11D48] text-white shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Izin / Cuti</p>
+                    <h3 class="text-4xl font-black mt-1" id="countIzin">0</h3>
+                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
                 </div>
-                <div class="card-custom p-5 border-l-4 border-l-brand-purple flex items-center justify-between">
-                    <div><p class="text-[11px] font-bold text-slate-400 uppercase">Sakit</p><h3 class="text-3xl font-extrabold text-slate-700 mt-1" id="countSakit">0</h3></div>
-                    <div class="text-brand-purple bg-purple-50 p-3 rounded-xl text-xl"><i class="fas fa-notes-medical"></i></div>
+                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#FFAD42] to-[#D97706] text-white shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Sakit</p>
+                    <h3 class="text-4xl font-black mt-1" id="countSakit">0</h3>
+                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
                 </div>
-                <div class="card-custom p-5 border-l-4 border-l-brand-rose flex items-center justify-between">
-                    <div><p class="text-[11px] font-bold text-slate-400 uppercase">Alfa</p><h3 class="text-3xl font-extrabold text-slate-700 mt-1" id="countAlpa">0</h3></div>
-                    <div class="text-brand-rose bg-rose-50 p-3 rounded-xl text-xl"><i class="fas fa-user-times"></i></div>
+                <div class="rounded-2xl p-5 bg-gradient-to-br from-[#987CFF] to-[#6D28D9] text-white shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Alfa</p>
+                    <h3 class="text-4xl font-black mt-1" id="countAlpa">0</h3>
+                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Hari Ini</span>
                 </div>
             </div>
             
             <div class="card-custom p-6">
-                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center"><i class="fas fa-bolt text-amber-500 mr-2"></i> Log Aktivitas Terkini</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-md font-bold text-slate-700">Aktivitas Absensi Terbaru</h3>
+                    <button onclick="switchMenu('rekap')" class="text-xs text-brand-blue font-bold hover:underline">Lihat Semua ></button>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="text-slate-400 text-xs border-b pb-2">
-                                <th class="pb-3">Waktu</th><th>Nama</th><th>Kategori</th><th class="text-center">Status</th>
+                                <th class="pb-3">Waktu</th><th>Nama Peserta</th><th>Kategori</th><th class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="tableDashboardTerbaru" class="divide-y divide-slate-100"></tbody>
@@ -154,7 +165,6 @@
         </section>
 
         <section id="menu-scan" class="menu-section hide">
-            <h2 class="text-2xl font-black mb-6">Scanner Kamera QR</h2>
             <div class="flex flex-col lg:flex-row gap-6">
                 <div class="w-full lg:w-5/12 card-custom p-6">
                     <div id="reader" class="w-full mb-4 bg-slate-50"></div>
@@ -164,35 +174,35 @@
                     </div>
                 </div>
                 <div class="w-full lg:w-7/12 card-custom p-8 flex flex-col items-center justify-center text-center min-h-[300px]" id="scanResult">
-                    <i class="fas fa-qrcode text-6xl text-slate-300 mb-4 animate-bounce"></i>
-                    <h3 class="text-lg font-bold text-slate-600">Sistem Siap Memindai</h3>
-                    <p class="text-slate-400 text-xs mt-1">Posisikan kode QR peserta tepat di tengah frame kamera</p>
+                    <i class="fas fa-qrcode text-6xl text-slate-300 mb-4 animate-pulse"></i>
+                    <h3 class="text-lg font-bold text-slate-600">Kamera Siap Memindai</h3>
+                    <p class="text-slate-400 text-xs mt-1">Posisikan barcode / QR Code Peserta di area kamera.</p>
                 </div>
             </div>
         </section>
 
         <section id="menu-input-manual" class="menu-section hide">
-            <h2 class="text-2xl font-black mb-6">Input / Perubahan Presensi Manual</h2>
-            <div class="card-custom p-6 max-w-xl">
+            <div class="card-custom p-6 max-w-xl mx-auto">
+                <h3 class="text-md font-bold mb-4 text-slate-700 border-b pb-2"><i class="fas fa-keyboard mr-2 text-brand-blue"></i>Input Log Kehadiran Manual</h3>
                 <form onsubmit="handleInputManual(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Pilih Peserta</label>
-                        <select id="manualSelectPeserta" class="w-full p-3.5 bg-slate-50 border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
-                            <option value="">-- Pilih Anggota/Peserta --</option>
+                        <select id="manualSelectPeserta" class="w-full p-3 bg-slate-50 border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
+                            <option value="">-- Cari / Pilih Anggota --</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tanggal</label>
-                            <input type="date" id="manualTanggal" class="w-full p-3.5 bg-slate-50 border rounded-xl text-sm" required>
+                            <input type="date" id="manualTanggal" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Waktu Log</label>
-                            <input type="time" id="manualWaktu" class="w-full p-3.5 bg-slate-50 border rounded-xl text-sm" required>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Waktu</label>
+                            <input type="time" id="manualWaktu" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Status Kehadiran</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Status Penetapan</label>
                         <div class="grid grid-cols-4 gap-2">
                             <label class="border p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
                                 <input type="radio" name="manualStatus" value="Hadir" checked class="mb-1">
@@ -212,25 +222,18 @@
                             </label>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-md">Simpan Data Absensi</button>
+                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition">Simpan Presensi</button>
                 </form>
             </div>
         </section>
 
         <section id="menu-peserta" class="menu-section hide">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-2xl font-black">Data Peserta</h2>
-                    <p class="text-xs text-slate-400">Total terdaftar di dalam Google Sheets.</p>
-                </div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <input type="text" id="searchPeserta" oninput="filterPeserta()" placeholder="Cari ID, nama atau kategori..." class="w-full md:w-80 p-3 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue">
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <button onclick="downloadSemuaQR()" class="flex-1 sm:flex-none bg-brand-amber text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-download mr-1"></i> ZIP QR</button>
-                    <button onclick="openModalPeserta()" class="flex-1 sm:flex-none bg-brand-blue text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                    <button onclick="downloadSemuaQR()" class="flex-1 sm:flex-none bg-brand-amber text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-download mr-1"></i> Unduh Semua QR (ZIP)</button>
+                    <button onclick="openModalPeserta()" class="flex-1 sm:flex-none bg-brand-blue text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-plus mr-1"></i> Tambah Anggota</button>
                 </div>
-            </div>
-            
-            <div class="mb-4">
-                <input type="text" id="searchPeserta" oninput="filterPeserta()" placeholder="Cari berdasarkan ID, nama atau kelas..." class="w-full md:w-80 p-3 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue">
             </div>
 
             <div class="card-custom overflow-hidden">
@@ -248,24 +251,19 @@
         </section>
 
         <section id="menu-rekap" class="menu-section hide">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-2xl font-black">Buku Log Absensi</h2>
-                    <p class="text-xs text-slate-400">Arsip data histori rekapitulasi.</p>
+            <div class="flex flex-wrap gap-2 mb-4 items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <input type="text" id="searchRekap" oninput="filterRekap()" placeholder="Cari nama/ID..." class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-48">
+                    <input type="date" id="filterTanggalRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-40">
+                    <select id="filterStatusRekap" onchange="filterRekap()" class="p-3 bg-white border border-slate-200 rounded-xl text-xs w-full sm:w-36">
+                        <option value="">Semua Status</option>
+                        <option value="Hadir">Hadir</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Alfa">Alfa</option>
+                    </select>
                 </div>
-                <button onclick="eksporKeCSV()" class="bg-brand-emerald text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm"><i class="fas fa-file-excel mr-1"></i> Ekspor ke Excel (.CSV)</button>
-            </div>
-
-            <div class="flex flex-wrap gap-2 mb-4">
-                <input type="text" id="searchRekap" oninput="filterRekap()" placeholder="Cari nama/ID..." class="p-3 bg-white border rounded-xl text-xs w-full sm:w-48">
-                <input type="date" id="filterTanggalRekap" onchange="filterRekap()" class="p-3 bg-white border rounded-xl text-xs w-full sm:w-40">
-                <select id="filterStatusRekap" onchange="filterRekap()" class="p-3 bg-white border rounded-xl text-xs w-full sm:w-36">
-                    <option value="">Semua Status</option>
-                    <option value="Hadir">Hadir</option>
-                    <option value="Izin">Izin</option>
-                    <option value="Sakit">Sakit</option>
-                    <option value="Alfa">Alfa</option>
-                </select>
+                <button onclick="eksporKeCSV()" class="bg-brand-emerald text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm w-full sm:w-auto"><i class="fas fa-file-excel mr-1"></i> Ekspor CSV (Excel)</button>
             </div>
 
             <div class="card-custom overflow-hidden">
@@ -282,26 +280,28 @@
             </div>
         </section>
 
-        <section id="menu-analytics" class="menu-section hide">
-            <h2 class="text-2xl font-black mb-6">Statistik & Analytics Kehadiran</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card-custom p-6">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">Rasio Kehadiran (All-Time)</h3>
-                    <div class="max-w-[280px] mx-auto">
-                        <canvas id="chartPieDoughnut"></canvas>
-                    </div>
+        <section id="menu-profil" class="menu-section hide">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card-custom p-6 text-center flex flex-col items-center justify-center">
+                    <div class="w-24 h-24 bg-blue-50 text-brand-blue border border-blue-200 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-user-shield"></i></div>
+                    <h3 class="text-xl font-black text-slate-700" id="profileAdminName">Administrator Utama</h3>
+                    <p class="text-xs font-bold text-emerald-500 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full mt-2 uppercase tracking-wide">Level: Admin Utama</p>
                 </div>
-                <div class="card-custom p-6 flex flex-col justify-center">
-                    <h3 class="text-sm font-bold text-slate-700 mb-2">Informasi Metrik Efisiensi</h3>
-                    <p class="text-xs text-brand-textMuted mb-4">Perhitungan performa kehadiran akumulatif seluruh peserta aktif.</p>
-                    <div class="space-y-3">
-                        <div class="p-4 bg-slate-50 rounded-xl">
-                            <span class="text-xs text-slate-400 block font-medium">Persentase Kehadiran Baik</span>
-                            <span class="text-xl font-black text-emerald-600" id="metricRate">0%</span>
+                <div class="card-custom p-6 md:col-span-2">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center md:text-left">Statistik Akumulasi Kehadiran</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="max-w-[200px] mx-auto md:mx-0">
+                            <canvas id="chartPieProfile"></canvas>
                         </div>
-                        <div class="p-4 bg-slate-50 rounded-xl">
-                            <span class="text-xs text-slate-400 block font-medium">Total Baris Log Terproses</span>
-                            <span class="text-xl font-black text-brand-blue" id="metricTotalLog">0 Baris</span>
+                        <div class="flex flex-col justify-center space-y-3">
+                            <div class="p-4 bg-slate-50 rounded-xl">
+                                <span class="text-xs text-slate-400 block font-semibold">Tingkat Kehadiran Bersih</span>
+                                <span class="text-2xl font-black text-emerald-600" id="profileRate">0%</span>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl">
+                                <span class="text-xs text-slate-400 block font-semibold">Total Log Terdata</span>
+                                <span class="text-2xl font-black text-brand-blue" id="profileTotalLog">0 Baris</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -309,19 +309,19 @@
         </section>
 
         <section id="menu-settings" class="menu-section hide">
-            <h2 class="text-2xl font-black mb-6">Pengaturan WhatsApp Gateway</h2>
-            <div class="card-custom p-6 max-w-xl">
+            <div class="card-custom p-6 max-w-xl mx-auto">
+                <h3 class="text-md font-bold mb-4 text-slate-700 border-b pb-2"><i class="fab fa-whatsapp mr-2 text-emerald-500"></i>Konfigurasi Fonnte API Gateway</h3>
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fonnte API Token</label>
-                        <input type="text" id="waToken" placeholder="Paste Token API Fonnte disini" class="w-full p-3.5 bg-slate-50 border rounded-xl text-sm font-mono">
+                        <input type="text" id="waToken" placeholder="Masukkan token Fonnte" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-blue">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Template Notifikasi Kehadiran</label>
-                        <textarea id="waTemplate" rows="4" class="w-full p-3.5 bg-slate-50 border rounded-xl text-sm"></textarea>
-                        <p class="text-[10px] text-slate-400 mt-1">Gunakan tag: <code class="bg-slate-100 px-1 rounded text-rose-500">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[STATUS]</code></p>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Template Pesan WhatsApp</label>
+                        <textarea id="waTemplate" rows="4" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+                        <p class="text-[10px] text-slate-400 mt-1">Gunakan tag dinamis: <code class="bg-slate-100 px-1 rounded text-rose-500">[NAMA]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[TANGGAL]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[WAKTU]</code>, <code class="bg-slate-100 px-1 rounded text-rose-500">[STATUS]</code></p>
                     </div>
-                    <button onclick="saveSettings()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-3.5 rounded-xl text-sm w-full shadow-sm">Simpan Parameter</button>
+                    <button onclick="saveSettings()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-xl text-sm w-full shadow-sm transition">Simpan Parameter</button>
                 </div>
             </div>
         </section>
@@ -329,15 +329,15 @@
 
     <div id="modalPeserta" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 hide">
         <div class="bg-white p-6 rounded-3xl shadow-xl w-11/12 max-w-md">
-            <h3 class="text-xl font-black mb-4">Tambah Anggota Baru</h3>
+            <h3 class="text-xl font-black mb-4">Registrasi Peserta Baru</h3>
             <form id="formPeserta" onsubmit="savePeserta(event)" class="space-y-3">
-                <input type="text" id="inputId" placeholder="ID Unik (Contoh: P023)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-bold" required>
-                <input type="text" id="inputNama" placeholder="Nama Lengkap" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
-                <input type="text" id="inputKategori" placeholder="Kategori / Divisi / Kelas" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
-                <input type="text" id="inputWa" placeholder="No WhatsApp (Cth: 62812345678)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
+                <input type="text" id="inputId" placeholder="ID Unik / NISN / NIP" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
+                <input type="text" id="inputNama" placeholder="Nama Lengkap" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
+                <input type="text" id="inputKategori" placeholder="Kategori / Kelas / Jabatan" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
+                <input type="text" id="inputWa" placeholder="No WhatsApp (Contoh: 6281234567)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" required>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeModalPeserta()" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-sm">Batal</button>
-                    <button type="submit" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm">Simpan</button>
+                    <button type="submit" class="flex-1 bg-brand-blue text-white py-3 rounded-xl font-bold text-sm">Simpan ke Sheets</button>
                 </div>
             </form>
         </div>
@@ -359,7 +359,6 @@
             document.getElementById('initialLoader').classList.add('hide');
             document.getElementById('loginScreen').classList.remove('hide');
             
-            // Set default tanggal hari ini pada input manual
             document.getElementById('manualTanggal').value = new Date().toISOString().split('T')[0];
             document.getElementById('manualWaktu').value = new Date().toTimeString().slice(0,5);
         }
@@ -374,13 +373,13 @@
                 return await response.json();
             } catch(e) {
                 console.error(e);
-                return {success: false, error: 'Hubungan dengan Cloud Spreadsheet terputus.'};
+                return {success: false, error: 'Hubungan dengan Google Sheets terputus.'};
             }
         }
 
         async function handleLogin(e) {
             e.preventDefault();
-            Swal.fire({title: 'Otentikasi Kredensial...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            Swal.fire({title: 'Memvalidasi Akun...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
             
             let u = document.getElementById('username').value;
             let p = document.getElementById('password').value;
@@ -392,12 +391,16 @@
                 document.getElementById('loginScreen').classList.add('hide');
                 document.getElementById('mainNav').classList.remove('hide');
                 document.getElementById('mainContent').classList.remove('hide');
-                if(res.nama) document.getElementById('adminName').innerText = res.nama;
+                
+                if(res.nama) {
+                    document.getElementById('adminName').innerText = res.nama;
+                    document.getElementById('profileAdminName').innerText = res.nama;
+                }
                 
                 await refreshSemuaData();
                 switchMenu('dashboard');
             } else {
-                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password salah!', 'error');
+                Swal.fire('Gagal Masuk', 'Kombinasi Username & Password pada Google Sheets salah!', 'error');
             }
         }
 
@@ -422,9 +425,9 @@
 
         function populateSelectPesertaManual() {
             let select = document.getElementById('manualSelectPeserta');
-            select.innerHTML = '<option value="">-- Pilih Anggota/Peserta --</option>';
+            select.innerHTML = '<option value="">-- Cari / Pilih Anggota --</option>';
             globalPeserta.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.id} - ${p.nama} (${p.kategori})</option>`;
+                select.innerHTML += `<option value="${p.id}">${p.id} - ${p.nama} [${p.kategori}]</option>`;
             });
         }
 
@@ -433,18 +436,25 @@
             document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hide'));
             document.getElementById('menu-' + target).classList.remove('hide');
             
+            // Perbarui Judul Halaman Sesuai Menu Klik
+            let titleMap = {
+                'dashboard': 'Dashboard', 'scan': 'Scan QR', 'input-manual': 'Input Manual',
+                'peserta': 'Data Peserta', 'rekap': 'Rekap Absensi', 'profil': 'Profil Admin', 'settings': 'WA Gateway'
+            };
+            document.getElementById('pageTitle').innerText = titleMap[target] || 'Sistem';
+
             document.querySelectorAll('.menu-btn').forEach(b => {
                 if(b.getAttribute('data-target') === target) {
-                    b.classList.add('text-brand-blue', 'bg-blue-50/70', 'border-r-4', 'border-brand-blue');
+                    b.classList.add('text-brand-blue', 'bg-blue-50', 'border-r-4', 'border-brand-blue');
                 } else {
-                    b.classList.remove('text-brand-blue', 'bg-blue-50/70', 'border-r-4', 'border-brand-blue');
+                    b.classList.remove('text-brand-blue', 'bg-blue-50', 'border-r-4', 'border-brand-blue');
                 }
             });
 
             if(target === 'dashboard') loadDashboardData();
             if(target === 'peserta') renderTablePeserta(globalPeserta);
             if(target === 'rekap') renderTableRekap(globalAbsensi);
-            if(target === 'analytics') buildAnalyticsChart();
+            if(target === 'profil') buildProfileAnalytics();
         }
 
         function loadDashboardData() {
@@ -459,24 +469,20 @@
             let tbody = document.getElementById('tableDashboardTerbaru');
             tbody.innerHTML = '';
             
-            let reversedAktivitas = [...hariIni].reverse().slice(0, 7);
+            let reversedAktivitas = [...hariIni].reverse().slice(0, 5);
             if(reversedAktivitas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">Belum ada aktivitas presensi masuk hari ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">BelUp ada log aktivitas masuk hari ini.</td></tr>`;
                 return;
             }
 
             reversedAktivitas.forEach(a => {
-                let badgeStyle = "text-emerald-600 bg-emerald-50";
-                if(a.status === "Izin") badgeStyle = "text-amber-600 bg-amber-50";
-                if(a.status === "Sakit") badgeStyle = "text-purple-600 bg-purple-50";
-                if(a.status === "Alfa") badgeStyle = "text-rose-600 bg-rose-50";
-
+                let style = a.status === "Hadir" ? "text-emerald-600 bg-emerald-50" : a.status === "Izin" ? "text-amber-600 bg-amber-50" : a.status === "Sakit" ? "text-purple-600 bg-purple-50" : "text-rose-600 bg-rose-50";
                 tbody.innerHTML += `
                     <tr>
                         <td class="py-3 text-slate-400 font-medium font-mono">${a.waktu}</td>
                         <td class="font-bold text-slate-700">${a.nama}</td>
                         <td class="text-slate-500">${a.kategori}</td>
-                        <td class="text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${badgeStyle}">${a.status}</span></td>
+                        <td class="text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${style}">${a.status}</span></td>
                     </tr>`;
             });
         }
@@ -485,7 +491,7 @@
             let tbody = document.getElementById('tableDataPeserta');
             tbody.innerHTML = '';
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data peserta ditemukan.</td></tr>`;
                 return;
             }
             data.forEach(p => {
@@ -514,16 +520,12 @@
             
             let sorted = [...data].reverse();
             if(sorted.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Arsip data kosong.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Arsip data absensi kosong.</td></tr>`;
                 return;
             }
 
             sorted.forEach(a => {
-                let badgeStyle = "text-emerald-600 bg-emerald-50";
-                if(a.status === "Izin") badgeStyle = "text-amber-600 bg-amber-50";
-                if(a.status === "Sakit") badgeStyle = "text-purple-600 bg-purple-50";
-                if(a.status === "Alfa") badgeStyle = "text-rose-600 bg-rose-50";
-
+                let style = a.status === "Hadir" ? "text-emerald-600 bg-emerald-50" : a.status === "Izin" ? "text-amber-600 bg-amber-50" : a.status === "Sakit" ? "text-purple-600 bg-purple-50" : "text-rose-600 bg-rose-50";
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-4 font-bold text-slate-400 font-mono">${a.id}</td>
@@ -531,7 +533,7 @@
                         <td class="p-4 text-slate-500">${a.kategori}</td>
                         <td class="p-4 font-mono">${a.tanggal}</td>
                         <td class="p-4 font-mono">${a.waktu}</td>
-                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${badgeStyle}">${a.status}</span></td>
+                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${style}">${a.status}</span></td>
                     </tr>`;
             });
         }
@@ -557,10 +559,9 @@
             let waktu = document.getElementById('manualWaktu').value;
             let status = document.querySelector('input[name="manualStatus"]:checked').value;
 
-            if(!id) return Swal.fire('Gagal', 'Pilih peserta terlebih dahulu', 'error');
+            if(!id) return Swal.fire('Gagal', 'Pilih salah satu peserta.', 'error');
 
             Swal.fire({title: 'Memproses entri manual...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            
             let p = globalPeserta.find(item => item.id === id);
 
             let res = await fetchAPI('addAbsensi', {id: p.id, nama: p.nama, kategori: p.kategori, tanggal, waktu, status});
@@ -568,10 +569,10 @@
 
             if(res.success) {
                 await refreshSemuaData();
-                Swal.fire('Sukses', `Data absensi ${p.nama} berhasil dimasukkan manual!`, 'success');
+                Swal.fire('Sukses', `Data absensi ${p.nama} berhasil dimasukkan!`, 'success');
                 kirimWhatsApp(p, {nama: p.nama, tanggal, waktu, status});
             } else {
-                Swal.fire('Error', 'Gagal menulis ke cloud server', 'error');
+                Swal.fire('Error', 'Gagal menulis ke server cloud.', 'error');
             }
         }
 
@@ -585,7 +586,7 @@
                 (text) => { prosesAbsensi(text); },
                 () => {}
             ).catch(() => {
-                Swal.fire('Gagal Akses', 'Periksa izin akses kamera perangkat.', 'error');
+                Swal.fire('Gagal Akses', 'Periksa izin kamera perangkat Anda.', 'error');
                 stopScanner();
             });
         }
@@ -610,7 +611,7 @@
             }
 
             if(globalAbsensi.some(a => a.id === p.id && a.tanggal && a.tanggal.includes(tgl))) {
-                box.innerHTML = `<div class="text-amber-500 text-5xl mb-2"><i class="fas fa-exclamation-triangle"></i></div><h3 class="text-md font-bold">${p.nama}</h3><p class="text-xs text-slate-400">Sudah melakukan absensi hari ini</p>`;
+                box.innerHTML = `<div class="text-amber-500 text-5xl mb-2"><i class="fas fa-exclamation-triangle"></i></div><h3 class="text-md font-bold">${p.nama}</h3><p class="text-xs text-slate-400">Sudah absen hari ini</p>`;
                 return;
             }
 
@@ -646,9 +647,9 @@
             }).then(r => r.text()).then(res => console.log('WA Sent:', res)).catch(e => console.error(e));
         }
 
-        function buildAnalyticsChart() {
+        function buildProfileAnalytics() {
             let total = globalAbsensi.length;
-            document.getElementById('metricTotalLog').innerText = total + " Baris";
+            document.getElementById('profileTotalLog').innerText = total + " Baris";
             
             let h = globalAbsensi.filter(a => a.status === 'Hadir').length;
             let i = globalAbsensi.filter(a => a.status === 'Izin').length;
@@ -656,11 +657,11 @@
             let a = globalAbsensi.filter(a => a.status === 'Alfa').length;
 
             let rate = total > 0 ? Math.round((h / total) * 100) : 0;
-            document.getElementById('metricRate').innerText = rate + "%";
+            document.getElementById('profileRate').innerText = rate + "%";
 
             if(chartInstance) chartInstance.destroy();
 
-            const ctx = document.getElementById('chartPieDoughnut').getContext('2d');
+            const ctx = document.getElementById('chartPieProfile').getContext('2d');
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -668,24 +669,22 @@
                     datasets: [{
                         data: [h, i, s, a],
                         backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6', '#EF4444'],
-                        borderWidth: 2
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Plus Jakarta Sans' } } } }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
         function eksporKeCSV() {
-            if(globalAbsensi.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor', 'info');
-            
+            if(globalAbsensi.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'info');
             let csvContent = "data:text/csv;charset=utf-8,ID,Nama,Kategori,Tanggal,Waktu,Status\n";
             globalAbsensi.forEach(r => {
                 csvContent += `"${r.id}","${r.nama}","${r.kategori}","${r.tanggal}","${r.waktu}","${r.status}"\n`;
             });
-            
             let encodedUri = encodeURI(csvContent);
             let link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -763,7 +762,7 @@
 
         function downloadSemuaQR() {
             if(globalPeserta.length === 0) return Swal.fire('Info', 'Tidak ada data peserta.', 'info');
-            Swal.fire({title: 'Mengompilasi Arsip ZIP QR...', didOpen: () => Swal.showLoading()});
+            Swal.fire({title: 'Mengompilasi ZIP QR...', didOpen: () => Swal.showLoading()});
             let zip = new JSZip(); let terproses = 0;
             globalPeserta.forEach(p => {
                 let url = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${p.id}`;
