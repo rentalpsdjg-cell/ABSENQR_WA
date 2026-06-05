@@ -255,8 +255,8 @@
     </div>
 
     <script>
-        // MASUKKAN URL WEB APP ANDA YANG SEBENARNYA DI SINI
-        const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoWC-cXytwG_MmT6BSnbpQTc_2sIR5DqCOXg-X-_RcanAp6h8LdbDSpe5pNjctvn0u/exec"; 
+        // URL WEB APP ANDA YANG SUDAH TERHUBUNG KE ENGINE GOOGLE SHEET
+        const DEPLOY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7NgDYWQ-dxiX91hwhwKR43hUjygfwYSQU710Azf9zkFFJJJX-kmkHtYgy6qZ_rvLs/exec"; 
 
         let sysConfig = {
             waUrl: "https://api.fonnte.com/send",
@@ -468,147 +468,268 @@
 
         function saveNewPeserta(e) {
             e.preventDefault();
-            Swal.fire({ title: 'Menyimpan Ke Google Cloud...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
-            
-            let dataPeserta = {
-                id: document.getElementById('addId').value,
-                nama: document.getElementById('addNama').value,
-                kategori: document.getElementById('addKategori').value,
-                wa: document.getElementById('addWa').value
+            Swal.fire({ 
+                title: 'Menyimpan Ke Google Cloud...', 
+                didOpen: () => Swal.showLoading(), 
+                allowOutsideClick: false 
+            });
+
+            let newSiswa = {
+                id: document.getElementById('addId').value.trim(),
+                nama: document.getElementById('addNama').value.trim(),
+                kategori: document.getElementById('addKategori').value.trim(),
+                wa: document.getElementById('addWa').value.trim()
             };
 
-            fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "addPeserta", ...dataPeserta }) })
-            .then(res => res.json()).then(res => {
-                Swal.close();
+            if (dbPeserta.some(p => String(p.id).toLowerCase() === String(newSiswa.id).toLowerCase())) {
+                Swal.fire('Gagal!', 'ID / NISN tersebut sudah terdaftar di sistem.', 'error');
+                return;
+            }
+
+            fetch(DEPLOY_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "addPeserta", ...newSiswa })
+            })
+            .then(res => res.json())
+            .then(res => {
                 if(res.success) {
+                    Swal.fire('Berhasil!', 'Data siswa baru telah disinkronkan.', 'success');
                     closePesertaModal();
                     fetchDatabase();
-                    Swal.fire('Berhasil', 'Siswa baru berhasil disinkronkan ke database server.', 'success');
+                } else {
+                    Swal.fire('Gagal!', res.message || 'Gagal menyimpan data.', 'error');
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Koneksi Error', 'Gagal menghubungi server cloud.', 'error');
             });
         }
 
         function deletePeserta(id) {
             Swal.fire({
-                title: 'Hapus Peserta?',
-                text: "Data akan dihapus permanen dari Cloud Server Database.",
+                title: 'Apakah Anda yakin?',
+                text: `Data siswa dengan ID ${id} akan dihapus dari cloud!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#E11D48',
-                confirmButtonText: 'Ya, Hapus!'
+                cancelButtonColor: '#64748B',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'Menghapus dari Server...', didOpen: () => Swal.showLoading() });
-                    fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "deletePeserta", id: id }) })
-                    .then(() => { fetchDatabase(); Swal.close(); Swal.fire('Terhapus', 'Data telah bersih dari cloud.', 'success'); });
+                    Swal.fire({ title: 'Menghapus Data...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+                    
+                    fetch(DEPLOY_WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "deletePeserta", id: id })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if(res.success) {
+                            Swal.fire('Terhapus!', 'Data siswa berhasil dihapus.', 'success');
+                            fetchDatabase();
+                        } else {
+                            Swal.fire('Gagal!', 'Gagal menghapus data dari cloud.', 'error');
+                        }
+                    }).catch(() => Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error'));
                 }
             });
         }
 
         function renderTableRekap(data) {
-            let tbody = document.getElementById('rekapTableBody'); tbody.innerHTML = '';
-            data.forEach(a => {
-                tbody.innerHTML += `<tr><td class="p-3 font-mono">${a.id}</td><td class="p-3 font-bold">${a.nama}</td><td class="p-3">${a.kategori}</td><td class="p-3">${a.tanggal}</td><td class="p-3 font-mono">${a.waktu}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold text-[10px]">${a.status}</span></td></tr>`;
+            let tbody = document.getElementById('rekapTableBody');
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data rekap absensi ditemukan.</td></tr>`;
+                return;
+            }
+
+            data.forEach(r => {
+                let badgeColor = "bg-emerald-50 text-brand-emerald";
+                if(r.status === 'Izin') badgeColor = "bg-amber-50 text-amber-600";
+                if(r.status === 'Sakit') badgeColor = "bg-purple-50 text-purple-600";
+                if(r.status === 'Alfa') badgeColor = "bg-rose-50 text-brand-rose";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-mono text-xs text-slate-500">${r.id}</td>
+                        <td class="p-3 font-bold text-slate-800">${r.nama}</td>
+                        <td class="p-3 text-slate-500 text-xs">${r.kategori}</td>
+                        <td class="p-3 text-slate-600 font-medium text-xs">${r.tanggal}</td>
+                        <td class="p-3 font-mono text-slate-500 text-xs">${r.waktu}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${r.status}</span></td>
+                    </tr>`;
             });
         }
 
         function filterTableRekap() {
-            let tgl = document.getElementById('rekapFilterTgl').value;
-            let status = document.getElementById('rekapFilterStatus').value;
-            let filtered = dbAbsensi.filter(a => (!tgl || a.tanggal === tgl) && (!status || a.status === status));
+            let filterTgl = document.getElementById('rekapFilterTgl').value;
+            let filterStatus = document.getElementById('rekapFilterStatus').value;
+            
+            let filtered = dbAbsensi.filter(a => {
+                let matchTgl = filterTgl ? a.tanggal === filterTgl : true;
+                let matchStatus = filterStatus ? a.status === filterStatus : true;
+                return matchTgl && matchStatus;
+            });
+            
             renderTableRekap(filtered);
         }
 
+        function exportRekapCSV() {
+            if(dbAbsensi.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor', 'warning');
+            
+            let csvContent = "\uFEFF"; 
+            csvContent += "ID Anggota,Nama Peserta,Kategori/Kelas,Tanggal,Waktu,Status\n";
+            
+            dbAbsensi.forEach(r => {
+                csvContent += `"${r.id}","${r.nama}","${r.kategori}","${r.tanggal}","${r.waktu}","${r.status}"\n`;
+            });
+            
+            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            saveAs(blob, `Rekap_Absensi_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportRekapPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            
+            doc.text(`LAPORAN REKAP PRESENSI - ${sysConfig.instansiNama}`, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Sistem: ${sysConfig.appNama} | Diunduh pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+            
+            let rows = [];
+            dbAbsensi.forEach(r => rows.push([r.id, r.nama, r.kategori, r.tanggal, r.waktu, r.status]));
+            
+            doc.autoTable({
+                startY: 28,
+                head: [['ID', 'Nama Peserta', 'Kategori', 'Tanggal', 'Waktu', 'Status']],
+                body: rows,
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] }
+            });
+            
+            doc.save(`Rekap_Absensi_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
         function renderConfigTable() {
-            let tbody = document.getElementById('sysConfigTableBody'); tbody.innerHTML = '';
+            let tbody = document.getElementById('sysConfigTableBody');
+            tbody.innerHTML = '';
+            
             Object.keys(sysConfig).forEach(key => {
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="p-3 border-r font-mono bg-slate-50 text-slate-500 font-bold">${key}</td>
-                        <td class="p-2"><input type="text" data-key="${key}" value="${sysConfig[key]}" class="w-full bg-slate-50/50 px-2 py-1.5 border border-slate-200 rounded-xl font-semibold focus:bg-white outline-none"></td>
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="p-3 font-mono text-slate-500 font-bold bg-slate-50/40">${key}</td>
+                        <td class="p-2">
+                            <input type="text" data-key="${key}" value="${sysConfig[key]}" class="config-input w-full p-2 bg-white border border-slate-200 rounded-xl font-medium focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition">
+                        </td>
                     </tr>`;
             });
         }
 
         function commitConfigChanges() {
-            Swal.fire({ title: 'Mengunggah Pengaturan Baru...', didOpen: () => Swal.showLoading() });
-            document.querySelectorAll('#sysConfigTableBody input').forEach(input => {
-                sysConfig[input.getAttribute('data-key')] = input.value;
+            let updatedConfig = {};
+            document.querySelectorAll('.config-input').forEach(input => {
+                let k = input.getAttribute('data-key');
+                updatedConfig[k] = input.value;
             });
-            
-            fetch(DEPLOY_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "savePengaturan", config: sysConfig }) })
-            .then(() => { applySystemMetadata(); Swal.close(); Swal.fire('Sukses', 'Konfigurasi global diperbarui di cloud.', 'success'); });
+
+            Swal.fire({ title: 'Menyimpan Konfigurasi...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+            fetch(DEPLOY_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "updateConfig", config: updatedConfig })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    sysConfig = updatedConfig;
+                    applySystemMetadata();
+                    Swal.fire('Berhasil!', 'Pengaturan Engine berhasil diperbarui.', 'success');
+                } else {
+                    Swal.fire('Gagal!', 'Gagal memperbarui pengaturan cloud.', 'error');
+                }
+            }).catch(() => Swal.fire('Error', 'Terjadi gangguan jaringan.', 'error'));
         }
 
-        // AMAN 100%: DETEKSI ELEMENT & SINKRONISASI ASYNC UNTUK CETAK ID CARD
+        function prepareIdCardDOM(siswa) {
+            document.getElementById('pdfMetaApp').innerText = sysConfig.appNama;
+            document.getElementById('pdfMetaInstansi').innerText = sysConfig.instansiNama;
+            document.getElementById('pdfMetaName').innerText = siswa.nama;
+            document.getElementById('pdfMetaId').innerText = siswa.id;
+            document.getElementById('pdfMetaKategori').innerText = siswa.kategori;
+            
+            let qrArea = document.getElementById('renderQrArea');
+            qrArea.innerHTML = '';
+            new QRCode(qrArea, { text: String(siswa.id), width: 140, height: 140, correctLevel: QRCode.CorrectLevel.H });
+        }
+
         function printSingleIDCard(id) {
-            let p = dbPeserta.find(item => String(item.id).trim() === String(id).trim());
-            if(!p) return;
-            
-            Swal.fire({ 
-                title: 'Rendering ID Card...', 
-                html: 'Menyiapkan berkas grafis dan QR Code siswa.',
-                didOpen: () => Swal.showLoading(), 
-                allowOutsideClick: false 
-            });
-            
-            document.getElementById('pdfMetaName').innerText = p.nama.toUpperCase();
-            document.getElementById('pdfMetaId').innerText = "ID: " + p.id;
-            document.getElementById('pdfMetaKategori').innerText = p.kategori.toUpperCase();
-            
-            let qrArea = document.getElementById('renderQrArea'); 
-            if (qrArea) {
-                qrArea.innerHTML = '';
-                
-                new QRCode(qrArea, { 
-                    text: String(p.id).trim(), 
-                    width: 140, 
-                    height: 140,
-                    correctLevel: QRCode.CorrectLevel.H
+            let siswa = dbPeserta.find(p => String(p.id) === String(id));
+            if(!siswa) return;
+
+            Swal.fire({ title: 'Generating ID Card...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            prepareIdCardDOM(siswa);
+
+            setTimeout(() => {
+                let element = document.getElementById('idCardPrintBox');
+                let opt = {
+                    margin: 0,
+                    filename: `ID_Card_${siswa.id}_${siswa.nama.replace(/\s+/g, '_')}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 3, useCORS: true },
+                    jsPDF: { unit: 'mm', format: [100, 150], orientation: 'portrait' }
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    Swal.close();
                 });
-                
-                setTimeout(() => {
-                    let element = document.getElementById('idCardPrintBox');
-                    let opt = {
-                        margin:       [10, 10],
-                        filename:     `KARTU_PRESENSI_${p.id}.pdf`,
-                        image:        { type: 'jpeg', quality: 1.0 },
-                        html2canvas:  { scale: 2, useCORS: true, logging: false },
-                        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
-                    };
-                    
-                    html2pdf().set(opt).from(element).save().then(() => { Swal.close(); });
-                }, 700);
-            }
+            }, 800);
         }
 
-        async function downloadAllQrZip() {
-            if(dbPeserta.length === 0) { Swal.fire('Kosong', 'Tidak ada data peserta.', 'info'); return; }
-            Swal.fire({ title: 'Mengekspor Seluruh QR...', html: 'Mengompilasi file ZIP...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+        function downloadAllQrZip() {
+            if(dbPeserta.length === 0) return Swal.fire('Kosong', 'Tidak ada data peserta.', 'warning');
             
-            let zip = new JSZip(); let div = document.createElement('div');
-            for(let p of dbPeserta) {
-                div.innerHTML = ''; 
-                new QRCode(div, { text: String(p.id).trim(), width: 250, height: 250 });
-                await new Promise(r => setTimeout(r, 100));
-                let img = div.querySelector('img');
-                if(img) zip.file(`QR_${p.id}.png`, img.src.split(',')[1], { base64: true });
+            Swal.fire({
+                title: 'Mempersiapkan ZIP...',
+                html: 'Sedang merender seluruh barcode QR Siswa: <br><b id="zipProgress">0</b> / ' + dbPeserta.length,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            let zip = new JSZip();
+            let invisibleDiv = document.createElement('div');
+            document.body.appendChild(invisibleDiv);
+
+            let index = 0;
+            function processNext() {
+                if(index >= dbPeserta.length) {
+                    zip.generateAsync({ type: "blob" }).then(function(content) {
+                        saveAs(content, `Semua_QR_Presensi_${sysConfig.instansiNama.replace(/\s+/g, '_')}.zip`);
+                        document.body.removeChild(invisibleDiv);
+                        Swal.fire('Berhasil!', 'Arsip ZIP semua barcode berhasil diunduh.', 'success');
+                    });
+                    return;
+                }
+
+                let p = dbPeserta[index];
+                invisibleDiv.innerHTML = '';
+                new QRCode(invisibleDiv, { text: String(p.id), width: 250, height: 250 });
+
+                setTimeout(() => {
+                    let img = invisibleDiv.querySelector('img');
+                    if(img && img.src) {
+                        let base64Data = img.src.split(',')[1];
+                        zip.file(`QR_${p.id}_${p.nama.replace(/\s+/g, '_')}.png`, base64Data, { base64: true });
+                    }
+                    index++;
+                    document.getElementById('zipProgress').innerText = index;
+                    processNext();
+                }, 80);
             }
-            zip.generateAsync({ type: "blob" }).then(content => { saveAs(content, `DATABASE_QR_CODE.zip`); Swal.close(); });
-        }
 
-        function exportRekapCSV() {
-            let csv = "\uFEFFID,Nama,Kategori,Tanggal,Waktu,Status\n";
-            dbAbsensi.forEach(a => { csv += `"${a.id}","${a.nama}","${a.kategori}","${a.tanggal}","${a.waktu}","${a.status}"\n`; });
-            saveAs(new Blob([csv], { type: 'text/csv;' }), `LAPORAN_REKAP_PRESENSI.csv`);
-        }
-
-        function exportRekapPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.text(sysConfig.instansiNama, 14, 15); doc.text("LAPORAN REKAPITULASI PRESENSI SISWA", 14, 23);
-            let rows = dbAbsensi.map(a => [a.id, a.nama, a.kategori, a.tanggal, a.waktu, a.status]);
-            doc.autoTable({ startY: 30, head: [['ID', 'Nama Peserta', 'Kategori', 'Tanggal', 'Waktu', 'Status']], body: rows });
-            doc.save("LAPORAN_PRESENSI.pdf");
+            processNext();
         }
     </script>
 </body>
