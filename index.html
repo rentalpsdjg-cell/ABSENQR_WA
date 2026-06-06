@@ -159,6 +159,12 @@
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
 
+    // Jam Real-time Header
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+    }, 1000);
+
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('nav-active'));
@@ -534,28 +540,24 @@
 
     function closeModal() {
         document.getElementById('inputModal').classList.add('hidden');
+        document.getElementById('dynamicForm').innerHTML = '';
     }
 
     function handleFormSubmit(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
         
-        let payload = {};
+        let payload = { action: currentModalType === 'siswa' ? 'addSiswa' : 'addGuru' };
+        
         if(currentModalType === 'siswa') {
-            payload = {
-                action: 'addSiswa',
-                nisn: document.getElementById('form1').value,
-                nama: document.getElementById('form2').value,
-                kelas: document.getElementById('form3').value,
-                wa: document.getElementById('form4').value
-            };
+            payload.nisn = document.getElementById('form1').value;
+            payload.nama = document.getElementById('form2').value;
+            payload.kelas = document.getElementById('form3').value;
+            payload.wa = document.getElementById('form4').value;
         } else {
-            payload = {
-                action: 'addGuru',
-                nip: document.getElementById('form1').value,
-                nama: document.getElementById('form2').value,
-                mapel: document.getElementById('form3').value
-            };
+            payload.nip = document.getElementById('form1').value;
+            payload.nama = document.getElementById('form2').value;
+            payload.mapel = document.getElementById('form3').value;
         }
 
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
@@ -568,16 +570,12 @@
             } else {
                 Swal.fire('Gagal', res.message, 'error');
             }
+        }).catch(() => {
+            Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
         });
     }
 
-    // Jam Realtime di Header
-    setInterval(() => {
-        const now = new Date();
-        document.getElementById('clockDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }) + " - " + now.toLocaleTimeString('id-ID');
-    }, 1000);
-
-    // Load Pertama Kali
+    // Inisialisasi awal saat aplikasi dimuat pertama kali
     window.onload = () => {
         loadStats();
     };
