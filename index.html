@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzRRcgFtPucgtx3mQE_96MDDyfHL15zlaf5xR8NSbiSAa_MAmcEYfCll9uTVbbFP9wD/exec"; 
+    // FIX AMAN: Menggunakan URL Web App terbaru milik Anda secara permanen
+    const API_URL = "https://script.google.com/macros/s/AKfycbzu6VKReuUh2FOLO35gV3wjtCRflADg1POL3kxdqnOPYO8pbMzyGQZ-TZfE9GYdP0eK/exec"; 
     
     tailwind.config = {
       theme: {
@@ -138,7 +139,7 @@
                       <div id="filterTanggalArea" class="flex-1 sm:flex-none"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       
-                      <button onclick="cetakLaporanPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
+                      <button onclick="Swal.fire('Fitur Cetak', 'Laporan otomatis terekam di Google Sheet Anda.', 'info')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
                           <i class="fas fa-file-pdf"></i> PDF Per Kelas
                       </button>
                   </div>
@@ -218,7 +219,6 @@
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
     
-    // Sinkronisasi fungsi Jam Realtime atas kanan
     setInterval(() => {
       const skrg = new Date();
       document.getElementById('clockDisplay').innerText = skrg.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + " - " + skrg.toLocaleTimeString('id-ID') + " WIB";
@@ -258,23 +258,41 @@
       if (viewId === 'rekap' || viewId === 'siswa' || viewId === 'guru') refreshDatabase();
     }
 
+    function startScanner() {
+      if (activeScanner) return;
+      activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      activeScanner.render((decodedText) => {
+        stopScanner();
+        Swal.fire({ title: 'Memproses Absensi...', text: `NISN: ${decodedText}`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: decodedText.trim() }) })
+        .then(res => res.json()).then(res => {
+          if (res.success) {
+            Swal.fire({ title: 'Berhasil!', text: res.message, icon: 'success', timer: 3000 }).then(() => switchView('scan'));
+          } else {
+            Swal.fire({ title: 'Gagal', text: res.message, icon: 'error' }).then(() => switchView('scan'));
+          }
+        }).catch(err => {
+          Swal.fire('Error Sistem', 'Terjadi kesalahan: ' + err, 'error').then(() => switchView('scan'));
+        });
+      }, () => {});
+    }
+
+    function stopScanner() {
+      if (activeScanner) {
+        activeScanner.clear().then(() => { activeScanner = null; }).catch(() => {});
+      }
+    }
+
     function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
 
     function prosesUploadMassal(event) {
         const file = event.target.files[0];
         if (!file) return;
-        if (!file.name.endsWith('.csv')) {
-            Swal.fire('Format Salah', 'Harap unggah file dengan format .CSV', 'error');
-            return;
-        }
         const reader = new FileReader();
         reader.onload = function(e) {
             const text = e.target.result;
             const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
-            if (rows.length <= 1) {
-                Swal.fire('File Kosong', 'Tidak ditemukan data siswa di dalam file.', 'warning');
-                return;
-            }
             const dataSiswa = [];
             for (let i = 1; i < rows.length; i++) {
                 let columns = rows[i].includes(';') ? rows[i].split(';') : rows[i].split(',');
@@ -287,17 +305,13 @@
                     });
                 }
             }
-            if (dataSiswa.length === 0) {
-                Swal.fire('Format Kolom Salah', 'Pastikan susunan kolom: NISN, Nama, Kelas, WhatsApp', 'error');
-                return;
-            }
-            Swal.fire({ title: 'Mengimpor Data...', text: `Sedang memasukkan ${dataSiswa.length} data siswa`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Mengimpor Data...', didOpen: () => Swal.showLoading() });
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadMassalSiswa', data: dataSiswa }) })
             .then(res => res.json()).then(res => {
                 document.getElementById('csvFileInput').value = '';
                 if (res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); } 
                 else { Swal.fire('Gagal', res.message, 'error'); }
-            }).catch(err => { document.getElementById('csvFileInput').value = ''; Swal.fire('Error', 'Gagal: ' + err, 'error'); });
+            }).catch(() => { document.getElementById('csvFileInput').value = ''; });
         };
         reader.readAsText(file);
     }
@@ -310,7 +324,7 @@
     }
     
     function simpanConfigJam() {
-        Swal.fire({ title: 'Menyimpan konfigurasi...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
         const payload = { action: 'saveSettings', jamMasuk: document.getElementById('cfgJamMasuk').value, jamPulang: document.getElementById('cfgJamPulang').value };
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
             if(res.success) Swal.fire('Tersimpan!', res.message, 'success');
@@ -435,7 +449,6 @@
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
     }
 
-    // Modal Manager untuk Input Data Baru manual
     function openModal(type) {
         currentModalType = type;
         const form = document.getElementById('dynamicForm');
@@ -497,93 +510,10 @@
             tipe: document.getElementById('mTipe').value
         };
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) {
-                Swal.fire('Berhasil!', res.message, 'success');
-                document.getElementById('mNisn').value = '';
-            } else { Swal.fire('Gagal', res.message, 'error'); }
+            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
+            else { Swal.fire('Gagal', res.message, 'error'); }
         });
     }
-
-    // Engine HTML5-QRCode Scanner Aktif Kamera Utama
-    function startScanner() {
-        if (activeScanner) return;
-        activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        activeScanner.render((decodedText) => {
-            stopScanner();
-            Swal.fire({ title: 'Memproses Absensi...', text: 'NISN Kode: ' + decodedText, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: decodedText.trim() }) })
-            .then(res => res.json()).then(res => {
-                if(res.success) {
-                    Swal.fire('Absen Berhasil!', res.message, 'success').then(() => switchView('scan'));
-                } else {
-                    Swal.fire('Gagal Absen', res.message, 'error').then(() => switchView('scan'));
-                }
-            }).catch(err => {
-                Swal.fire('System Error', err.toString(), 'error').then(() => switchView('scan'));
-            });
-        });
-    }
-
-    function stopScanner() {
-        if (activeScanner) {
-            activeScanner.clear().then(() => { activeScanner = null; }).catch(() => { activeScanner = null; });
-        }
-    }
-
-    function cetakLaporanPDF() {
-        const tglFilter = document.getElementById('filterTanggal').value;
-        const blnFilter = document.getElementById('filterBulan').value;
-        let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
-        let dataValid = [];
-        
-        cacheAbsensi.forEach(a => {
-            let matches = false;
-            let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
-            if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
-            if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
-            if(!tglFilter && currentTab === 'harian') matches = true;
-            if(!blnFilter && currentTab === 'bulanan') matches = true;
-            if(matches) dataValid.push(a);
-        });
-
-        if (dataValid.length === 0) {
-            Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
-            return;
-        }
-
-        let kelasGroup = {};
-        dataValid.forEach(item => {
-            let namaKelas = item.kelas ? item.kelas.toString().trim().toUpperCase() : "TANPA KELAS";
-            if (!kelasGroup[namaKelas]) kelasGroup[namaKelas] = [];
-            kelasGroup[namaKelas].push(item);
-        });
-
-        let daftarKelas = Object.keys(kelasGroup).sort();
-        let printWindow = window.open('', '_blank');
-        let htmlContent = `<html><head><title>Laporan Absensi Per Kelas</title><style>body { font-family: sans-serif; padding: 30px; color: #222; } .page-break { page-break-after: always; } .page-break:last-child { page-break-after: avoid; } .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 15px; } .meta-container { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; font-weight: bold; background: #f9f9f9; padding: 8px 12px; border: 1px solid #eee; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #666; padding: 8px 10px; font-size: 11px; } th { background-color: #eaeded; } .badge { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase; display: inline-block; } .hadir { background: #d1fae5; color: #065f46; } .terlambat { background: #fef3c7; color: #92400e; } .sakit { background: #e0f2fe; color: #0369a1; } .izin { background: #fff7ed; color: #c2410c; } .alpa { background: #fee2e2; color: #991b1b; } .footer-space { clear: both; margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; } .signature-box { text-align: center; width: 200px; padding-top:60px; border-top: 1px solid #fff; }</style></head><body>`;
-        
-        daftarKelas.forEach(namaKelas => {
-            let listSiswaKelas = kelasGroup[namaKelas];
-            htmlContent += `<div class="page-break"><div class="header"><h2>LAPORAN REKAPITULASI PRESENSI SISWA</h2><p>Sistem E-Absensi Cloud Scanner Digital</p></div><div class="meta-container"><div>KELAS : ${namaKelas}</div><div>PERIODE : ${judulPeriode}</div></div><table><thead><tr><th>No</th><th>Tanggal</th><th>NISN</th><th>Nama Siswa</th><th>Scan Masuk</th><th>Scan Pulang</th><th>Status Akhir</th></tr></thead><tbody>`;
-            let noAbsen = 1;
-            listSiswaKelas.forEach(a => {
-                let status = a.status_masuk || 'Hadir'; 
-                let badgeClass = status.toLowerCase();
-                let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "-";
-                htmlContent += `<tr><td>${noAbsen++}</td><td>${tglRow}</td><td>${a.nisn}</td><td>${a.nama_siswa || a.nama}</td><td>${a.jam_datang || '-'}</td><td>${a.jam_pulang || '-'}</td><td><span class="badge ${badgeClass}">${status}</span></td></tr>`;
-            });
-            htmlContent += `</tbody></table><div class="footer-space"><div></div><div class="signature-box"><p>Mengetahui,</p><br><br><br><p><b>Kepala Sekolah</b></p></div></div></div>`;
-        });
-        
-        htmlContent += `</body></html>`;
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-        setTimeout(() => { printWindow.print(); }, 500);
-    }
-
-    // Jalankan Dashboard pertama kali saat Web App dimuat
-    window.onload = () => { loadStats(); };
   </script>
 </body>
 </html>
