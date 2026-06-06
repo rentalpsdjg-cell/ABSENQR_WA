@@ -75,7 +75,7 @@
                   <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Siswa Terdaftar</p><h3 id="dashSiswa" class="text-3xl font-bold mt-2">0</h3></div>
                   <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Scan Datang</p><h3 id="dashHadir" class="text-3xl font-bold text-emerald-400 mt-2">0</h3></div>
                   <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Scan Pulang</p><h3 id="dashPulang" class="text-3xl font-bold text-cyan-400 mt-2">0</h3></div>
-                  <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Sakit / Izin</p><h3 id="dashSakitIzin" class="text-3xl font-bold text-amber-400 mt-2">0</h3></div>
+                  <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Ket. (Sakit/Izin/Alpa)</p><h3 id="dashSakitIzin" class="text-3xl font-bold text-amber-400 mt-2">0</h3></div>
               </div>
               <div class="bg-bCard p-6 rounded-xl border border-white/5 max-w-sm flex items-center justify-center mx-auto">
                   <div class="w-48"><canvas id="chartPresensi"></canvas></div>
@@ -115,7 +115,7 @@
                       <div id="filterBulanArea" class="hidden"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       
                       <button onclick="cetakLaporanPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md">
-                          <i class="fas fa-file-pdf"></i> Cetak PDF
+                          <i class="fas fa-file-pdf"></i> Cetak PDF Rekap
                       </button>
                   </div>
               </div>
@@ -136,7 +136,12 @@
               <h3 class="font-bold text-sm text-center">Input Keterangan Manual</h3>
               <form onsubmit="simpanManual(event)" class="space-y-3">
                   <input type="number" id="mNisn" placeholder="Nomor Induk / NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                  <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select>
+                  <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                      <option value="Sakit">Sakit</option>
+                      <option value="Izin">Izin</option>
+                      <option value="Alpa">Alpa</option>
+                      <option value="Hadir">Hadir (Manual)</option>
+                  </select>
                   <select id="mTipe" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Masuk">Absen Pagi (Masuk)</option><option value="Pulang">Absen Siang (Pulang)</option></select>
                   <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Simpan Absen</button>
               </form>
@@ -269,6 +274,10 @@
             if(!blnFilter && currentTab === 'bulanan') matches = true;
             
             if(matches) {
+                let stStyle = "text-amber-400";
+                if(a.status_masuk === 'Hadir') stStyle = "text-emerald-400";
+                if(a.status_masuk === 'Alpa') stStyle = "text-red-500";
+
                 html += `
                 <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
                     <div>
@@ -279,24 +288,27 @@
                         <div><p class="text-bMuted text-[10px]">Datang</p><p class="text-emerald-400 font-semibold">${a.jam_datang || '-'}</p></div>
                         <div><p class="text-bMuted text-[10px]">Pulang</p><p class="text-cyan-400 font-semibold">${a.jam_pulang || '-'}</p></div>
                     </div>
-                    <div class="text-[11px] bg-bDark/60 px-2 py-1 rounded text-right font-bold text-amber-400">${a.status_masuk}</div>
+                    <div class="text-[11px] bg-bDark/60 px-2 py-1 rounded text-right font-bold ${stStyle}">${a.status_masuk}</div>
                 </div>`;
             }
         });
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
     }
 
-    // --- FITUR ENGINE GENERATOR PRINT PDF VIRTUAL ---
+    // --- INTEGRASI ENGINE PRINT PDF TOTAL REKAP ---
     function cetakLaporanPDF() {
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
         let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
 
+        // Counter Kalkulasi Total
+        let totalHadir = 0, totalTerlambat = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0;
+
         let printWindow = window.open('', '_blank');
         let htmlContent = `
         <html>
         <head>
-            <title>Laporan Absensi Sekolah</title>
+            <title>Laporan Komprehensif Absensi</title>
             <style>
                 body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #222; }
                 .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 20px; }
@@ -304,26 +316,29 @@
                 .header p { margin: 5px 0 0 0; font-size: 13px; color: #555; }
                 .meta-info { margin-bottom: 20px; font-size: 14px; font-weight: bold; color: #444; }
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th, td { border: 1px solid #999; padding: 10px; text-align: left; font-size: 12px; }
+                th, td { border: 1px solid #777; padding: 10px; text-align: left; font-size: 12px; }
                 th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
                 tr:nth-child(even) { background-color: #fafafa; }
-                .badge { font-weight: bold; padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; }
+                .badge { font-weight: bold; padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; display: inline-block; }
                 .hadir { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
                 .terlambat { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-                .disp { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+                .sakit { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+                .izin { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+                .alpa { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+                
+                /* Ringkasan Box */
+                .summary-table { width: 40%; margin-top: 30px; border: 1px solid #333; }
+                .summary-table th, .summary-table td { padding: 6px 10px; font-size: 12px; }
                 .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 13px; }
-                .signature-box { text-align: center; width: 200px; }
             </style>
         </head>
         <body>
             <div class="header">
-                <h1>LAPORAN REKAPITULASI PRESENSI SISWA</h1>
-                <p>Sistem E-Absensi Digital Administrator</p>
+                <h1>LAPORAN REKAPITULASI PRESENSI SISWA ALL STATUS</h1>
+                <p>Rekapitulasi Data Hadir, Terlambat, Sakit, Izin, dan Alpa</p>
             </div>
             
-            <div class="meta-info">
-                Periode Laporan : ${judulPeriode}
-            </div>
+            <div class="meta-info"> Periode : ${judulPeriode} </div>
 
             <table>
                 <thead>
@@ -333,9 +348,9 @@
                         <th style="width: 15%">NISN</th>
                         <th>Nama Siswa</th>
                         <th style="width: 10%">Kelas</th>
-                        <th style="width: 13%">Jam Datang</th>
-                        <th style="width: 13%">Jam Pulang</th>
-                        <th style="width: 12%">Status</th>
+                        <th style="width: 12%">Scan Masuk</th>
+                        <th style="width: 12%">Scan Pulang</th>
+                        <th style="width: 15%">Status Akhir</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -352,8 +367,14 @@
 
             if(matches) {
                 let badgeClass = 'hadir';
-                if(a.status_masuk === 'Terlambat') badgeClass = 'terlambat';
-                if(['Sakit', 'Izin', 'Alpa', 'Lupa Scan Masuk'].includes(a.status_masuk)) badgeClass = 'disp';
+                let status = a.status_masuk || 'Hadir';
+                
+                // Kalkulasi Counter & Penyesuaian Badge
+                if(status === 'Hadir') { totalHadir++; badgeClass = 'hadir'; }
+                else if(status === 'Terlambat') { totalTerlambat++; badgeClass = 'terlambat'; }
+                else if(status === 'Sakit') { totalSakit++; badgeClass = 'sakit'; }
+                else if(status === 'Izin') { totalIzin++; badgeClass = 'izin'; }
+                else if(status === 'Alpa' || status === 'Lupa Scan Masuk') { totalAlpa++; badgeClass = 'alpa'; }
 
                 htmlContent += `
                 <tr>
@@ -362,9 +383,9 @@
                     <td>${a.nisn || '-'}</td>
                     <td style="font-weight:600;">${a.nama_siswa || a.nama}</td>
                     <td>${a.kelas || '-'}</td>
-                    <td style="color:#047857;">${a.jam_datang || '-'}</td>
-                    <td style="color:#0369a1;">${a.jam_pulang || '-'}</td>
-                    <td><span class="badge ${badgeClass}">${a.status_masuk}</span></td>
+                    <td>${a.jam_datang || '-'}</td>
+                    <td>${a.jam_pulang || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${status}</span></td>
                 </tr>`;
             }
         });
@@ -377,14 +398,28 @@
                 </tbody>
             </table>
 
+            <table class="summary-table">
+                <thead>
+                    <tr><th colspan="2" style="background:#333; color:white; text-align:center;">Kalkulasi Ringkasan</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Hadir Tepat Waktu</td><td style="font-weight:bold; text-align:right;">${totalHadir} Siswa</td></tr>
+                    <tr><td>Total Terlambat</td><td style="font-weight:bold; text-align:right; color:#b45309;">${totalTerlambat} Siswa</td></tr>
+                    <tr><td>Total Sakit</td><td style="font-weight:bold; text-align:right; color:#0369a1;">${totalSakit} Siswa</td></tr>
+                    <tr><td>Total Izin</td><td style="font-weight:bold; text-align:right; color:#b45309;">${totalIzin} Siswa</td></tr>
+                    <tr><td>Total Alpa / Tanpa Keterangan</td><td style="font-weight:bold; text-align:right; color:#991b1b;">${totalAlpa} Siswa</td></tr>
+                    <tr style="background:#f2f2f2; font-weight:bold;"><td>Total Log Entri Data</td><td style="text-align:right;">${index-1} Baris</td></tr>
+                </tbody>
+            </table>
+
             <div class="footer">
                 <div>
                     <p>Mengetahui,</p>
-                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; inline-block; padding-top:5px; width:180px; text-align:center;">Kepala Sekolah</p>
+                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; padding-top:5px; width:180px; text-align:center;">Kepala Sekolah</p>
                 </div>
-                <div class="signature-box">
+                <div>
                     <p>Medan, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
-                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; inline-block; padding-top:5px; width:180px; text-align:center;">Admin Absensi</p>
+                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; padding-top:5px; width:180px; text-align:center;">Admin Absensi</p>
                 </div>
             </div>
 
