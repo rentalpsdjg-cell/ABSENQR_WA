@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi QR Code v2.0</title>
+    <title>Sistem Absensi QR Code v2.1</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome untuk Ikon -->
@@ -70,17 +70,15 @@
     </div>
 </div>
 
-<!-- Library HTML5-QRCode (Untuk membaca QR via Kamera) -->
+<!-- Library HTML5-QRCode -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <script>
-    // URL Web App Google Script Anda sudah terpasang aktif di bawah ini
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYRaOqF4hfDC-pi75-FqZZveB2yGaU7a0UHKpEsHuQvgVGVXWaAzJhr4UMSzORfqz4/exec";
 
     let html5QrcodeScanner;
     let isProcessing = false;
 
-    // Mengubah petunjuk di kotak status sesuai tombol aktif
     function gantiLabelMode() {
         const isGuru = document.getElementById("modeGuru").checked;
         const statusBox = document.getElementById("statusBox");
@@ -93,7 +91,6 @@
         }
     }
 
-    // Fungsi Utama: Dipanggil otomatis ketika kamera berhasil mendeteksi QR Code
     function onScanSuccess(decodedText, decodedResult) {
         if (isProcessing) return;
         isProcessing = true;
@@ -102,75 +99,72 @@
         const statusBox = document.getElementById("statusBox");
         const spinner = document.getElementById("loading-spinner");
 
-        // Tampilkan animasi loading
         spinner.classList.remove("d-none");
         statusBox.className = "status-box bg-warning text-dark text-center p-3";
         statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Memproses data, mohon tunggu...';
 
-        // Merakit data kiriman (Payload) berdasarkan mode yang dipilih
         let payload = {};
         if (isGuru) {
-            payload = {
-                action: "scanQRGuru",
-                nip: decodedText
-            };
+            payload = { action: "scanQRGuru", nip: decodedText };
         } else {
-            payload = {
-                action: "scanQR",
-                nisn: decodedText
-            };
+            payload = { action: "scanQR", nisn: decodedText };
         }
 
-        // Mengirimkan data hasil scan ke Google Apps Script
+        // PERBAIKAN UTAMA: Menggunakan konfigurasi fetch yang benar untuk Google Apps Script Web App
         fetch(WEB_APP_URL, {
             method: "POST",
+            mode: "cors", // Mengaktifkan CORS cross-origin resmi
+            redirect: "follow", // WAJIB: Mengikuti pengalihan (redirect) link otomatis dari Google
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8" // Google Apps Script membaca JSON lebih stabil dengan tipe ini
+            },
             body: JSON.stringify(payload)
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Respon server bermasalah (Status: " + res.status + ")");
+            }
+            return res.json();
+        })
         .then(data => {
             spinner.classList.add("d-none");
             
             if (data.success) {
-                // Jika sukses mencatat absen & kirim WA
                 statusBox.className = "status-box bg-success text-white text-center p-3";
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> ${data.message}`;
                 playAudio("https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav"); 
             } else {
-                // Jika gagal (ID tidak terdaftar / sudah absen)
                 statusBox.className = "status-box bg-danger text-white text-center p-3";
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-xmark me-2"></i> ${data.message}`;
                 playAudio("https://assets.mixkit.co/active_storage/sfx/951/951-84.wav");
             }
 
-            // Berikan jeda 4 detik sebelum bisa menerima scan kartu berikutnya
             setTimeout(() => {
                 isProcessing = false;
                 gantiLabelMode();
             }, 4000);
         })
         .catch(error => {
-            console.error("Error:", error);
+            console.error("Error Detail:", error);
             spinner.classList.add("d-none");
             statusBox.className = "status-box bg-danger text-white text-center p-3";
-            statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> Hubungan gagal / Terjadi kesalahan jaringan.`;
+            statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> Hubungan gagal. Pastikan Web App sudah di-Deploy ulang sebagai 'Versi Baru'.`;
             
             setTimeout(() => {
                 isProcessing = false;
                 gantiLabelMode();
-            }, 4000);
+            }, 5000);
         });
     }
 
-    // Fungsi membunyikan "Beep" saat scan
     function playAudio(url) {
         const audio = new Audio(url);
         audio.play().catch(e => console.log("Izin audio diblokir browser"));
     }
 
-    // Menjalankan Kamera Scanner saat halaman web dibuka
     function jalankanScanner() {
         html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 }, /* verbose= */ false
+            "reader", { fps: 10, qrbox: 250 }, false
         );
         html5QrcodeScanner.render(onScanSuccess);
     }
