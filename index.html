@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-ABSENSI ADMIN SYSTEM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
@@ -218,6 +218,12 @@
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
     
+    // Sinkronisasi fungsi Jam Realtime atas kanan
+    setInterval(() => {
+      const skrg = new Date();
+      document.getElementById('clockDisplay').innerText = skrg.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + " - " + skrg.toLocaleTimeString('id-ID') + " WIB";
+    }, 1000);
+
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebarMenu');
       const overlay = document.getElementById('sidebarOverlay');
@@ -302,6 +308,7 @@
             document.getElementById('cfgJamPulang').value = s.jamPulang || "14:00";
         }).catch(() => {});
     }
+    
     function simpanConfigJam() {
         Swal.fire({ title: 'Menyimpan konfigurasi...', didOpen: () => Swal.showLoading() });
         const payload = { action: 'saveSettings', jamMasuk: document.getElementById('cfgJamMasuk').value, jamPulang: document.getElementById('cfgJamPulang').value };
@@ -309,6 +316,7 @@
             if(res.success) Swal.fire('Tersimpan!', res.message, 'success');
         });
     }
+    
     function loadStats() {
       fetch(`${API_URL}?action=getStats`).then(res => res.json()).then(s => {
             document.getElementById('dashSiswa').innerText = s.totalSiswa || 0;
@@ -318,6 +326,7 @@
             renderPieChart(s.hadir || 0, s.pulang || 0, s.sakitIzin || 0);
         }).catch(() => {});
     }
+    
     function renderPieChart(h, p, si) {
       const ctx = document.getElementById('chartPresensi').getContext('2d');
       if (mainChart) mainChart.destroy();
@@ -327,6 +336,7 @@
         options: { responsive: true, cutout: '75%' }
       });
     }
+    
     function setRekapTab(type) {
         currentTab = type;
         const btnH = document.getElementById('btnTabHarian');
@@ -382,22 +392,16 @@
         });
     }
 
-    // --- FUNGSIONAL BARU: GENERATOR QR BARCODE VIA ZXING-API YANG AKTIF ---
     function bukaKartuQR(nisn, nama, kelas) {
-        // Menggunakan zxing QR generator cloud api yang super cepat & up-to-date
         const cleanNisn = encodeURIComponent(nisn.trim());
         document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanNisn}&margin=10`;
-        
         document.getElementById('modalQrNama').innerText = nama;
         document.getElementById('modalQrNisn').innerText = "ID NISN: " + nisn;
         document.getElementById('modalQrKelas').innerText = "Kelas " + kelas;
-        
         document.getElementById('qrModal').classList.remove('hidden');
     }
     
-    function closeQrModal() {
-        document.getElementById('qrModal').classList.add('hidden');
-    }
+    function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
     function renderDataRekap() {
         let html = '';
@@ -431,11 +435,108 @@
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
     }
 
+    // Modal Manager untuk Input Data Baru manual
+    function openModal(type) {
+        currentModalType = type;
+        const form = document.getElementById('dynamicForm');
+        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa' : 'Tambah Data Guru';
+        
+        if (type === 'siswa') {
+            form.innerHTML = `
+                <input type="number" id="fNisn" placeholder="NISN Siswa" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <input type="text" id="fNama" placeholder="Nama Lengkap" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <input type="text" id="fKelas" placeholder="Kelas (Contoh: X-RPL)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <input type="number" id="fWa" placeholder="Nomor WhatsApp Ortu (628xx)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <button type="submit" class="w-full py-2.5 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Siswa</button>
+            `;
+        } else {
+            form.innerHTML = `
+                <input type="number" id="fNip" placeholder="NIP Guru" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <input type="text" id="fNamaGuru" placeholder="Nama Guru" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <input type="text" id="fMapel" placeholder="Mata Pelajaran" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm">
+                <button type="submit" class="w-full py-2.5 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Guru</button>
+            `;
+        }
+        document.getElementById('inputModal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
+
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
+        let payload = { action: currentModalType === 'siswa' ? 'tambahSiswa' : 'tambahGuru' };
+        
+        if (currentModalType === 'siswa') {
+            payload.nisn = document.getElementById('fNisn').value;
+            payload.nama = document.getElementById('fNama').value;
+            payload.kelas = document.getElementById('fKelas').value;
+            payload.whatsapp = document.getElementById('fWa').value;
+        } else {
+            payload.nip = document.getElementById('fNip').value;
+            payload.nama = document.getElementById('fNamaGuru').value;
+            payload.mapel = document.getElementById('fMapel').value;
+        }
+
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) {
+                Swal.fire('Berhasil!', res.message, 'success');
+                closeModal();
+                refreshDatabase();
+            } else { Swal.fire('Gagal', res.message, 'error'); }
+        });
+    }
+
+    function simpanManual(e) {
+        e.preventDefault();
+        Swal.fire({ title: 'Memproses data...', didOpen: () => Swal.showLoading() });
+        const payload = {
+            action: 'absenManual',
+            nisn: document.getElementById('mNisn').value,
+            status: document.getElementById('mStatus').value,
+            tipe: document.getElementById('mTipe').value
+        };
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) {
+                Swal.fire('Berhasil!', res.message, 'success');
+                document.getElementById('mNisn').value = '';
+            } else { Swal.fire('Gagal', res.message, 'error'); }
+        });
+    }
+
+    // Engine HTML5-QRCode Scanner Aktif Kamera Utama
+    function startScanner() {
+        if (activeScanner) return;
+        activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        activeScanner.render((decodedText) => {
+            stopScanner();
+            Swal.fire({ title: 'Memproses Absensi...', text: 'NISN Kode: ' + decodedText, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: decodedText.trim() }) })
+            .then(res => res.json()).then(res => {
+                if(res.success) {
+                    Swal.fire('Absen Berhasil!', res.message, 'success').then(() => switchView('scan'));
+                } else {
+                    Swal.fire('Gagal Absen', res.message, 'error').then(() => switchView('scan'));
+                }
+            }).catch(err => {
+                Swal.fire('System Error', err.toString(), 'error').then(() => switchView('scan'));
+            });
+        });
+    }
+
+    function stopScanner() {
+        if (activeScanner) {
+            activeScanner.clear().then(() => { activeScanner = null; }).catch(() => { activeScanner = null; });
+        }
+    }
+
     function cetakLaporanPDF() {
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
         let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
         let dataValid = [];
+        
         cacheAbsensi.forEach(a => {
             let matches = false;
             let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
@@ -445,123 +546,44 @@
             if(!blnFilter && currentTab === 'bulanan') matches = true;
             if(matches) dataValid.push(a);
         });
+
         if (dataValid.length === 0) {
             Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak.', 'warning');
             return;
         }
+
         let kelasGroup = {};
         dataValid.forEach(item => {
             let namaKelas = item.kelas ? item.kelas.toString().trim().toUpperCase() : "TANPA KELAS";
             if (!kelasGroup[namaKelas]) kelasGroup[namaKelas] = [];
             kelasGroup[namaKelas].push(item);
         });
+
         let daftarKelas = Object.keys(kelasGroup).sort();
         let printWindow = window.open('', '_blank');
-        let htmlContent = `<html><head><title>Laporan Absensi Per Kelas</title><style>body { font-family: sans-serif; padding: 30px; color: #222; } .page-break { page-break-after: always; } .page-break:last-child { page-break-after: avoid; } .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 15px; } .meta-container { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; font-weight: bold; background: #f9f9f9; padding: 8px 12px; border: 1px solid #eee; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #666; padding: 8px 10px; font-size: 11px; } th { background-color: #eaeded; } .badge { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase; display: inline-block; } .hadir { background: #d1fae5; color: #065f46; } .terlambat { background: #fef3c7; color: #92400e; } .sakit { background: #e0f2fe; color: #0369a1; } .izin { background: #fff7ed; color: #c2410c; } .alpa { background: #fee2e2; color: #991b1b; } .summary-table { width: 45%; margin-top: 15px; border: 1px solid #444; float: left; } .footer-space { clear: both; margin-top: 25px; display: flex; justify-content: space-between; font-size: 12px; } .signature-box { text-align: center; width: 200px; }</style></head><body>`;
+        let htmlContent = `<html><head><title>Laporan Absensi Per Kelas</title><style>body { font-family: sans-serif; padding: 30px; color: #222; } .page-break { page-break-after: always; } .page-break:last-child { page-break-after: avoid; } .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 15px; } .meta-container { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; font-weight: bold; background: #f9f9f9; padding: 8px 12px; border: 1px solid #eee; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #666; padding: 8px 10px; font-size: 11px; } th { background-color: #eaeded; } .badge { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase; display: inline-block; } .hadir { background: #d1fae5; color: #065f46; } .terlambat { background: #fef3c7; color: #92400e; } .sakit { background: #e0f2fe; color: #0369a1; } .izin { background: #fff7ed; color: #c2410c; } .alpa { background: #fee2e2; color: #991b1b; } .footer-space { clear: both; margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; } .signature-box { text-align: center; width: 200px; padding-top:60px; border-top: 1px solid #fff; }</style></head><body>`;
+        
         daftarKelas.forEach(namaKelas => {
             let listSiswaKelas = kelasGroup[namaKelas];
-            let tHadir = 0, tTerlambat = 0, tSakit = 0, tIzin = 0, tAlpa = 0;
-            htmlContent += `<div class="page-break"><div class="header"><h1>LAPORAN REKAPITULASI PRESENSI SISWA</h1><p>Sistem E-Absensi Cloud Scanner Digital - All Status</p></div><div class="meta-container"><div>KELAS : ${namaKelas}</div><div>PERIODE : ${judulPeriode}</div></div><table><thead><tr><th>No</th><th>Tanggal</th><th>NISN</th><th>Nama Siswa</th><th>Scan Masuk</th><th>Scan Pulang</th><th>Status Akhir</th></tr></thead><tbody>`;
+            htmlContent += `<div class="page-break"><div class="header"><h2>LAPORAN REKAPITULASI PRESENSI SISWA</h2><p>Sistem E-Absensi Cloud Scanner Digital</p></div><div class="meta-container"><div>KELAS : ${namaKelas}</div><div>PERIODE : ${judulPeriode}</div></div><table><thead><tr><th>No</th><th>Tanggal</th><th>NISN</th><th>Nama Siswa</th><th>Scan Masuk</th><th>Scan Pulang</th><th>Status Akhir</th></tr></thead><tbody>`;
             let noAbsen = 1;
             listSiswaKelas.forEach(a => {
-                let status = a.status_masuk || 'Hadir'; let badgeClass = 'hadir'; let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "-";
-                if (status === 'Hadir') { tHadir++; badgeClass = 'hadir'; }
-                else if (status === 'Terlambat') { tTerlambat++; badgeClass = 'terlambat'; }
-                else if (status === 'Sakit') { tSakit++; badgeClass = 'sakit'; }
-                else if (status === 'Izin') { tIzin++; badgeClass = 'izin'; }
-                else if (status === 'Alpa' || status === 'Lupa Scan Masuk') { tAlpa++; badgeClass = 'alpa'; }
-                htmlContent += `<tr><td style="text-align:center;">${noAbsen++}</td><td>${tglRow}</td><td>${a.nisn || '-'}</td><td style="font-weight:600;">${a.nama_siswa || a.nama}</td><td>${a.jam_datang || '-'}</td><td>${a.jam_pulang || '-'}</td><td><span class="badge ${badgeClass}">${status}</span></td></tr>`;
+                let status = a.status_masuk || 'Hadir'; 
+                let badgeClass = status.toLowerCase();
+                let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "-";
+                htmlContent += `<tr><td>${noAbsen++}</td><td>${tglRow}</td><td>${a.nisn}</td><td>${a.nama_siswa || a.nama}</td><td>${a.jam_datang || '-'}</td><td>${a.jam_pulang || '-'}</td><td><span class="badge ${badgeClass}">${status}</span></td></tr>`;
             });
-            htmlContent += `</tbody></table><table class="summary-table"><thead><tr><th colspan="2">Ringkasan Kelas ${namaKelas}</th></tr></thead><tbody><tr><td>Hadir</td><td style="text-align:right;">${tHadir}</td></tr><tr><td>Terlambat</td><td style="text-align:right;">${tTerlambat}</td></tr><tr><td>Sakit</td><td style="text-align:right;">${tSakit}</td></tr><tr><td>Izin</td><td style="text-align:right;">${tIzin}</td></tr><tr><td>Alpa</td><td style="text-align:right;">${tAlpa}</td></tr></tbody></table><div class="footer-space"><div class="signature-box"><p>Mengetahui,</p><p style="margin-top:50px; font-weight:bold; border-top:1px solid #333;">Wali Kelas ${namaKelas}</p></div><div class="signature-box"><p>Medan, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p><p style="margin-top:50px; font-weight:bold; border-top:1px solid #333;">Admin Absensi</p></div></div></div>`;
+            htmlContent += `</tbody></table><div class="footer-space"><div></div><div class="signature-box"><p>Mengetahui,</p><br><br><br><p><b>Kepala Sekolah</b></p></div></div></div>`;
         });
-        htmlContent += `<script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 600); }</s`+`cript></body></html>`;
-        printWindow.document.write(htmlContent); printWindow.document.close();
+        
+        htmlContent += `</body></html>`;
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        setTimeout(() => { printWindow.print(); }, 500);
     }
 
-    function startScanner() {
-      if (activeScanner) return;
-      activeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
-      activeScanner.render((text) => {
-        stopScanner(); Swal.fire({ title: 'Verifikasi Absen...', didOpen: () => Swal.showLoading() });
-        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) }).then(res => res.json()).then(res => {
-          if (res.success) { Swal.fire('Sukses', res.message, 'success').then(() => startScanner()); } 
-          else { Swal.fire('Gagal', res.message, 'error').then(() => startScanner()); }
-        });
-      }, () => {});
-    }
-    function stopScanner() { if (activeScanner) { activeScanner.clear().then(() => { activeScanner = null; }); } }
-    
-    function openModal(type) {
-        currentModalType = type;
-        const form = document.getElementById('dynamicForm');
-        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Siswa' : 'Tambah Guru';
-        if(type === 'siswa') {
-            form.innerHTML = `
-                <input type="number" id="form1" placeholder="NISN" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form2" placeholder="Nama Siswa" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form3" placeholder="Kelas" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="number" id="form4" placeholder="WhatsApp Ortu (628...)" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Submit Siswa</button>
-            `;
-        } else {
-            form.innerHTML = `
-                <input type="number" id="form1" placeholder="NIP Guru" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form2" placeholder="Nama Guru" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form3" placeholder="Mata Pelajaran" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl text-xs font-bold uppercase">Submit Guru</button>
-            `;
-        }
-        document.getElementById('inputModal').classList.remove('hidden');
-    }
-    
-    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
-    
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      Swal.fire({ title: 'Memproses data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      let payload = {};
-      
-      const v1 = document.getElementById('form1').value;
-      const v2 = document.getElementById('form2').value;
-      const v3 = document.getElementById('form3').value;
-      
-      if(currentModalType === 'siswa') {
-          payload = { action: 'tambahSiswa', nisn: v1, nama: v2, kelas: v3, whatsapp: document.getElementById('form4').value };
-      } else {
-          payload = { action: 'tambahGuru', nip: v1, nama: v2, mapel: v3 };
-      }
-      
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-      .then(res => res.json())
-      .then((res) => { 
-          closeModal(); 
-          refreshDatabase(); 
-          Swal.close();
-          
-          if(currentModalType === 'siswa') {
-              bukaKartuQR(v1, v2, v3);
-          } else {
-              Swal.fire('Berhasil!', 'Data Guru berhasil disimpan.', 'success');
-          }
-      }).catch(err => Swal.fire('Error', 'Gagal menyimpan: ' + err, 'error'));
-    }
-    
-    function simpanManual(e) {
-        e.preventDefault();
-        Swal.fire({ title: 'Menyimpan absensi...' });
-        const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Sukses', res.message, 'success'); document.getElementById('mNisn').value = ''; refreshDatabase(); } 
-            else { Swal.fire('Gagal', res.message, 'error'); }
-        });
-    }
-    window.onload = () => {
-        const tgl = new Date();
-        document.getElementById('filterTanggal').value = tgl.toISOString().substring(0, 10);
-        document.getElementById('filterBulan').value = tgl.toISOString().substring(0, 7);
-        document.getElementById('clockDisplay').innerText = tgl.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
-        loadStats();
-    };
+    // Jalankan Dashboard pertama kali saat Web App dimuat
+    window.onload = () => { loadStats(); };
   </script>
 </body>
 </html>
