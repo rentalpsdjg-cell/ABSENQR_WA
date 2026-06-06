@@ -34,9 +34,8 @@
 </head>
 <body class="text-white font-sans antialiased flex h-screen w-screen overflow-hidden relative">
 
-  <!-- SIDEBAR (Mendukung Responsif Desktop & HP) -->
+  <!-- SIDEBAR -->
   <aside id="sidebarMenu" class="w-64 bg-bCard/95 md:bg-bCard/40 border-r border-white/5 flex flex-col p-5 shrink-0 fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:relative z-50 transition-transform duration-300 ease-in-out">
-      <!-- Tombol Tutup Menu di HP -->
       <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-bMuted hover:text-white text-xl">
           <i class="fas fa-times"></i>
       </button>
@@ -66,15 +65,12 @@
       </nav>
   </aside>
 
-  <!-- OVERLAY BACKGROUND SAAT MENU HP TERBUKA -->
   <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
 
   <!-- KONTEN UTAMA -->
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-      <!-- HEADER DENGAN TOMBOL HAMBURGER DI HP -->
       <header class="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 bg-bDark">
           <div class="flex items-center gap-3">
-              <!-- Tombol Hamburger Menu HP -->
               <button onclick="toggleSidebar()" class="md:hidden p-2 text-bMuted hover:text-white focus:outline-none">
                   <i class="fas fa-bars text-lg"></i>
               </button>
@@ -141,9 +137,21 @@
               <div id="rekapListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- DATA SISWA VIEW -->
+          <!-- DATA SISWA VIEW (Sudah Ditambah Tombol Upload Massal) -->
           <div id="view-siswa" class="view-section space-y-4">
-              <div class="flex justify-between items-center"><span class="text-xs md:text-sm font-bold text-bMuted">Database Siswa</span><button onclick="openModal('siswa')" class="bg-bActive text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i> Siswa</button></div>
+              <div class="flex justify-between items-center">
+                  <span class="text-xs md:text-sm font-bold text-bMuted">Database Siswa</span>
+                  <div class="flex gap-2">
+                      <!-- Input File Tersembunyi -->
+                      <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="prosesUploadMassal(event)">
+                      <button onclick="triggerUploadClick()" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1">
+                          <i class="fas fa-file-upload"></i> Upload Massal (.CSV)
+                      </button>
+                      <button onclick="openModal('siswa')" class="bg-bActive hover:bg-opacity-80 text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl transition-all">
+                          <i class="fas fa-plus mr-1"></i> Siswa
+                      </button>
+                  </div>
+              </div>
               <div id="listSiswa" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
@@ -182,7 +190,6 @@
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
     
-    // FUNGSI TOGGLE SIDEBAR MENU DI HP
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebarMenu');
       const overlay = document.getElementById('sidebarOverlay');
@@ -204,7 +211,6 @@
       const titles = { dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera QR', 'jam-config': 'Atur Waktu Absensi', rekap: 'Laporan Rekapitulasi', siswa: 'Master Data Siswa', guru: 'Master Data Guru', manual: 'Kelola Absen Manual' };
       document.getElementById('viewTitle').innerText = titles[viewId] || 'System';
       
-      // Otomatis tutup menu setelah klik fitur di HP
       if (window.innerWidth < 768) {
         const sidebar = document.getElementById('sidebarMenu');
         const overlay = document.getElementById('sidebarOverlay');
@@ -216,6 +222,81 @@
       if (viewId === 'dashboard') loadStats();
       if (viewId === 'jam-config') fetchJamConfig();
       if (viewId === 'rekap' || viewId === 'siswa' || viewId === 'guru') refreshDatabase();
+    }
+
+    // LOGIKA PROSES UPLOAD MASSAL VIA CSV
+    function triggerUploadClick() {
+        document.getElementById('csvFileInput').click();
+    }
+
+    function prosesUploadMassal(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validasi ekstensi
+        if (!file.name.endsWith('.csv')) {
+            Swal.fire('Format Salah', 'Harap unggah file dengan format .CSV', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
+            
+            if (rows.length <= 1) {
+                Swal.fire('File Kosong', 'Tidak ditemukan data siswa di dalam file.', 'warning');
+                return;
+            }
+
+            // Ambil baris data tanpa baris header pertama
+            const dataSiswa = [];
+            for (let i = 1; i < rows.length; i++) {
+                // Mendukung pemisahan koma (,) atau titik koma (;) khas Excel Indonesia
+                let columns = rows[i].includes(';') ? rows[i].split(';') : rows[i].split(',');
+                if (columns.length >= 4) {
+                    dataSiswa.push({
+                        nisn: columns[0].trim().replace(/['"]/g, ''),
+                        nama: columns[1].trim().replace(/['"]/g, ''),
+                        kelas: columns[2].trim().replace(/['"]/g, ''),
+                        whatsapp: columns[3].trim().replace(/['"]/g, '')
+                    });
+                }
+            }
+
+            if (dataSiswa.length === 0) {
+                Swal.fire('Format Kolom Salah', 'Pastikan susunan kolom: NISN, Nama, Kelas, WhatsApp', 'error');
+                return;
+            }
+
+            // Kirim ke Google Apps Script
+            Swal.fire({
+                title: 'Mengimpor Data...',
+                text: `Sedang memasukkan ${dataSiswa.length} data siswa ke server cloud`,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'uploadMassalSiswa', data: dataSiswa })
+            })
+            .then(res => res.json())
+            .then(res => {
+                document.getElementById('csvFileInput').value = ''; // Reset input
+                if (res.success) {
+                    Swal.fire('Berhasil!', res.message, 'success');
+                    refreshDatabase();
+                } else {
+                    Swal.fire('Gagal', res.message, 'error');
+                }
+            })
+            .catch(err => {
+                document.getElementById('csvFileInput').value = '';
+                Swal.fire('Error', 'Gagal terhubung ke database cloud: ' + err, 'error');
+            });
+        };
+        reader.readAsText(file);
     }
 
     function fetchJamConfig() {
