@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
-    // URL API Google Apps Script Anda sudah aktif di sini
     const API_URL = "https://script.google.com/macros/s/AKfycbzRRcgFtPucgtx3mQE_96MDDyfHL15zlaf5xR8NSbiSAa_MAmcEYfCll9uTVbbFP9wD/exec"; 
     
     tailwind.config = {
@@ -35,6 +34,7 @@
 </head>
 <body class="text-white font-sans antialiased flex h-screen w-screen overflow-hidden">
 
+  <!-- SIDEBAR LEFT NAVIGATION -->
   <aside class="w-64 bg-bCard/40 border-r border-white/5 flex flex-col p-5 shrink-0 hidden md:flex">
       <div class="flex items-center gap-3 mb-8 px-2">
           <div class="w-10 h-10 rounded-xl bg-bActive flex items-center justify-center shadow-lg"><i class="fas fa-th-large text-white text-sm"></i></div>
@@ -63,6 +63,7 @@
       </nav>
   </aside>
 
+  <!-- MAIN WORKSPACE -->
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <header class="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0">
           <h2 id="viewTitle" class="font-bold text-base">Dashboard Absensi</h2>
@@ -71,6 +72,7 @@
 
       <main class="flex-1 overflow-y-auto p-6 custom-scroll">
           
+          <!-- VIEW: DASHBOARD -->
           <div id="view-dashboard" class="view-section active space-y-6">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div class="bg-bCard p-5 rounded-xl border border-white/5"><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Siswa Terdaftar</p><h3 id="dashSiswa" class="text-3xl font-bold mt-2">0</h3></div>
@@ -83,6 +85,7 @@
               </div>
           </div>
 
+          <!-- VIEW: SCAN QR -->
           <div id="view-scan" class="view-section max-w-xl mx-auto bg-bCard p-6 rounded-2xl border border-white/5 text-center space-y-4">
               <p class="text-sm font-semibold text-bMuted">Arahkan Kartu QR Siswa ke Kamera</p>
               <div class="w-full aspect-video rounded-xl overflow-hidden bg-bDark border border-white/10 p-1 flex items-center justify-center relative">
@@ -90,6 +93,7 @@
               </div>
           </div>
 
+          <!-- VIEW: CONFIG JAM -->
           <div id="view-jam-config" class="view-section max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
               <h3 class="font-bold text-sm border-b border-white/5 pb-2 text-center"><i class="fas fa-sliders-h mr-1 text-bActive"></i> Atur Waktu Absensi</h3>
               <div class="space-y-4">
@@ -105,28 +109,39 @@
               </div>
           </div>
 
+          <!-- VIEW: LAPORAN REKAP HARIAN & BULANAN WITH PDF PRINT -->
           <div id="view-rekap" class="view-section space-y-4">
               <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-wrap gap-4 items-center justify-between">
                   <div class="flex gap-2">
                       <button id="btnTabHarian" onclick="setRekapTab('harian')" class="px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
                       <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
                   </div>
-                  <div id="filterTanggalArea"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                  <div id="filterBulanArea" class="hidden"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                  <div class="flex items-center gap-3">
+                      <div id="filterTanggalArea"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                      <div id="filterBulanArea" class="hidden"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                      
+                      <!-- TOMBOL CETAK LAPORAN PDF -->
+                      <button onclick="cetakLaporanPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all">
+                          <i class="fas fa-file-pdf"></i> Cetak PDF
+                      </button>
+                  </div>
               </div>
               <div id="rekapListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
+          <!-- VIEW: DATA SISWA -->
           <div id="view-siswa" class="view-section space-y-4">
               <div class="flex justify-between items-center"><span class="text-sm font-bold text-bMuted">Master Database Siswa</span><button onclick="openModal('siswa')" class="bg-bActive text-xs font-bold px-4 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i> Tambah Siswa</button></div>
               <div id="listSiswa" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
+          <!-- VIEW: DATA GURU -->
           <div id="view-guru" class="view-section space-y-4">
               <div class="flex justify-between items-center"><span class="text-sm font-bold text-bMuted">Master Database Guru</span><button onclick="openModal('guru')" class="bg-cyan-600 text-xs font-bold px-4 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i> Tambah Guru</button></div>
               <div id="listGuru" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
+          <!-- VIEW: KELOLA ABSEN MANUAL -->
           <div id="view-manual" class="view-section max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
               <h3 class="font-bold text-sm text-center">Input Keterangan Manual</h3>
               <form onsubmit="simpanManual(event)" class="space-y-3">
@@ -139,6 +154,7 @@
       </main>
   </div>
 
+  <!-- MODAL FORM INPUT POPUP -->
   <div id="inputModal" class="hidden fixed inset-0 bg-bDark/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-bCard border border-white/10 w-full max-w-sm p-6 rounded-2xl space-y-4">
           <div class="flex justify-between items-center"><h3 id="modalHeaderTitle" class="font-bold text-sm">Form Tambah Data</h3><button onclick="closeModal()" class="text-bMuted"><i class="fas fa-times"></i></button></div>
@@ -146,6 +162,7 @@
       </div>
   </div>
 
+  <!-- DRIVER SYSTEM CORE -->
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
 
@@ -189,7 +206,6 @@
         }).catch(() => {});
     }
 
-    // Memuat Grafik Lingkaran Interaktif di Dashboard
     function renderPieChart(h, p, si) {
       const ctx = document.getElementById('chartPresensi').getContext('2d');
       if (mainChart) mainChart.destroy();
@@ -279,7 +295,97 @@
                 </div>`;
             }
         });
-        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Kosong.</p>';
+        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
+    }
+
+    // --- ENGINES DOKUMEN CETAK PDF VIRTUAL ---
+    function cetakLaporanPDF() {
+        const tglFilter = document.getElementById('filterTanggal').value;
+        const blnFilter = document.getElementById('filterBulan').value;
+        let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
+
+        let printWindow = window.open('', '_blank');
+        let htmlContent = `
+        <html>
+        <head>
+            <title>Laporan Absensi E-Absensi</title>
+            <style>
+                body { font-family: sans-serif; padding: 30px; color: #333; }
+                h2 { margin-bottom: 5px; text-transform: uppercase; }
+                p { margin-top: 0; color: #666; font-size: 13px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
+                th { background-color: #f4f4f5; font-weight: bold; }
+                .badge { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+                .hadir { background: #d1fae5; color: #065f46; }
+                .terlambat { background: #fef3c7; color: #92400e; }
+                .disp { background: #fee2e2; color: #991b1b; }
+            </style>
+        </head>
+        <body>
+            <h2>Laporan Rekapitulasi Presensi</h2>
+            <p>Periode ${judulPeriode}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>NISN</th>
+                        <th>Nama Siswa</th>
+                        <th>Kelas</th>
+                        <th>Jam Datang</th>
+                        <th>Jam Pulang</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        let index = 1;
+        cacheAbsensi.forEach(a => {
+            let matches = false;
+            let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
+            
+            if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
+            if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
+            if(!tglFilter && currentTab === 'harian') matches = true;
+            if(!blnFilter && currentTab === 'bulanan') matches = true;
+
+            if(matches) {
+                let badgeClass = 'hadir';
+                if(a.status_masuk === 'Terlambat') badgeClass = 'terlambat';
+                if(a.status_masuk === 'Sakit' || a.status_masuk === 'Izin' || a.status_masuk === 'Alpa') badgeClass = 'disp';
+
+                htmlContent += `
+                <tr>
+                    <td>${index++}</td>
+                    <td>${tglRow}</td>
+                    <td>${a.nisn || '-'}</td>
+                    <td>${a.nama_siswa || a.nama}</td>
+                    <td>${a.kelas || '-'}</td>
+                    <td>${a.jam_datang || '-'}</td>
+                    <td>${a.jam_pulang || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${a.status_masuk}</span></td>
+                </tr>`;
+            }
+        });
+
+        if(index === 1) {
+            htmlContent += `<tr><td colspan="8" style="text-align:center; color:#999;">Tidak ada data ditemukan untuk dicetak</td></tr>`;
+        }
+
+        htmlContent += `
+                </tbody>
+            </table>
+            <div style="margin-top: 40px; text-align: right; font-size: 12px; color: #555;">
+                <p>Dicetak otomatis oleh E-Absensi System</p>
+                <p style="margin-top:50px; font-weight:bold;">Petugas Administrasi</p>
+            </div>
+            <script>window.onload = function() { window.print(); window.close(); }</script>
+        </body>
+        </html>`;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
     }
 
     function startScanner() {
@@ -344,7 +450,12 @@
         Swal.fire({ title: 'Menyimpan absensi...' });
         const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Sukses', res.message, 'success'); document.getElementById('mNisn').value = ''; }
+            if(res.success) { 
+                Swal.fire('Sukses', res.message, 'success'); 
+                document.getElementById('mNisn').value = ''; 
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
         });
     }
 
