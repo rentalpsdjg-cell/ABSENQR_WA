@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>E-ABSENSI PREMIUM SMARTPHONE</title>
+  <title>E-ABSENSI CLOUD V2</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -17,293 +17,299 @@
       theme: {
         extend: {
           fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-          colors: { bDark: '#070814', bCard: '#11132C', bActive: '#6366F1', bMuted: '#797CA6' }
+          colors: { bDark: '#090A1A', bCard: '#131535', bActive: '#6366F1', bMuted: '#797CA6' }
         }
       }
     }
   </script>
   <style>
-    body { background-color: #070814; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #090A1A; -webkit-tap-highlight-color: transparent; }
     .view-section { display: none; }
     .view-section.active { display: block; }
-    .nav-active { color: #6366F1 !important; transform: translateY(-2px); }
-    .nav-active i { background-color: rgba(99, 102, 241, 0.18); padding: 6px 14px; border-radius: 12px; }
-    #reader button { background-color: #6366F1; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 13px; margin: 10px auto; border:none; display: block; }
-    #reader video { border-radius: 14px !important; object-fit: cover !important; }
+    .nav-active { color: #6366F1 !important; }
+    .nav-active i { background-color: rgba(99, 102, 241, 0.15); padding: 6px 12px; border-radius: 10px; }
+    #reader video { border-radius: 12px !important; object-fit: cover !important; }
     .custom-scroll::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="text-white font-sans antialiased flex flex-col h-screen w-screen overflow-hidden select-none">
 
+  <!-- TOP BAR -->
   <header class="h-16 shrink-0 border-b border-white/5 bg-bDark/90 backdrop-blur-md flex items-center justify-between px-5 z-40 sticky top-0">
-      <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-bActive flex items-center justify-center shadow-md shadow-bActive/20">
-              <i class="fas fa-school text-xs text-white"></i>
-          </div>
-          <h1 id="viewTitle" class="font-bold text-sm tracking-wide">Dashboard</h1>
+      <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-bActive flex items-center justify-center shadow-md shadow-bActive/20"><i class="fas fa-clock text-xs text-white"></i></div>
+          <h1 id="viewTitle" class="font-bold text-sm">Dashboard</h1>
       </div>
       <span class="text-[10px] text-bMuted font-bold bg-white/5 px-2.5 py-1.5 rounded-lg" id="clockDisplay">-</span>
   </header>
 
-  <main class="flex-1 overflow-y-auto p-5 pb-24 custom-scroll">
+  <!-- MAIN SCROLL CONTAINER -->
+  <main class="flex-1 overflow-y-auto p-4 pb-24 custom-scroll">
       
-      <div id="view-dashboard" class="view-section active space-y-5">
+      <!-- VIEW: DASHBOARD -->
+      <div id="view-dashboard" class="view-section active space-y-4">
           <div class="grid grid-cols-2 gap-3">
-              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-bMuted uppercase tracking-wider">Total Siswa</p><h3 id="dashSiswa" class="text-2xl font-bold mt-1">-</h3></div>
-              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Hadir Hari Ini</p><h3 id="dashHadir" class="text-2xl font-bold text-emerald-400 mt-1">-</h3></div>
-              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Sakit & Izin</p><h3 id="dashSakitIzin" class="text-2xl font-bold text-amber-400 mt-1">-</h3></div>
-              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-red-400 uppercase tracking-wider">Mangkir (Alpa)</p><h3 id="dashAlpa" class="text-2xl font-bold text-red-400 mt-1">-</h3></div>
+              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-bMuted uppercase">Siswa Terdaftar</p><h3 id="dashSiswa" class="text-2xl font-bold mt-1">-</h3></div>
+              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-emerald-400 uppercase">Scan Datang</p><h3 id="dashHadir" class="text-2xl font-bold text-emerald-400 mt-1">-</h3></div>
+              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-cyan-400 uppercase">Scan Pulang</p><h3 id="dashPulang" class="text-2xl font-bold text-cyan-400 mt-1">-</h3></div>
+              <div class="bg-bCard p-4 rounded-xl border border-white/5"><p class="text-[9px] font-bold text-amber-400 uppercase">Sakit/Izin</p><h3 id="dashSakitIzin" class="text-2xl font-bold text-amber-400 mt-1">-</h3></div>
           </div>
-          <div class="bg-bCard p-5 rounded-xl border border-white/5 flex flex-col items-center">
-              <h4 class="text-[11px] font-bold uppercase text-bMuted self-start mb-4"><i class="fas fa-chart-pie mr-1"></i> Proporsi Kehadiran</h4>
-              <div class="w-full max-w-[170px]"><canvas id="chartPresensi"></canvas></div>
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col items-center">
+              <div class="w-full max-w-[150px]"><canvas id="chartPresensi"></canvas></div>
           </div>
       </div>
 
+      <!-- VIEW: SCANNER QR -->
+      <div id="view-scan" class="view-section max-w-md mx-auto bg-bCard p-4 rounded-xl border border-white/5 text-center space-y-3">
+          <div class="w-full rounded-xl overflow-hidden bg-bDark border border-white/10 p-1"><div id="reader" class="w-full"></div></div>
+      </div>
+
+      <!-- VIEW: PENGATURAN OPERASIONAL JAM -->
+      <div id="view-jam-config" class="view-section max-w-md mx-auto bg-bCard p-5 rounded-xl border border-white/5 space-y-4">
+          <h3 class="font-bold text-sm text-center"><i class="fas fa-sliders-h mr-1 text-bActive"></i> Pengaturan Jam Operasional</h3>
+          <div class="space-y-3">
+              <div>
+                  <label class="text-[11px] text-bMuted font-bold block mb-1">Batas Jam Datang Pagi</label>
+                  <input type="time" id="cfgJamMasuk" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm focus:outline-none text-white">
+              </div>
+              <div>
+                  <label class="text-[11px] text-bMuted font-bold block mb-1">Jam Mulai Scan Pulang Siang</label>
+                  <input type="time" id="cfgJamPulang" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm focus:outline-none text-white">
+              </div>
+              <p class="text-[10px] text-bMuted italic">Catatan: Jika siswa melakukan scan setelah Jam Mulai Pulang, status otomatis memperbarui waktu pulang siswa.</p>
+              <button onclick="simpanConfigJam()" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs">SIMPAN JAM OPERASIONAL</button>
+          </div>
+      </div>
+
+      <!-- VIEW: REKAP ABSENSI (HARIAN & BULANAN) -->
+      <div id="view-rekap" class="view-section space-y-4">
+          <!-- Filter Kontrol Menu -->
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-3">
+              <div class="flex gap-2">
+                  <button id="btnTabHarian" onclick="setRekapTab('harian')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Rekap Harian</button>
+                  <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Rekap Bulanan</button>
+              </div>
+              <!-- Input Filter Tanggal / Bulan -->
+              <div id="filterTanggalArea">
+                  <input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+              </div>
+              <div id="filterBulanArea" class="hidden">
+                  <input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+              </div>
+          </div>
+          <!-- Output Container List Card -->
+          <div id="rekapListContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- VIEW: DATA SISWA -->
       <div id="view-siswa" class="view-section space-y-4">
           <div class="flex justify-between items-center bg-bCard p-3 rounded-xl border border-white/5">
-              <span class="text-xs text-bMuted font-medium">Registrasi Siswa & WA</span>
-              <button onclick="openModal('siswa')" class="bg-bActive text-[10px] font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-plus mr-1"></i>Tambah</button>
+              <span class="text-xs text-bMuted font-medium">Database Siswa</span>
+              <button onclick="openModalSiswa()" class="bg-bActive text-[10px] font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-plus"></i></button>
           </div>
           <div id="listSiswa" class="space-y-2"></div>
       </div>
 
-      <div id="view-scan" class="view-section max-w-md mx-auto bg-bCard p-4 rounded-xl border border-white/5 text-center space-y-3">
-          <p class="text-[11px] text-bMuted">Arahkan kamera belakang ponsel fokus ke QR Code siswa</p>
-          <div class="w-full rounded-xl overflow-hidden bg-bDark border border-white/10 p-1">
-              <div id="reader" class="w-full"></div>
-          </div>
-      </div>
-
-      <div id="view-barcode-gen" class="view-section space-y-4">
-          <div class="bg-bCard p-5 rounded-xl border border-white/5 space-y-4 text-center">
-              <h3 class="font-bold text-sm">Pembuat Kartu QR Siswa</h3>
-              <p class="text-xs text-bMuted">Masukkan NISN siswa untuk merender gambar QR Code murni yang bisa dipindai scanner.</p>
-              <input type="number" id="genNisn" class="w-full p-3.5 rounded-xl bg-bDark border border-white/10 text-sm focus:outline-none text-center" placeholder="Masukkan NISN">
-              <button onclick="buatKartuQR()" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs">GENERATE QR CODE</button>
-              <div id="qrResultArea" class="hidden pt-4 flex flex-col items-center justify-center space-y-3 border-t border-white/5">
-                  <div class="p-3 bg-white rounded-xl inline-block"><img id="generatedQrImage" class="w-36 h-36"></div>
-                  <p class="text-[10px] font-bold text-cyan-400">QR-CODE BERISI NISN DAN COCOK UNTUK DISCAN</p>
-              </div>
-          </div>
-      </div>
-
-      <div id="view-laporan" class="view-section space-y-4">
-          <div class="flex justify-between items-center bg-bCard p-3 rounded-xl border border-white/5">
-              <span class="text-xs text-bMuted font-medium">Log Kehadiran Masuk</span>
-              <button onclick="unduhRekapPDF()" class="bg-red-600 text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"><i class="fas fa-file-pdf"></i> Unduh PDF</button>
-          </div>
-          <div id="listLaporan" class="space-y-2"></div>
-      </div>
-
-      <div id="view-settings" class="view-section max-w-md mx-auto bg-bCard p-5 rounded-xl border border-white/5 space-y-4">
-          <h3 class="font-bold text-sm"><i class="fab fa-whatsapp text-emerald-400 mr-1"></i> Pengaturan Auto WhatsApp</h3>
-          <p class="text-xs text-bMuted">Tentukan format pesan otomatis yang akan memicu tautan kirim ke WhatsApp orang tua sesaat setelah proses scan QR sukses.</p>
-          <div class="space-y-3">
-              <div>
-                  <label class="text-[11px] text-bMuted font-bold block mb-1">Template Notifikasi Hadir</label>
-                  <textarea id="waTemplate" rows="5" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-xs focus:outline-none text-white leading-relaxed">Yth. Orang Tua/Wali dari [nama], menginfokan bahwa putra/putri Anda telah memasuki kawasan sekolah pada pukul [jam] dengan status: [status]. Terima kasih.</textarea>
-              </div>
-              <div class="p-3 bg-white/5 rounded-xl text-[10px] text-bMuted space-y-1">
-                  <p class="font-bold text-white">Variabel Pengganti Otomatis:</p>
-                  <p><b class="text-bActive">[nama]</b> = Nama lengkap siswa bersangkutan</p>
-                  <p><b class="text-bActive">[kelas]</b> = Kelas siswa</p>
-                  <p><b class="text-bActive">[jam]</b> = Waktu tepat siswa melakukan scan</p>
-                  <p><b class="text-bActive">[status]</b> = Hadir / Sakit / Izin</p>
-              </div>
-              <button onclick="saveNotificationSettings()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 transition-all text-white font-bold text-xs rounded-xl shadow-md">SIMPAN SETTING NOTIFIKASI</button>
-          </div>
-      </div>
-
-      <div id="view-kelola" class="view-section max-w-md mx-auto bg-bCard p-5 rounded-xl border border-white/5 space-y-4">
-          <h3 class="font-bold text-sm text-center">Pencatatan Absensi Manual</h3>
-          <p class="text-xs text-bMuted text-center">Gunakan menu ini jika siswa tidak membawa kartu QR karena Sakit, Izin, atau Alpa.</p>
-          <form onsubmit="simpanAbsenManual(event)" class="space-y-3">
-              <input type="number" id="manualNisn" required class="w-full p-3.5 rounded-xl bg-bDark border border-white/10 text-sm focus:outline-none" placeholder="Masukkan NISN Siswa">
-              <select id="manualStatus" class="w-full p-3.5 rounded-xl bg-bDark border border-white/10 text-sm focus:outline-none text-white"><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select>
-              <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs shadow-md">INPUT ABSEN MANUAL</button>
+      <!-- VIEW: INPUT MANUAL KETERANGAN -->
+      <div id="view-manual" class="view-section max-w-md mx-auto bg-bCard p-5 rounded-xl border border-white/5 space-y-3">
+          <h3 class="font-bold text-sm text-center">Input Ket. Manual</h3>
+          <form onsubmit="simpanManual(event)" class="space-y-3">
+              <input type="number" id="mNisn" placeholder="Masukkan NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+              <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select>
+              <select id="mTipe" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Masuk">Sesi Jam Datang</option><option value="Pulang">Sesi Jam Pulang</option></select>
+              <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold shadow-md">SUBMIT DATA</button>
           </form>
       </div>
   </main>
 
-  <div class="fixed bottom-0 left-0 right-0 h-16 bg-bCard/95 backdrop-blur-md border-t border-white/5 flex items-center justify-around z-40 px-1 shadow-2xl">
-      <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn nav-active flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-home text-base"></i><span class="text-[9px] font-medium">Home</span></button>
-      <button onclick="switchView('siswa')" id="nav-siswa" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-user-friends text-base"></i><span class="text-[9px] font-medium">Siswa</span></button>
-      <button onclick="switchView('scan')" id="nav-scan" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-qrcode text-base"></i><span class="text-[9px] font-medium">Scan</span></button>
-      <button onclick="switchView('barcode-gen')" id="nav-barcode-gen" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-id-card text-base"></i><span class="text-[9px] font-medium">Kartu</span></button>
-      <button onclick="switchView('laporan')" id="nav-laporan" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-list text-base"></i><span class="text-[9px] font-medium">Log</span></button>
-      <button onclick="switchView('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fab fa-whatsapp text-base"></i><span class="text-[9px] font-medium">Auto WA</span></button>
-      <button onclick="switchView('kelola')" id="nav-kelola" class="nav-btn flex flex-col items-center gap-1 text-bMuted transition-all"><i class="fas fa-pen-alt text-base"></i><span class="text-[9px] font-medium">Manual</span></button>
+  <!-- BOTTOM FIXED NAVIGATION BAR -->
+  <div class="fixed bottom-0 left-0 right-0 h-16 bg-bCard/95 backdrop-blur-md border-t border-white/5 flex items-center justify-around z-40 px-1">
+      <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn nav-active flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-home text-base"></i><span class="text-[9px] font-medium">Home</span></button>
+      <button onclick="switchView('scan')" id="nav-scan" class="nav-btn flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-camera text-base"></i><span class="text-[9px] font-medium">Scan QR</span></button>
+      <button onclick="switchView('jam-config')" id="nav-jam-config" class="nav-btn flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-clock text-base"></i><span class="text-[9px] font-medium">Jam</span></button>
+      <button onclick="switchView('rekap')" id="nav-rekap" class="nav-btn flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-calendar-alt text-base"></i><span class="text-[9px] font-medium">Rekap</span></button>
+      <button onclick="switchView('siswa')" id="nav-siswa" class="nav-btn flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-users text-base"></i><span class="text-[9px] font-medium">Siswa</span></button>
+      <button onclick="switchView('manual')" id="nav-manual" class="nav-btn flex flex-col items-center gap-1 text-bMuted"><i class="fas fa-pen text-base"></i><span class="text-[9px] font-medium">Manual</span></button>
   </div>
 
-  <div id="crudModal" class="hidden fixed inset-0 bg-bDark/95 backdrop-blur-sm z-50 flex items-center justify-center p-5">
+  <!-- POPUP MODAL REGISTER SISWA -->
+  <div id="crudModal" class="hidden fixed inset-0 bg-bDark/95 backdrop-blur-md z-50 flex items-center justify-center p-5">
       <div class="bg-bCard border border-white/10 w-full max-w-sm p-5 rounded-2xl space-y-4">
-          <div class="flex justify-between items-center"><h3 id="modalTitle" class="font-bold text-sm">Tambah Siswa Baru</h3><button onclick="closeModal()" class="text-bMuted"><i class="fas fa-times text-lg"></i></button></div>
-          <form id="modalForm" onsubmit="handleFormSubmit(event)" class="space-y-3"></form>
+          <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Siswa Baru</h3><button onclick="closeModal()" class="text-bMuted"><i class="fas fa-times text-lg"></i></button></div>
+          <form onsubmit="handleFormSubmit(event)" class="space-y-3">
+              <input type="number" id="inNisn" placeholder="NISN" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
+              <input type="text" id="inNama" placeholder="Nama Lengkap" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
+              <input type="text" id="inKelas" placeholder="Kelas" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
+              <input type="number" id="inWa" placeholder="No WA Orang Tua (628...)" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
+              <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold">DAFTARKAN SISWA</button>
+          </form>
       </div>
   </div>
 
+  <!-- CORE APPLICATION LOGIC -->
   <script>
-    let activeScanner = null, mainChart = null, currentModalType = '';
+    let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [];
 
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('nav-active'));
-      
       document.getElementById(`view-${viewId}`).classList.add('active');
       document.getElementById(`nav-${viewId}`).classList.add('nav-active');
       
-      const headerNames = { dashboard: 'Dashboard Absensi', siswa: 'Manajemen Pengguna', scan: 'Pemindai Kamera QR', 'barcode-gen': 'Pembuat Kartu QR', laporan: 'Rekapitulasi Kehadiran', settings: 'Format Pesan WA', kelola: 'Keterangan Manual' };
-      document.getElementById('viewTitle').innerText = headerNames[viewId] || 'E-Absensi';
+      const titles = { dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera', 'jam-config': 'Atur Jam Kerja', rekap: 'Rekap Kehadiran', siswa: 'Master Data Siswa', manual: 'Keterangan Manual' };
+      document.getElementById('viewTitle').innerText = titles[viewId] || 'E-Absensi';
 
       if (viewId === 'scan') { setTimeout(startScanner, 200); } else { stopScanner(); }
       if (viewId === 'dashboard') loadStats();
-      if (viewId === 'siswa' || viewId === 'laporan') refreshTableData();
+      if (viewId === 'jam-config') fetchJamConfig();
+      if (viewId === 'rekap' || viewId === 'siswa') refreshDatabase();
+    }
+
+    function fetchJamConfig() {
+        fetch(`${API_URL}?action=getSettings`).then(res => res.json()).then(s => {
+            document.getElementById('cfgJamMasuk').value = s.jamMasuk;
+            document.getElementById('cfgJamPulang').value = s.jamJamPulang || s.jamPulang;
+        });
+    }
+
+    function simpanConfigJam() {
+        Swal.fire({ title: 'Menyimpan konfigurasi...' });
+        const payload = { action: 'saveSettings', jamMasuk: document.getElementById('cfgJamMasuk').value, jamPulang: document.getElementById('cfgJamPulang').value };
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) Swal.fire('Berhasil Update!', res.message, 'success');
+        });
     }
 
     function loadStats() {
       fetch(`${API_URL}?action=getStats`).then(res => res.json()).then(s => {
           document.getElementById('dashSiswa').innerText = s.totalSiswa;
           document.getElementById('dashHadir').innerText = s.hadir;
-          document.getElementById('dashSakitIzin').innerText = s.sakit + s.izin;
-          document.getElementById('dashAlpa').innerText = s.alpa;
-          renderPieChart(s.hadir, s.sakit, s.izin, s.alpa);
-      }).catch(() => {});
+          document.getElementById('dashPulang').innerText = s.pulang;
+          document.getElementById('dashSakitIzin').innerText = s.sakitIzin;
+          renderPieChart(s.hadir, s.pulang, s.sakitIzin);
+      });
     }
 
-    function renderPieChart(h, s, i, a) {
+    function renderPieChart(h, p, si) {
       const ctx = document.getElementById('chartPresensi').getContext('2d');
       if (mainChart) mainChart.destroy();
       mainChart = new Chart(ctx, {
         type: 'doughnut',
-        data: { datasets: [{ data: [h, s, i, a], backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444'], borderWidth: 0 }] },
-        options: { responsive: true, cutout: '72%' }
+        data: { datasets: [{ data: [h, p, si], backgroundColor: ['#10B981', '#22D3EE', '#F59E0B'], borderWidth: 0 }] },
+        options: { responsive: true, cutout: '75%' }
       });
     }
 
-    function refreshTableData() {
-      fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
-          let sHtml = '';
-          db.siswa.forEach(s => { 
-            sHtml += `<div class="bg-bCard p-3.5 rounded-xl border border-white/5 flex justify-between items-center"><div class="space-y-0.5"><p class="text-xs font-bold text-bActive">NISN: ${s.nisn}</p><p class="text-sm font-semibold">${s.nama}</p><p class="text-[10px] text-bMuted">Kelas: ${s.kelas} | WA Ortu: ${s.whatsapp_ortu || '-'}</p></div><button onclick="hapusMaster('Siswa', ${s.row_index})" class="text-red-400 p-2 text-xs"><i class="far fa-trash-alt"></i></button></div>`; 
-          });
-          document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-center text-xs text-bMuted py-4">Siswa belum terdaftar</p>';
-          
-          let lHtml = '';
-          db.absensi.forEach(a => { 
-            lHtml += `<div class="bg-bCard p-3.5 rounded-xl border border-white/5 flex justify-between items-center"><div><p class="text-sm font-semibold">${a.nama}</p><p class="text-[10px] text-bMuted">Log: ${a.tanggal_waktu}</p></div><span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${a.status==='Hadir'?'bg-emerald-500/10 text-emerald-400':'bg-amber-500/10 text-amber-400'}">${a.status}</span></div>`; 
-          });
-          document.getElementById('listLaporan').innerHTML = lHtml || '<p class="text-center text-xs text-bMuted py-4">Belum ada data masuk</p>';
-      });
+    function setRekapTab(type) {
+        currentTab = type;
+        const btnH = document.getElementById('btnTabHarian');
+        const btnB = document.getElementById('btnTabBulanan');
+        const areaTgl = document.getElementById('filterTanggalArea');
+        const areaBln = document.getElementById('filterBulanArea');
+        
+        if(type === 'harian') {
+            btnH.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-bActive text-white";
+            btnB.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
+            areaTgl.classList.remove('hidden'); areaBln.classList.add('hidden');
+        } else {
+            btnB.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-bActive text-white";
+            btnH.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
+            areaBln.classList.remove('hidden'); areaTgl.classList.add('hidden');
+        }
+        renderDataRekap();
     }
 
-    function buatKartuQR() {
-      const nisn = document.getElementById("genNisn").value;
-      if(!nisn) return Swal.fire("Isi NISN!", "", "warning");
-      document.getElementById("generatedQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${nisn}`;
-      document.getElementById("qrResultArea").classList.remove("hidden");
+    function refreshDatabase() {
+        fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
+            cacheAbsensi = db.absensi;
+            
+            // Render Siswa Master
+            let sHtml = '';
+            db.siswa.forEach(s => {
+                sHtml += `<div class="bg-bCard p-3.5 rounded-xl border border-white/5 flex justify-between items-center"><div><p class="text-xs font-bold text-bActive">${s.nisn}</p><p class="text-sm font-semibold">${s.nama}</p><p class="text-[10px] text-bMuted">Kelas: ${s.kelas}</p></div></div>`;
+            });
+            document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-center text-bMuted py-4">Data kosong</p>';
+            renderDataRekap();
+        });
     }
 
-    function saveNotificationSettings() {
-      const templateText = document.getElementById("waTemplate").value;
-      localStorage.setItem("wa_template_msg", templateText);
-      Swal.fire("Berhasil", "Format Auto WA berhasil disimpan!", "success");
-    }
-
-    function dispatchWhatsAppNotification(meta, status) {
-      let template = localStorage.getItem("wa_template_msg") || "Yth. Orang Tua dari [nama], menginfokan bahwa putra/putri Anda telah memasuki sekolah pada pukul [jam] dengan status: [status].";
-      if (!meta.whatsapp) return; 
-
-      let message = template
-        .replace("[nama]", meta.nama)
-        .replace("[kelas]", meta.kelas)
-        .replace("[jam]", meta.jam)
-        .replace("[status]", status);
-
-      let cleanPhone = meta.whatsapp.replace(/[^0-9]/g, "");
-      if (cleanPhone.startsWith("0")) { cleanPhone = "62" + cleanPhone.slice(1); }
-
-      const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
-      
-      // Membuka WhatsApp Web/Aplikasi untuk mengirim pesan instan ke nomor wali siswa
-      window.open(waUrl, '_blank');
+    function renderDataRekap() {
+        let html = '';
+        const tglFilter = document.getElementById('filterTanggal').value;
+        const blnFilter = document.getElementById('filterBulan').value;
+        
+        cacheAbsensi.forEach(a => {
+            let matches = false;
+            let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
+            
+            if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
+            if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
+            if(!tglFilter && currentTab === 'harian') matches = true; // show all if empty
+            if(!blnFilter && currentTab === 'bulanan') matches = true;
+            
+            if(matches) {
+                html += `
+                <div class="bg-bCard p-3.5 rounded-xl border border-white/5 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="text-sm font-bold text-white">${a.nama_siswa}</h4>
+                            <p class="text-[10px] text-bMuted">Kelas: ${a.kelas} | Tgl: ${tglRow}</p>
+                        </div>
+                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-white/5 text-bMuted">${currentTab === 'harian' ? 'Harian' : 'Bulanan'}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-white/5 text-[11px]">
+                        <div><p class="text-bMuted">Jam Datang</p><p class="font-semibold text-emerald-400"><i class="fas fa-sign-in-alt mr-1"></i>${a.jam_datang || '-'}</p></div>
+                        <div><p class="text-bMuted">Jam Pulang</p><p class="font-semibold text-cyan-400"><i class="fas fa-sign-out-alt mr-1"></i>${a.jam_pulang || '-'}</p></div>
+                    </div>
+                    <div class="text-[10px] bg-bDark/50 px-2 py-1 rounded border border-white/5 flex justify-between">
+                        <span class="text-bMuted">Status Masuk:</span> <span class="font-bold text-amber-400">${a.status_masuk}</span>
+                    </div>
+                </div>`;
+            }
+        });
+        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-center text-bMuted py-4">Tidak ada record absensi pada periode ini.</p>';
     }
 
     function startScanner() {
       if (activeScanner) return;
-      activeScanner = new Html5QrcodeScanner("reader", { fps: 22, qrbox: 210, rememberLastUsedCamera: true });
+      activeScanner = new Html5QrcodeScanner("reader", { fps: 20, qrbox: 220, rememberLastUsedCamera: true });
       activeScanner.render((text) => {
-        stopScanner(); 
-        Swal.fire({ title: 'Memverifikasi ID...', didOpen: () => Swal.showLoading() });
-        
-        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) })
-        .then(res => res.json())
-        .then(res => {
-          if (res.success) { 
-            Swal.fire('Berhasil Terbaca!', res.message, 'success').then(() => {
-                if(res.metaData && res.metaData.whatsapp) {
-                   dispatchWhatsAppNotification(res.metaData, "Hadir");
-                }
-                startScanner();
-            }); 
-          } else { 
-            Swal.fire('Gagal Absen', res.message, 'error').then(() => startScanner()); 
+        stopScanner(); Swal.fire({ title: 'Memproses Absensi...' });
+        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) }).then(res => res.json()).then(res => {
+          if (res.success) {
+            Swal.fire('Berhasil Terbaca!', res.message, 'success').then(() => startScanner());
+          } else {
+            Swal.fire('Gagal', res.message, 'error').then(() => startScanner());
           }
         });
       }, () => {});
     }
 
     function stopScanner() { if (activeScanner) { activeScanner.clear().then(() => { activeScanner = null; }); } }
-
-    function openModal() {
-      document.getElementById('crudModal').classList.remove('hidden');
-      document.getElementById('modalForm').innerHTML = `
-        <input type="number" id="in1" required placeholder="Masukkan NISN Siswa" class="w-full bg-bDark border border-white/10 p-3.5 rounded-xl text-sm">
-        <input type="text" id="in2" required placeholder="Nama Lengkap Siswa" class="w-full bg-bDark border border-white/10 p-3.5 rounded-xl text-sm">
-        <input type="text" id="in3" required placeholder="Kelas (Contoh: XI-MIPA 1)" class="w-full bg-bDark border border-white/10 p-3.5 rounded-xl text-sm">
-        <input type="text" id="in4" required placeholder="No WA Orang Tua (Contoh: 08123...)" class="w-full bg-bDark border border-white/10 p-3.5 rounded-xl text-sm">
-        <button type="submit" class="w-full py-3.5 bg-bActive rounded-xl text-xs font-bold">SIMPAN DATA SISWA</button>`;
-    }
+    function openModalSiswa() { document.getElementById('crudModal').classList.remove('hidden'); }
     function closeModal() { document.getElementById('crudModal').classList.add('hidden'); }
-
+    
     function handleFormSubmit(e) {
-      e.preventDefault(); Swal.fire({ title: 'Menyimpan ke Cloud...' });
-      const payload = { 
-        action: 'tambahSiswa', 
-        nisn: document.getElementById('in1').value, 
-        nama: document.getElementById('in2').value, 
-        kelas: document.getElementById('in3').value,
-        whatsapp: document.getElementById('in4').value
-      };
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { Swal.fire('Sukses', 'Siswa terdaftar', 'success'); closeModal(); refreshTableData(); });
+      e.preventDefault();
+      const payload = { action: 'tambahSiswa', nisn: document.getElementById('inNisn').value, nama: document.getElementById('inNama').value, kelas: document.getElementById('inKelas').value, whatsapp: document.getElementById('inWa').value };
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { closeModal(); refreshDatabase(); });
     }
 
-    function hapusMaster(type, idx) {
-      Swal.fire({ title: 'Hapus data ini?', icon:'warning', showCancelButton: true, confirmButtonColor:'#6366F1' }).then((r) => {
-        if (r.isConfirmed) {
-          fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusSiswa', row_index: idx }) }).then(() => { Swal.fire('Dihapus', '', 'success'); refreshTableData(); });
-        }
-      });
+    function simpanManual(e) {
+        e.preventDefault();
+        const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) { Swal.fire('Tercatat!', res.message, 'success'); document.getElementById('mNisn').value = ''; }
+        });
     }
 
-    function simpanAbsenManual(e) {
-      e.preventDefault(); Swal.fire({ title: 'Mencatat Data...' });
-      const payload = { action: 'absenManual', nisn: document.getElementById('manualNisn').value, status: document.getElementById('manualStatus').value };
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-        if(res.success) { Swal.fire('Berhasil', res.message, 'success'); document.getElementById('manualNisn').value = ''; }
-        else { Swal.fire('Gagal', res.message, 'error'); }
-      });
-    }
-
-    function unduhRekapPDF() {
-      Swal.fire({ title: 'Menyusun File PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      fetch(`${API_URL}?action=downloadPDF`).then(res => res.json()).then(res => {
-          Swal.close();
-          if (res.success) { window.open(res.pdfUrl, '_blank'); }
-      });
-    }
-
-    window.onload = () => { loadStats(); document.getElementById('clockDisplay').innerText = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}); };
+    window.onload = () => {
+        const tgl = new Date();
+        document.getElementById('filterTanggal').value = tgl.toISOString().substring(0, 10);
+        document.getElementById('filterBulan').value = tgl.toISOString().substring(0, 7);
+        document.getElementById('clockDisplay').innerText = tgl.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+        loadStats();
+    };
   </script>
 </body>
 </html>
