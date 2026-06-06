@@ -34,7 +34,6 @@
 </head>
 <body class="text-white font-sans antialiased flex h-screen w-screen overflow-hidden relative">
 
-  <!-- SIDEBAR -->
   <aside id="sidebarMenu" class="w-64 bg-bCard/95 md:bg-bCard/40 border-r border-white/5 flex flex-col p-5 shrink-0 fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:relative z-50 transition-transform duration-300 ease-in-out">
       <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-bMuted hover:text-white text-xl">
           <i class="fas fa-times"></i>
@@ -67,7 +66,6 @@
 
   <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
 
-  <!-- KONTEN UTAMA -->
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <header class="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 bg-bDark">
           <div class="flex items-center gap-3">
@@ -81,7 +79,6 @@
       
       <main class="flex-1 overflow-y-auto p-4 md:p-6 custom-scroll">
           
-          <!-- DASHBOARD VIEW -->
           <div id="view-dashboard" class="view-section active space-y-6">
               <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                   <div class="bg-bCard p-4 md:p-5 rounded-xl border border-white/5"><p class="text-[9px] md:text-[10px] font-bold text-bMuted uppercase tracking-wider">Siswa Terdaftar</p><h3 id="dashSiswa" class="text-xl md:text-3xl font-bold mt-2">0</h3></div>
@@ -94,7 +91,6 @@
               </div>
           </div>
 
-          <!-- SCAN QR VIEW -->
           <div id="view-scan" class="view-section max-w-xl mx-auto bg-bCard p-4 md:p-6 rounded-2xl border border-white/5 text-center space-y-4">
               <p class="text-xs md:text-sm font-semibold text-bMuted">Arahkan Kartu QR Siswa ke Kamera</p>
               <div class="w-full aspect-video rounded-xl overflow-hidden bg-bDark border border-white/10 p-1 flex items-center justify-center relative">
@@ -102,7 +98,6 @@
               </div>
           </div>
 
-          <!-- SETTING JAM VIEW -->
           <div id="view-jam-config" class="view-section max-w-md mx-auto bg-bCard p-5 md:p-6 rounded-2xl border border-white/5 space-y-4">
               <h3 class="font-bold text-sm border-b border-white/5 pb-2 text-center"><i class="fas fa-sliders-h mr-1 text-bActive"></i> Atur Waktu Absensi</h3>
               <div class="space-y-4">
@@ -118,7 +113,6 @@
               </div>
           </div>
 
-          <!-- REKAP LAPORAN VIEW -->
           <div id="view-rekap" class="view-section space-y-4">
               <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row gap-3 items-center justify-between">
                   <div class="flex gap-2 w-full sm:w-auto justify-center">
@@ -130,19 +124,17 @@
                       <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       
                       <button onclick="cetakLaporanPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
-                          <i class="fas fa-file-pdf"></i> PDF
+                          <i class="fas fa-file-pdf"></i> PDF Per Kelas
                       </button>
                   </div>
               </div>
               <div id="rekapListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- DATA SISWA VIEW (Sudah Ditambah Tombol Upload Massal) -->
           <div id="view-siswa" class="view-section space-y-4">
               <div class="flex justify-between items-center">
                   <span class="text-xs md:text-sm font-bold text-bMuted">Database Siswa</span>
                   <div class="flex gap-2">
-                      <!-- Input File Tersembunyi -->
                       <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="prosesUploadMassal(event)">
                       <button onclick="triggerUploadClick()" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1">
                           <i class="fas fa-file-upload"></i> Upload Massal (.CSV)
@@ -155,13 +147,11 @@
               <div id="listSiswa" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- DATA GURU VIEW -->
           <div id="view-guru" class="view-section space-y-4">
               <div class="flex justify-between items-center"><span class="text-xs md:text-sm font-bold text-bMuted">Database Guru</span><button onclick="openModal('guru')" class="bg-cyan-600 text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i> Guru</button></div>
               <div id="listGuru" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- MANUAL ABSEN VIEW -->
           <div id="view-manual" class="view-section max-w-md mx-auto bg-bCard p-5 md:p-6 rounded-2xl border border-white/5 space-y-4">
               <h3 class="font-bold text-sm text-center">Input Keterangan Manual</h3>
               <form onsubmit="simpanManual(event)" class="space-y-3">
@@ -179,7 +169,6 @@
       </main>
   </div>
 
-  <!-- MODAL DINAMIS -->
   <div id="inputModal" class="hidden fixed inset-0 bg-bDark/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-bCard border border-white/10 w-full max-w-sm p-5 md:p-6 rounded-2xl space-y-4">
           <div class="flex justify-between items-center"><h3 id="modalHeaderTitle" class="font-bold text-sm">Form Data</h3><button onclick="closeModal()" class="text-bMuted"><i class="fas fa-times"></i></button></div>
@@ -224,35 +213,25 @@
       if (viewId === 'rekap' || viewId === 'siswa' || viewId === 'guru') refreshDatabase();
     }
 
-    // LOGIKA PROSES UPLOAD MASSAL VIA CSV
-    function triggerUploadClick() {
-        document.getElementById('csvFileInput').click();
-    }
+    function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
 
     function prosesUploadMassal(event) {
         const file = event.target.files[0];
         if (!file) return;
-
-        // Validasi ekstensi
         if (!file.name.endsWith('.csv')) {
             Swal.fire('Format Salah', 'Harap unggah file dengan format .CSV', 'error');
             return;
         }
-
         const reader = new FileReader();
         reader.onload = function(e) {
             const text = e.target.result;
             const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
-            
             if (rows.length <= 1) {
                 Swal.fire('File Kosong', 'Tidak ditemukan data siswa di dalam file.', 'warning');
                 return;
             }
-
-            // Ambil baris data tanpa baris header pertama
             const dataSiswa = [];
             for (let i = 1; i < rows.length; i++) {
-                // Mendukung pemisahan koma (,) atau titik koma (;) khas Excel Indonesia
                 let columns = rows[i].includes(';') ? rows[i].split(';') : rows[i].split(',');
                 if (columns.length >= 4) {
                     dataSiswa.push({
@@ -263,38 +242,17 @@
                     });
                 }
             }
-
             if (dataSiswa.length === 0) {
                 Swal.fire('Format Kolom Salah', 'Pastikan susunan kolom: NISN, Nama, Kelas, WhatsApp', 'error');
                 return;
             }
-
-            // Kirim ke Google Apps Script
-            Swal.fire({
-                title: 'Mengimpor Data...',
-                text: `Sedang memasukkan ${dataSiswa.length} data siswa ke server cloud`,
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'uploadMassalSiswa', data: dataSiswa })
-            })
-            .then(res => res.json())
-            .then(res => {
-                document.getElementById('csvFileInput').value = ''; // Reset input
-                if (res.success) {
-                    Swal.fire('Berhasil!', res.message, 'success');
-                    refreshDatabase();
-                } else {
-                    Swal.fire('Gagal', res.message, 'error');
-                }
-            })
-            .catch(err => {
+            Swal.fire({ title: 'Mengimpor Data...', text: `Sedang memasukkan ${dataSiswa.length} data siswa`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadMassalSiswa', data: dataSiswa }) })
+            .then(res => res.json()).then(res => {
                 document.getElementById('csvFileInput').value = '';
-                Swal.fire('Error', 'Gagal terhubung ke database cloud: ' + err, 'error');
-            });
+                if (res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); } 
+                else { Swal.fire('Gagal', res.message, 'error'); }
+            }).catch(err => { document.getElementById('csvFileInput').value = ''; Swal.fire('Error', 'Gagal: ' + err, 'error'); });
         };
         reader.readAsText(file);
     }
@@ -336,7 +294,6 @@
         const btnB = document.getElementById('btnTabBulanan');
         const areaTgl = document.getElementById('filterTanggalArea');
         const areaBln = document.getElementById('filterBulanArea');
-        
         if(type === 'harian') {
             btnH.className = "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white";
             btnB.className = "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
@@ -351,7 +308,6 @@
     function refreshDatabase() {
         fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
             cacheAbsensi = db.absensi || [];
-            
             let sHtml = '';
             if(db.siswa) {
                 db.siswa.forEach(s => {
@@ -381,16 +337,13 @@
         let html = '';
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
-        
         cacheAbsensi.forEach(a => {
             let matches = false;
             let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
-            
             if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
             if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
             if(!tglFilter && currentTab === 'harian') matches = true;
             if(!blnFilter && currentTab === 'bulanan') matches = true;
-            
             if(matches) {
                 let stStyle = "text-amber-400";
                 if(a.status_masuk === 'Hadir') stStyle = "text-emerald-400";
@@ -412,125 +365,174 @@
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
     }
 
+    // --- LOGIKA UTAMA CETAK LAPORAN PDF TERPISAH PER KELAS ---
     function cetakLaporanPDF() {
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
         let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
-        let totalHadir = 0, totalTerlambat = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0;
-        let printWindow = window.open('', '_blank');
-        let htmlContent = `
-        <html>
-        <head>
-            <title>Laporan Komprehensif Absensi</title>
-            <style>
-                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #222; }
-                .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 20px; }
-                .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
-                .header p { margin: 5px 0 0 0; font-size: 13px; color: #555; }
-                .meta-info { margin-bottom: 20px; font-size: 14px; font-weight: bold; color: #444; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th, td { border: 1px solid #777; padding: 10px; text-align: left; font-size: 12px; }
-                th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
-                tr:nth-child(even) { background-color: #fafafa; }
-                .badge { font-weight: bold; padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; display: inline-block; }
-                .hadir { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-                .terlambat { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-                .sakit { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-                .izin { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-                .alpa { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-                .summary-table { width: 40%; margin-top: 30px; border: 1px solid #333; }
-                .summary-table th, .summary-table td { padding: 6px 10px; font-size: 12px; }
-                .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 13px; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>LAPORAN REKAPITULASI PRESENSI SISWA ALL STATUS</h1>
-                <p>Rekapitulasi Data Hadir, Terlambat, Sakit, Izin, dan Alpa</p>
-            </div>
-            <div class="meta-info"> Periode : ${judulPeriode} </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 5%">No</th>
-                        <th style="width: 12%">Tanggal</th>
-                        <th style="width: 15%">NISN</th>
-                        <th>Nama Siswa</th>
-                        <th style="width: 10%">Kelas</th>
-                        <th style="width: 12%">Scan Masuk</th>
-                        <th style="width: 12%">Scan Pulang</th>
-                        <th style="width: 15%">Status Akhir</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-        let index = 1;
+        
+        // 1. Filter data absensi yang valid sesuai range tanggal/bulan terlebih dahulu
+        let dataValid = [];
         cacheAbsensi.forEach(a => {
             let matches = false;
             let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
-            
             if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
             if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
             if(!tglFilter && currentTab === 'harian') matches = true;
             if(!blnFilter && currentTab === 'bulanan') matches = true;
-            if(matches) {
-                let badgeClass = 'hadir';
-                let status = a.status_masuk || 'Hadir';
+            if(matches) dataValid.push(a);
+        });
+
+        if (dataValid.length === 0) {
+            Swal.fire('Data Kosong', 'Tidak ada data absensi untuk dicetak pada periode ini.', 'warning');
+            return;
+        }
+
+        // 2. Kelompokkan data berdasarkan Kelas
+        let kelasGroup = {};
+        dataValid.forEach(item => {
+            let namaKelas = item.kelas ? item.kelas.toString().trim().toUpperCase() : "TANPA KELAS";
+            if (!kelasGroup[namaKelas]) kelasGroup[namaKelas] = [];
+            kelasGroup[namaKelas].push(item);
+        });
+
+        // Urutkan nama kelas secara alfabetis (misal: VII-A, VII-B, dst)
+        let daftarKelas = Object.keys(kelasGroup).sort();
+
+        let printWindow = window.open('', '_blank');
+        let htmlContent = `
+        <html>
+        <head>
+            <title>Laporan Absensi Per Kelas</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 30px; color: #222; background: #fff; }
+                .page-break { page-break-after: always; }
+                /* Jangan beri jeda halaman baru pada kelas terakhir */
+                .page-break:last-child { page-break-after: avoid; }
                 
-                if(status === 'Hadir') { totalHadir++; badgeClass = 'hadir'; }
-                else if(status === 'Terlambat') { totalTerlambat++; badgeClass = 'terlambat'; }
-                else if(status === 'Sakit') { totalSakit++; badgeClass = 'sakit'; }
-                else if(status === 'Izin') { totalIzin++; badgeClass = 'izin'; }
-                else if(status === 'Alpa' || status === 'Lupa Scan Masuk') { totalAlpa++; badgeClass = 'alpa'; }
+                .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 15px; }
+                .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 0.5px; }
+                .header p { margin: 4px 0 0 0; font-size: 12px; color: #555; }
+                
+                .meta-container { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; font-weight: bold; color: #333; background: #f9f9f9; padding: 8px 12px; border-radius: 6px; border: 1px solid #eee; }
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 20px; }
+                th, td { border: 1px solid #666; padding: 8px 10px; font-size: 11px; text-align: left; }
+                th { background-color: #eaeded; font-weight: bold; text-transform: uppercase; color: #333; }
+                tr:nth-child(even) { background-color: #fdfefe; }
+                
+                .badge { font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase; display: inline-block; }
+                .hadir { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+                .terlambat { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+                .sakit { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+                .izin { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+                .alpa { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+                
+                .summary-table { width: 45%; margin-top: 15px; border: 1px solid #444; float: left; }
+                .summary-table th, .summary-table td { padding: 5px 8px; font-size: 11px; }
+                
+                .footer-space { clear: both; margin-top: 25px; display: flex; justify-content: space-between; font-size: 12px; }
+                .signature-box { text-align: center; width: 200px; }
+            </style>
+        </head>
+        <body>`;
+
+        // 3. Looping generate lembar PDF untuk masing-masing kelas
+        daftarKelas.forEach(namaKelas => {
+            let listSiswaKelas = kelasGroup[namaKelas];
+            let tHadir = 0, tTerlambat = 0, tSakit = 0, tIzin = 0, tAlpa = 0;
+
+            htmlContent += `
+            <div class="page-break">
+                <div class="header">
+                    <h1>LAPORAN REKAPITULASI PRESENSI SISWA</h1>
+                    <p>Sistem E-Absensi Cloud Scanner Digital - All Status</p>
+                </div>
+                
+                <div class="meta-container">
+                    <div>KELAS : <span style="color:#545BE6; font-size:15px;">${namaKelas}</span></div>
+                    <div>PERIODE : ${judulPeriode}</div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 5%; text-align:center;">No</th>
+                            <th style="width: 12%">Tanggal</th>
+                            <th style="width: 15%">NISN</th>
+                            <th>Nama Siswa</th>
+                            <th style="width: 12%">Scan Masuk</th>
+                            <th style="width: 12%">Scan Pulang</th>
+                            <th style="width: 18%">Status Akhir</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            let noAbsen = 1;
+            listSiswaKelas.forEach(a => {
+                let status = a.status_masuk || 'Hadir';
+                let badgeClass = 'hadir';
+                let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "-";
+
+                if (status === 'Hadir') { tHadir++; badgeClass = 'hadir'; }
+                else if (status === 'Terlambat') { tTerlambat++; badgeClass = 'terlambat'; }
+                else if (status === 'Sakit') { tSakit++; badgeClass = 'sakit'; }
+                else if (status === 'Izin') { tIzin++; badgeClass = 'izin'; }
+                else if (status === 'Alpa' || status === 'Lupa Scan Masuk') { tAlpa++; badgeClass = 'alpa'; }
+
                 htmlContent += `
                 <tr>
-                    <td style="text-align:center;">${index++}</td>
+                    <td style="text-align:center;">${noAbsen++}</td>
                     <td>${tglRow}</td>
                     <td>${a.nisn || '-'}</td>
                     <td style="font-weight:600;">${a.nama_siswa || a.nama}</td>
-                    <td>${a.kelas || '-'}</td>
                     <td>${a.jam_datang || '-'}</td>
                     <td>${a.jam_pulang || '-'}</td>
                     <td><span class="badge ${badgeClass}">${status}</span></td>
                 </tr>`;
-            }
+            });
+
+            htmlContent += `
+                    </tbody>
+                </table>
+
+                <table class="summary-table">
+                    <thead>
+                        <tr><th colspan="2" style="background:#333; color:white; text-align:center; font-size:10px;">Kalkulasi Ringkasan Kelas ${namaKelas}</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Hadir (Tepat Waktu)</td><td style="font-weight:bold; text-align:right; color:#065f46;">${tHadir} Siswa</td></tr>
+                        <tr><td>Terlambat</td><td style="font-weight:bold; text-align:right; color:#92400e;">${tTerlambat} Siswa</td></tr>
+                        <tr><td>Sakit</td><td style="font-weight:bold; text-align:right; color:#0369a1;">${tSakit} Siswa</td></tr>
+                        <tr><td>Izin</td><td style="font-weight:bold; text-align:right; color:#b45309;">${tIzin} Siswa</td></tr>
+                        <tr><td>Alpa / Tanpa Keterangan</td><td style="font-weight:bold; text-align:right; color:#991b1b;">${tAlpa} Siswa</td></tr>
+                        <tr style="background:#eaeded; font-weight:bold;"><td>Total Log Data</td><td style="text-align:right;">${listSiswaKelas.length} Baris</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="footer-space">
+                    <div class="signature-box">
+                        <p>Mengetahui,</p>
+                        <p style="margin-top:55px; font-weight:bold; border-top:1px solid #333; padding-top:3px;">Wali Kelas ${namaKelas}</p>
+                    </div>
+                    <div class="signature-box">
+                        <p>Medan, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+                        <p style="margin-top:55px; font-weight:bold; border-top:1px solid #333; padding-top:3px;">Admin Absensi</p>
+                    </div>
+                </div>
+            </div>`;
         });
-        if(index === 1) {
-            htmlContent += `<tr><td colspan="8" style="text-align:center; color:#777; padding:20px;">Tidak ada riwayat absensi pada tanggal/bulan ini.</td></tr>`;
-        }
+
         htmlContent += `
-                </tbody>
-            </table>
-            <table class="summary-table">
-                <thead>
-                    <tr><th colspan="2" style="background:#333; color:white; text-align:center;">Kalkulasi Ringkasan</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Total Hadir Tepat Waktu</td><td style="font-weight:bold; text-align:right;">${totalHadir} Siswa</td></tr>
-                    <tr><td>Total Terlambat</td><td style="font-weight:bold; text-align:right; color:#b45309;">${totalTerlambat} Siswa</td></tr>
-                    <tr><td>Total Sakit</td><td style="font-weight:bold; text-align:right; color:#0369a1;">${totalSakit} Siswa</td></tr>
-                    <tr><td>Total Izin</td><td style="font-weight:bold; text-align:right; color:#b45309;">${totalIzin} Siswa</td></tr>
-                    <tr><td>Total Alpa / Tanpa Keterangan</td><td style="font-weight:bold; text-align:right; color:#991b1b;">${totalAlpa} Siswa</td></tr>
-                    <tr style="background:#f2f2f2; font-weight:bold;"><td>Total Log Entri Data</td><td style="text-align:right;">${index-1} Baris</td></tr>
-                </tbody>
-            </table>
-            <div class="footer">
-                <div>
-                    <p>Mengetahui,</p>
-                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; padding-top:5px; width:180px; text-align:center;">Kepala Sekolah</p>
-                </div>
-                <div>
-                    <p>Medan, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
-                    <p style="margin-top:60px; font-weight:bold; border-top:1px solid #333; padding-top:5px; width:180px; text-align:center;">Admin Absensi</p>
-                </div>
-            </div>
             <script>
                 window.onload = function() { 
                     window.print(); 
-                    setTimeout(function() { window.close(); }, 500);
+                    setTimeout(function() { window.close(); }, 600);
                 }
             <\/script>
         </body>
         </html>`;
+
         printWindow.document.write(htmlContent);
         printWindow.document.close();
     }
@@ -541,11 +543,8 @@
       activeScanner.render((text) => {
         stopScanner(); Swal.fire({ title: 'Verifikasi Absen...', didOpen: () => Swal.showLoading() });
         fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) }).then(res => res.json()).then(res => {
-          if (res.success) {
-            Swal.fire('Sukses', res.message, 'success').then(() => startScanner());
-          } else {
-            Swal.fire('Gagal', res.message, 'error').then(() => startScanner());
-          }
+          if (res.success) { Swal.fire('Sukses', res.message, 'success').then(() => startScanner()); } 
+          else { Swal.fire('Gagal', res.message, 'error').then(() => startScanner()); }
         });
       }, () => {});
     }
@@ -555,7 +554,6 @@
         currentModalType = type;
         const form = document.getElementById('dynamicForm');
         document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Siswa' : 'Tambah Guru';
-        
         if(type === 'siswa') {
             form.innerHTML = `
                 <input type="number" id="form1" placeholder="NISN" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
@@ -580,27 +578,20 @@
       e.preventDefault();
       Swal.fire({ title: 'Memproses data...' });
       let payload = {};
-      
       if(currentModalType === 'siswa') {
           payload = { action: 'tambahSiswa', nisn: document.getElementById('form1').value, nama: document.getElementById('form2').value, kelas: document.getElementById('form3').value, whatsapp: document.getElementById('form4').value };
       } else {
           payload = { action: 'tambahGuru', nip: document.getElementById('form1').value, nama: document.getElementById('form2').value, mapel: document.getElementById('form3').value };
       }
-      
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { closeModal(); refreshDatabase(); Swal.fire('Berhasil!', 'Data tersimpan ke cloud.', 'success'); });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { closeModal(); refreshDatabase(); Swal.fire('Berhasil!', 'Data tersimpan.', 'success'); });
     }
     function simpanManual(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan absensi...' });
         const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { 
-                Swal.fire('Sukses', res.message, 'success'); 
-                document.getElementById('mNisn').value = ''; 
-                refreshDatabase();
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
-            }
+            if(res.success) { Swal.fire('Sukses', res.message, 'success'); document.getElementById('mNisn').value = ''; refreshDatabase(); } 
+            else { Swal.fire('Gagal', res.message, 'error'); }
         });
     }
     window.onload = () => {
