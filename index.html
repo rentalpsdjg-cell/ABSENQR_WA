@@ -13,6 +13,7 @@
   
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzRRcgFtPucgtx3mQE_96MDDyfHL15zlaf5xR8NSbiSAa_MAmcEYfCll9uTVbbFP9wD/exec"; 
+    let scanMode = "siswa"; // Default mode scan adalah siswa
     
     tailwind.config = {
       theme: {
@@ -31,7 +32,6 @@
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #131535; border-radius: 10px; }
     
-    /* CSS Khusus Cetak: Memastikan Hanya Kartu yang Terprint */
     @media print {
       body * { visibility: hidden; background: none !important; }
       #printCardArea, #printCardArea * { visibility: visible; }
@@ -107,7 +107,11 @@
           </div>
 
           <div id="view-scan" class="view-section max-w-xl mx-auto bg-bCard p-4 md:p-6 rounded-2xl border border-white/5 text-center space-y-4">
-              <p class="text-xs md:text-sm font-semibold text-bMuted">Arahkan Kartu QR Siswa ke Kamera</p>
+              <div class="flex justify-center bg-bDark p-1.5 rounded-xl max-w-xs mx-auto border border-white/5">
+                  <button id="btnScanSiswa" onclick="changeScanMode('siswa')" class="flex-1 py-2 text-xs font-bold rounded-lg bg-bActive text-white transition-all">SCAN SISWA</button>
+                  <button id="btnScanGuru" onclick="changeScanMode('guru')" class="flex-1 py-2 text-xs font-bold rounded-lg text-bMuted transition-all">SCAN GURU</button>
+              </div>
+              <p id="scanLabelText" class="text-xs md:text-sm font-semibold text-bMuted">Arahkan Kartu QR Siswa ke Kamera</p>
               <div class="w-full aspect-video rounded-xl overflow-hidden bg-bDark border border-white/10 p-1 flex items-center justify-center relative">
                   <div id="reader" class="w-full"></div>
               </div>
@@ -196,7 +200,7 @@
           <h3 class="font-bold text-sm text-emerald-400 tracking-wider">KARTU QR GENERATED</h3>
           
           <div id="printCardArea" class="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 rounded-xl border border-white/20 text-center shadow-2xl inline-block w-full">
-              <div class="text-[10px] font-bold tracking-widest text-indigo-400 uppercase mb-0.5">KARTU DIGITAL ABSENSI</div>
+              <div id="cardLabelTop" class="text-[10px] font-bold tracking-widest text-indigo-400 uppercase mb-0.5">KARTU DIGITAL ABSENSI</div>
               <div class="text-[9px] text-slate-500 border-b border-white/10 pb-2 mb-4 font-medium">SMK/SMP CLOUD SYSTEM</div>
               
               <div class="bg-white p-3 rounded-xl inline-block shadow-lg mb-4">
@@ -218,6 +222,23 @@
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
     
+    function changeScanMode(mode) {
+        scanMode = mode;
+        const btnSiswa = document.getElementById('btnScanSiswa');
+        const btnGuru = document.getElementById('btnScanGuru');
+        const label = document.getElementById('scanLabelText');
+        
+        if (mode === 'siswa') {
+            btnSiswa.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-bActive text-white transition-all";
+            btnGuru.className = "flex-1 py-2 text-xs font-bold rounded-lg text-bMuted transition-all";
+            label.innerText = "Arahkan Kartu QR Siswa ke Kamera";
+        } else {
+            btnGuru.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-cyan-600 text-white transition-all";
+            btnSiswa.className = "flex-1 py-2 text-xs font-bold rounded-lg text-bMuted transition-all";
+            label.innerText = "Arahkan Kartu QR GURU ke Kamera";
+        }
+    }
+
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebarMenu');
       const overlay = document.getElementById('sidebarOverlay');
@@ -370,10 +391,17 @@
             let gHtml = '';
             if(db.guru) {
                 db.guru.forEach(g => {
-                    gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5">
-                        <p class="text-xs font-bold text-cyan-400">${g.nip}</p>
-                        <h4 class="text-sm font-bold">${g.nama}</h4>
-                        <p class="text-xs text-bMuted">Mapel: ${g.mapel}</p>
+                    gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-cyan-400">${g.nip}</p>
+                            <h4 class="text-sm font-bold truncate">${g.nama}</h4>
+                            <p class="text-xs text-bMuted">Mapel: ${g.mapel}</p>
+                        </div>
+                        <div class="mt-3 pt-2.5 border-t border-white/5 flex gap-2">
+                            <button onclick="bukaKartuQR_Guru('${g.nip}', '${g.nama.replace(/'/g, "\\'")}', '${g.mapel}')" class="w-full bg-bDark hover:bg-slate-800 text-[11px] font-semibold py-1.5 rounded-lg text-cyan-400 transition-all flex items-center justify-center gap-1 border border-white/5 shadow-sm">
+                                <i class="fas fa-qrcode"></i> Lihat Kartu Guru
+                            </button>
+                        </div>
                     </div>`;
                 });
             }
@@ -382,16 +410,23 @@
         });
     }
 
-    // --- FUNGSIONAL BARU: GENERATOR QR BARCODE VIA ZXING-API YANG AKTIF ---
     function bukaKartuQR(nisn, nama, kelas) {
-        // Menggunakan zxing QR generator cloud api yang super cepat & up-to-date
         const cleanNisn = encodeURIComponent(nisn.trim());
+        document.getElementById('cardLabelTop').innerText = "KARTU DIGITAL ABSENSI";
         document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanNisn}&margin=10`;
-        
         document.getElementById('modalQrNama').innerText = nama;
         document.getElementById('modalQrNisn').innerText = "ID NISN: " + nisn;
         document.getElementById('modalQrKelas').innerText = "Kelas " + kelas;
-        
+        document.getElementById('qrModal').classList.remove('hidden');
+    }
+
+    function bukaKartuQR_Guru(nip, nama, mapel) {
+        const cleanNip = encodeURIComponent(nip.trim());
+        document.getElementById('cardLabelTop').innerText = "KARTU IDENTITAS GURU";
+        document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanNip}&margin=10`;
+        document.getElementById('modalQrNama').innerText = nama;
+        document.getElementById('modalQrNisn').innerText = "NIP: " + nip;
+        document.getElementById('modalQrKelas').innerText = "Mapel: " + mapel;
         document.getElementById('qrModal').classList.remove('hidden');
     }
     
@@ -483,7 +518,12 @@
       activeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
       activeScanner.render((text) => {
         stopScanner(); Swal.fire({ title: 'Verifikasi Absen...', didOpen: () => Swal.showLoading() });
-        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) }).then(res => res.json()).then(res => {
+        
+        // Tentukan payload berdasarkan mode scan aktif (siswa atau guru)
+        let actionTarget = scanMode === "siswa" ? "scanQR" : "scanQRGuru";
+        let payload = scanMode === "siswa" ? { action: actionTarget, nisn: text } : { action: actionTarget, nip: text };
+        
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
           if (res.success) { Swal.fire('Sukses', res.message, 'success').then(() => startScanner()); } 
           else { Swal.fire('Gagal', res.message, 'error').then(() => startScanner()); }
         });
@@ -541,7 +581,7 @@
           if(currentModalType === 'siswa') {
               bukaKartuQR(v1, v2, v3);
           } else {
-              Swal.fire('Berhasil!', 'Data Guru berhasil disimpan.', 'success');
+              bukaKartuQR_Guru(v1, v2, v3);
           }
       }).catch(err => Swal.fire('Error', 'Gagal menyimpan: ' + err, 'error'));
     }
