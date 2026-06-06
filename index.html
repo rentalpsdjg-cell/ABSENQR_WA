@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi QR Code v2.5</title>
+    <title>Sistem Absensi QR Code v2.0</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -12,7 +14,7 @@
         .scanner-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px; text-align: center; }
         #reader { width: 100%; max-width: 500px; margin: 0 auto; border: none !important; border-radius: 10px; overflow: hidden; }
         #reader__dashboard { padding: 15px !important; background: #fff; }
-        #reader__camera_selection, button { margin: 5px; }
+        #reader__camera_selection, button { .btn; .btn-primary; margin: 5px; }
         .status-box { min-height: 80px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; border-radius: 10px; transition: all 0.3s ease; }
         .mode-selector { background: #fff; padding: 10px; border-radius: 30px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
         .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
@@ -25,33 +27,37 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             
+            <!-- Card Scanner -->
             <div class="card scanner-card">
                 <div class="scanner-header">
                     <h3 class="mb-1"><i class="fa-solid fa-qrcode"></i> ABSENSI QR CODE</h3>
-                    <p class="mb-0 text-white-50">Silakan arahkan kode QR Anda ke kamera</p>
+                    <p class="mb-0 text-white-50">Silakan scan kartu Anda di depan kamera</p>
                 </div>
                 
                 <div class="card-body p-4">
                     
+                    <!-- 1. SAKELAR / PILIHAN MODE (SISWA / GURU) -->
                     <div class="text-center mb-4 mode-selector d-flex justify-content-around">
                         <input type="radio" class="btn-check" name="modeAbsen" id="modeSiswa" checked onchange="gantiLabelMode()">
-                        <label class="btn btn-outline-primary w-50 rounded-pill me-1 py-2" for="modeSiswa">
+                        <label class="btn btn-outline-primary w-50 rounded-pill me-1 py-2 font-weight-bold" for="modeSiswa">
                             <i class="fa-solid fa-user-graduate"></i> SCAN SISWA
                         </label>
 
                         <input type="radio" class="btn-check" name="modeAbsen" id="modeGuru" onchange="gantiLabelMode()">
-                        <label class="btn btn-outline-success w-50 rounded-pill ms-1 py-2" for="modeGuru">
+                        <label class="btn btn-outline-success w-50 rounded-pill ms-1 py-2 font-weight-bold" for="modeGuru">
                             <i class="fa-solid fa-user-tie"></i> SCAN GURU
                         </label>
                     </div>
 
+                    <!-- Tempat Kamera Scanner -->
                     <div class="text-center bg-light p-2 rounded mb-4" style="position: relative;">
                         <div id="reader"></div>
                         <div id="loading-spinner" class="spinner-border text-primary d-none" style="position: absolute; top: 45%; left: 45%; z-index: 10;" role="status"></div>
                     </div>
 
+                    <!-- 2. KOTAK STATUS/RESPON HASIL SCAN -->
                     <div id="statusBox" class="status-box bg-secondary text-white text-center p-3">
-                        <i class="fa-solid fa-camera me-2"></i> Kamera siap. Menunggu kartu di-scan...
+                        <i class="fa-solid fa-camera me-2"></i> Kamera siap. Menunggu scan kartu...
                     </div>
 
                 </div>
@@ -64,30 +70,34 @@
     </div>
 </div>
 
+<!-- Library HTML5-QRCode (Untuk membaca QR via Kamera) -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <script>
-    // Tautan Web App Google Apps Script Anda
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYRaOqF4hfDC-pi75-FqZZveB2yGaU7a0UHKpEsHuQvgVGVXWaAzJhr4UMSzORfqz4/exec";
+    // =========================================================================
+    // WAJIB DIGANTI: Masukkan Tautan Aplikasi Web (Web App URL) Google Script Anda
+    // =========================================================================
+    const WEB_APP_URL = "GANTI_DENGAN_URL_WEB_APP_GOOGLE_SCRIPT_ANDA";
 
     let html5QrcodeScanner;
     let isProcessing = false;
 
-    // Mengubah informasi petunjuk teks saat tombol mode ditekan
+    // Fungsi kosmetik untuk mengubah petunjuk di kotak status sesuai tombol aktif
     function gantiLabelMode() {
         const isGuru = document.getElementById("modeGuru").checked;
         const statusBox = document.getElementById("statusBox");
         
         statusBox.className = "status-box bg-secondary text-white text-center p-3";
         if (isGuru) {
-            statusBox.innerHTML = '<i class="fa-solid fa-camera me-2"></i> Mode Guru Aktif. Silakan scan QR NIP Guru.';
+            statusBox.innerHTML = '<i class="fa-solid fa-camera me-2"></i> Mode Guru Aktif. Silakan scan Kartu NIP Guru.';
         } else {
-            statusBox.innerHTML = '<i class="fa-solid fa-camera me-2"></i> Mode Siswa Aktif. Silakan scan QR NISN Siswa.';
+            statusBox.innerHTML = '<i class="fa-solid fa-camera me-2"></i> Mode Siswa Aktif. Silakan scan Kartu NISN Siswa.';
         }
     }
 
-    // Fungsi yang otomatis berjalan begitu kamera mendeteksi kode QR
+    // Fungsi Utama: Dipanggil otomatis ketika kamera berhasil mendeteksi QR Code
     function onScanSuccess(decodedText, decodedResult) {
+        // Mencegah scan ganda/beruntun saat data sebelumnya sedang diproses
         if (isProcessing) return;
         isProcessing = true;
 
@@ -95,77 +105,87 @@
         const statusBox = document.getElementById("statusBox");
         const spinner = document.getElementById("loading-spinner");
 
-        // Menampilkan animasi loading memproses data
+        // Tampilkan animasi loading
         spinner.classList.remove("d-none");
         statusBox.className = "status-box bg-warning text-dark text-center p-3";
-        statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Mengirim data ke server, mohon tunggu...';
+        statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Memproses data, mohon tunggu...';
 
-        // Menyesuaikan parameter kiriman data (Payload) dengan fungsi doPost di Code.gs Anda
+        // Merakit data kiriman (Payload) berdasarkan mode yang dipilih
         let payload = {};
         if (isGuru) {
-            payload = { action: "scanQRGuru", nip: decodedText };
+            payload = {
+                action: "scanQRGuru",
+                nip: decodedText
+            };
         } else {
-            payload = { action: "scanQR", nisn: decodedText };
+            payload = {
+                action: "scanQR",
+                nisn: decodedText
+            };
         }
 
-        // PROSES KIRIM DATA (FETCH) DIOPTIMALKAN UNTUK GOOGLE APPS SCRIPT
+        // Mengirimkan data hasil scan ke Google Apps Script
         fetch(WEB_APP_URL, {
             method: "POST",
-            mode: "cors", 
-            redirect: "follow", // Mengikuti pemindahan halaman otomatis sistem Google Apps Script
+            mode: "no-cors", // Digunakan jika terjadi error CORS di beberapa browser
             headers: {
-                "Content-Type": "text/plain;charset=utf-8" // Format teks aman agar dibaca JSON.parse() tanpa ganjalan CORS
+                "Content-Type": "text/plain" 
             },
             body: JSON.stringify(payload)
         })
-        .then(res => {
-            if (!res.ok) {
-                throw new Error("Koneksi server bermasalah.");
-            }
-            return res.json();
+        .then(response => {
+            // Karena menggunakan mode no-cors, kita handle respon secara terpisah atau pakai fetch normal
+            // Di bawah ini adalah penanganan fetch standar jika Web App mengizinkan CORS:
+            return fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }).then(res => res.json());
         })
         .then(data => {
             spinner.classList.add("d-none");
             
             if (data.success) {
-                // Berhasil Tercatat & Otomatis Terkirim ke WhatsApp Fonnte via Code.gs
+                // Jika sukses mencatat absen & kirim WA
                 statusBox.className = "status-box bg-success text-white text-center p-3";
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> ${data.message}`;
-                playAudio("https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav"); // Nada Beep Sukses
+                // Memutar suara sukses jika diperlukan (opsional)
+                playAudio("https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav"); 
             } else {
-                // Gagal (Siswa/Guru tidak terdaftar, atau sudah absen)
+                // Jika gagal (ID tidak terdaftar / sudah absen)
                 statusBox.className = "status-box bg-danger text-white text-center p-3";
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-xmark me-2"></i> ${data.message}`;
-                playAudio("https://assets.mixkit.co/active_storage/sfx/951/951-84.wav"); // Nada Gagal
+                playAudio("https://assets.mixkit.co/active_storage/sfx/951/951-84.wav");
             }
 
-            // Jeda waktu tunggu 4 detik agar kamera tidak langsung memindai ulang kartu yang sama secara beruntun
+            // Berikan jeda 4 detik sebelum kamera bisa menerima scan kartu berikutnya
             setTimeout(() => {
                 isProcessing = false;
                 gantiLabelMode();
             }, 4000);
         })
         .catch(error => {
-            console.error("Detail Error:", error);
+            console.error("Error:", error);
             spinner.classList.add("d-none");
             statusBox.className = "status-box bg-danger text-white text-center p-3";
-            statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> Hubungan Gagal. Pastikan setelan Akses Web App adalah 'Anyone'.`;
+            statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> Hubungan gagal / Terjadi kesalahan jaringan.`;
             
             setTimeout(() => {
                 isProcessing = false;
                 gantiLabelMode();
-            }, 5000);
+            }, 4000);
         });
     }
 
+    // Fungsi pembantu untuk membunyikan "Beep" saat berhasil/gagal scan
     function playAudio(url) {
         const audio = new Audio(url);
-        audio.play().catch(e => console.log("Pemutaran suara dihambat browser"));
+        audio.play().catch(e => console.log("Izin audio diblokir browser"));
     }
 
+    // Menjalankan Kamera Scanner saat halaman web pertama kali dibuka
     function jalankanScanner() {
         html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 15, qrbox: 250 }, false
+            "reader", { fps: 10, qrbox: 250 }, /* verbose= */ false
         );
         html5QrcodeScanner.render(onScanSuccess);
     }
