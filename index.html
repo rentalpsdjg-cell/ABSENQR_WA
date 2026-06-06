@@ -135,7 +135,7 @@
           <div id="view-manual" class="view-section max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
               <h3 class="font-bold text-sm text-center">Input Keterangan Manual</h3>
               <form onsubmit="simpanManual(event)" class="space-y-3">
-                  <input type="number" id="mNisn" placeholder="Nomor Induk / NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+                  <input type="number" id="mNisn" placeholder="Nomor Induk / NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                   <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                       <option value="Sakit">Sakit</option>
                       <option value="Izin">Izin</option>
@@ -301,7 +301,6 @@
         const blnFilter = document.getElementById('filterBulan').value;
         let judulPeriode = currentTab === 'harian' ? `Tanggal: ${tglFilter || '-'}` : `Bulan: ${blnFilter || '-'}`;
 
-        // Counter Kalkulasi Total
         let totalHadir = 0, totalTerlambat = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0;
 
         let printWindow = window.open('', '_blank');
@@ -326,7 +325,6 @@
                 .izin { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
                 .alpa { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
                 
-                /* Ringkasan Box */
                 .summary-table { width: 40%; margin-top: 30px; border: 1px solid #333; }
                 .summary-table th, .summary-table td { padding: 6px 10px; font-size: 12px; }
                 .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 13px; }
@@ -369,7 +367,6 @@
                 let badgeClass = 'hadir';
                 let status = a.status_masuk || 'Hadir';
                 
-                // Kalkulasi Counter & Penyesuaian Badge
                 if(status === 'Hadir') { totalHadir++; badgeClass = 'hadir'; }
                 else if(status === 'Terlambat') { totalTerlambat++; badgeClass = 'terlambat'; }
                 else if(status === 'Sakit') { totalSakit++; badgeClass = 'sakit'; }
@@ -436,14 +433,36 @@
         printWindow.document.close();
     }
 
+    // --- FUNGSI SCAN QR + DIRECT NOTIF WA GRATIS (UPDATED) ---
     function startScanner() {
       if (activeScanner) return;
       activeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
       activeScanner.render((text) => {
-        stopScanner(); Swal.fire({ title: 'Verifikasi Absen...', didOpen: () => Swal.showLoading() });
-        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) }).then(res => res.json()).then(res => {
-          if (res.success) {
-            Swal.fire('Sukses', res.message, 'success').then(() => startScanner());
+        stopScanner(); 
+        Swal.fire({ title: 'Verifikasi Absen...', didOpen: () => Swal.showLoading() });
+        
+        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: text }) })
+        .then(res => res.json())
+        .then(res => {
+          if (res.success && res.data) {
+            let d = res.data;
+            let infoPesan = `Yth. Orang Tua/Wali dari *${d.nama}* (Kelas ${d.kelas}), menginfokan bahwa anak Anda telah melakukan presensi *${d.tipe}* pada pukul *${d.jam}*. Terima kasih.`;
+            let formatWa = d.wa.startsWith('0') ? '62' + d.wa.slice(1) : d.wa;
+            
+            Swal.fire({
+              title: 'Absen Berhasil!',
+              text: res.message,
+              icon: 'success',
+              showCancelButton: true,
+              confirmButtonColor: '#25D366',
+              confirmButtonText: '<i class="fab fa-whatsapp"></i> Kirim WA Ortu',
+              cancelButtonText: 'Tutup'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.open(`https://api.whatsapp.com/send?phone=${formatWa}&text=${encodeURIComponent(infoPesan)}`, '_blank');
+              }
+              startScanner();
+            });
           } else {
             Swal.fire('Gagal', res.message, 'error').then(() => startScanner());
           }
@@ -451,8 +470,44 @@
       }, () => {});
     }
 
-    function stopScanner() { if (activeScanner) { activeScanner.clear().then(() => { activeScanner = null; }); } }
+    function stopScanner() { if (activeScanner) { return activeScanner.clear().then(() => { activeScanner = null; }); } }
     
+    // --- FUNGSI ABSEN MANUAL + DIRECT NOTIF WA GRATIS (UPDATED) ---
+    function simpanManual(e) {
+        e.preventDefault();
+        Swal.fire({ title: 'Menyimpan absensi...', didOpen: () => Swal.showLoading() });
+        const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
+        
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success && res.data) { 
+                let d = res.data;
+                let infoPesan = `Yth. Orang Tua/Wali dari *${d.nama}* (Kelas ${d.kelas}), menginfokan bahwa anak Anda hari ini tercatat *${d.tipe}* pada jam sekolah. Terima kasih.`;
+                let formatWa = d.wa.startsWith('0') ? '62' + d.wa.slice(1) : d.wa;
+
+                document.getElementById('mNisn').value = ''; 
+                refreshDatabase();
+
+                Swal.fire({
+                  title: 'Sukses',
+                  text: res.message,
+                  icon: 'success',
+                  showCancelButton: true,
+                  confirmButtonColor: '#25D366',
+                  confirmButtonText: '<i class="fab fa-whatsapp"></i> Kirim WA Ortu',
+                  cancelButtonText: 'Selesai'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    window.open(`https://api.whatsapp.com/send?phone=${formatWa}&text=${encodeURIComponent(infoPesan)}`, '_blank');
+                  }
+                });
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        });
+    }
+
     function openModal(type) {
         currentModalType = type;
         const form = document.getElementById('dynamicForm');
@@ -460,47 +515,55 @@
         
         if(type === 'siswa') {
             form.innerHTML = `
-                <input type="number" id="form1" placeholder="NISN" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form2" placeholder="Nama Siswa" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form3" placeholder="Kelas" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="number" id="form4" placeholder="WhatsApp Ortu (628...)" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Submit Siswa</button>
+                <input type="number" id="form1" placeholder="NISN" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <input type="text" id="form2" placeholder="Nama Siswa" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <input type="text" id="form3" placeholder="Kelas" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <input type="number" id="form4" placeholder="No. WA Orang Tua (Contoh: 08123...)" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Simpan Data</button>
             `;
         } else {
             form.innerHTML = `
-                <input type="number" id="form1" placeholder="NIP Guru" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form2" placeholder="Nama Guru" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <input type="text" id="form3" placeholder="Mata Pelajaran" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl text-xs font-bold uppercase">Submit Guru</button>
+                <input type="number" id="form1" placeholder="NIP" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <input type="text" id="form2" placeholder="Nama Guru" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <input type="text" id="form3" placeholder="Mata Pelajaran" required class="w-full bg-bDark border border-white/10 p-3 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl text-xs font-bold uppercase">Simpan Data</button>
             `;
         }
         document.getElementById('inputModal').classList.remove('hidden');
     }
-    
-    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      Swal.fire({ title: 'Memproses data...' });
-      let payload = {};
-      
-      if(currentModalType === 'siswa') {
-          payload = { action: 'tambahSiswa', nisn: document.getElementById('form1').value, nama: document.getElementById('form2').value, kelas: document.getElementById('form3').value, whatsapp: document.getElementById('form4').value };
-      } else {
-          payload = { action: 'tambahGuru', nip: document.getElementById('form1').value, nama: document.getElementById('form2').value, mapel: document.getElementById('form3').value };
-      }
-      
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { closeModal(); refreshDatabase(); Swal.fire('Berhasil!', 'Data tersimpan ke cloud.', 'success'); });
+    function closeModal() {
+        document.getElementById('inputModal').classList.add('hidden');
     }
 
-    function simpanManual(e) {
+    function handleFormSubmit(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Menyimpan absensi...' });
-        const payload = { action: 'absenManual', nisn: document.getElementById('mNisn').value, status: document.getElementById('mStatus').value, tipe: document.getElementById('mTipe').value };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { 
-                Swal.fire('Sukses', res.message, 'success'); 
-                document.getElementById('mNisn').value = ''; 
+        Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
+        
+        let payload = {};
+        if(currentModalType === 'siswa') {
+            payload = {
+                action: 'addSiswa',
+                nisn: document.getElementById('form1').value,
+                nama: document.getElementById('form2').value,
+                kelas: document.getElementById('form3').value,
+                wa: document.getElementById('form4').value
+            };
+        } else {
+            payload = {
+                action: 'addGuru',
+                nip: document.getElementById('form1').value,
+                nama: document.getElementById('form2').value,
+                mapel: document.getElementById('form3').value
+            };
+        }
+
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                Swal.fire('Sukses', res.message, 'success');
+                closeModal();
                 refreshDatabase();
             } else {
                 Swal.fire('Gagal', res.message, 'error');
@@ -508,11 +571,14 @@
         });
     }
 
+    // Jam Realtime di Header
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('clockDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }) + " - " + now.toLocaleTimeString('id-ID');
+    }, 1000);
+
+    // Load Pertama Kali
     window.onload = () => {
-        const tgl = new Date();
-        document.getElementById('filterTanggal').value = tgl.toISOString().substring(0, 10);
-        document.getElementById('filterBulan').value = tgl.toISOString().substring(0, 7);
-        document.getElementById('clockDisplay').innerText = tgl.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
         loadStats();
     };
   </script>
