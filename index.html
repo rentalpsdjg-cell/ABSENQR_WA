@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-ABSENSI ADMIN SYSTEM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
@@ -272,7 +272,7 @@
 
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', currentTabGuru = 'harian', cacheAbsensi = [], cacheSiswa = [], cacheGuru = [], currentModalType = '';
-    let dataSiswaTerfilterGlobal = [], dataGuruTerfilterGlobal = []; // Menyimpan state data pencarian terakhir
+    let dataSiswaTerfilterGlobal = [], dataGuruTerfilterGlobal = []; 
     
     window.addEventListener('DOMContentLoaded', () => {
       const hariIni = new Date().toISOString().split('T')[0];
@@ -497,6 +497,7 @@
         }).catch(() => {});
     }
 
+    /* FIX PADA PENCARIAN TANGGAL LAPORAN SISWA */
     function renderDataRekap() {
         const search = document.getElementById('searchRekapSiswa').value.toLowerCase();
         const status = document.getElementById('filterStatusSiswa').value;
@@ -504,19 +505,37 @@
         const tglVal = document.getElementById('filterTanggal').value;
         const blnVal = document.getElementById('filterBulan').value;
 
+        let targetTglStr = "";
+        if (tglVal) {
+            const d = new Date(tglVal);
+            if (!isNaN(d.getTime())) {
+                targetTglStr = d.toISOString().split('T')[0];
+            }
+        }
+
         dataSiswaTerfilterGlobal = cacheSiswa.map(s => {
             let log = cacheAbsensi.filter(a => a.id_User == s.nisn);
             let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
 
             if (currentTab === 'harian') {
-                let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tglVal);
+                let hariIniLog = log.find(a => {
+                    if (!a.tanggal) return false;
+                    const logDate = new Date(a.tanggal);
+                    if (isNaN(logDate.getTime())) return false;
+                    return logDate.toISOString().split('T')[0] === targetTglStr;
+                });
+
                 if (hariIniLog) {
                     statusFinal = hariIniLog.status || "Hadir";
                     jamMasuk = hariIniLog.jam_Masuk || "-";
                     jamPulang = hariIniLog.jam_Pulang || "-";
                 }
             } else {
-                let bulanLog = log.filter(a => a.tanggal.substring(0,7) === blnVal);
+                let bulanLog = log.filter(a => {
+                    if (!a.tanggal) return false;
+                    const logDate = new Date(a.tanggal);
+                    return logDate.toISOString().substring(0,7) === blnVal;
+                });
                 let hadirCount = bulanLog.filter(a => a.status === 'Hadir').length;
                 let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
                 let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
@@ -555,6 +574,7 @@
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap tidak ditemukan.</p>';
     }
 
+    /* FIX PADA PENCARIAN TANGGAL LAPORAN GURU */
     function renderDataRekapGuru() {
         const search = document.getElementById('searchRekapGuru').value.toLowerCase();
         const status = document.getElementById('filterStatusGuru').value;
@@ -562,19 +582,37 @@
         const tglVal = document.getElementById('filterTanggalGuru').value;
         const blnVal = document.getElementById('filterBulanGuru').value;
 
+        let targetTglStr = "";
+        if (tglVal) {
+            const d = new Date(tglVal);
+            if (!isNaN(d.getTime())) {
+                targetTglStr = d.toISOString().split('T')[0];
+            }
+        }
+
         dataGuruTerfilterGlobal = cacheGuru.map(g => {
             let log = cacheAbsensi.filter(a => a.id_User == g.nip);
             let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
 
             if (currentTabGuru === 'harian') {
-                let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tglVal);
+                let hariIniLog = log.find(a => {
+                    if (!a.tanggal) return false;
+                    const logDate = new Date(a.tanggal);
+                    if (isNaN(logDate.getTime())) return false;
+                    return logDate.toISOString().split('T')[0] === targetTglStr;
+                });
+
                 if (hariIniLog) {
                     statusFinal = hariIniLog.status || "Hadir";
                     jamMasuk = hariIniLog.jam_Masuk || "-";
                     jamPulang = hariIniLog.jam_Pulang || "-";
                 }
             } else {
-                let bulanLog = log.filter(a => a.tanggal.substring(0,7) === blnVal);
+                let bulanLog = log.filter(a => {
+                    if (!a.tanggal) return false;
+                    const logDate = new Date(a.tanggal);
+                    return logDate.toISOString().substring(0,7) === blnVal;
+                });
                 let hadirCount = bulanLog.filter(a => a.status === 'Hadir').length;
                 let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
                 let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
@@ -613,13 +651,12 @@
         document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap guru tidak ditemukan.</p>';
     }
 
-    // FUNGSI UNTUK MENCETAK LAPORAN PDF SISWA (TABEL FORMAL)
+    // FUNCTION ACTION EXPORT LAPORAN PDF SISWA 
     function cetakPdfSiswa() {
         if (dataSiswaTerfilterGlobal.length === 0) {
             Swal.fire('Informasi', 'Tidak ada data siswa untuk dicetak', 'warning');
             return;
         }
-
         const kelasSelected = document.getElementById('filterKelasSiswa').value;
         const tglHariIni = document.getElementById('filterTanggal').value;
         const blnHariIni = document.getElementById('filterBulan').value;
@@ -628,10 +665,7 @@
         let win = window.open('', '_blank');
         win.document.write(`<html><head><title>Laporan Absensi Siswa</title>`);
         win.document.write(`<script src="https://cdn.tailwindcss.com"><\/script>`);
-        win.document.write(`<style>@media print { body { padding: 0; } }</style></head>`);
-        win.document.write(`<body class="p-8 bg-white text-black font-sans">`);
-        
-        // Header Dokumen Cetak
+        win.document.write(`</head><body class="p-8 bg-white text-black font-sans">`);
         win.document.write(`
             <div class="text-center mb-6 border-b-2 border-black pb-4">
                 <h2 class="text-xl font-bold uppercase tracking-wide">LAPORAN REKAPITULASI ABSENSI SISWA</h2>
@@ -652,7 +686,6 @@
                 </thead>
                 <tbody>
         `);
-
         dataSiswaTerfilterGlobal.forEach((s, idx) => {
             win.document.write(`
                 <tr class="border-b border-gray-300 hover:bg-gray-50">
@@ -667,7 +700,6 @@
                 </tr>
             `);
         });
-
         win.document.write(`
                 </tbody>
             </table>
@@ -684,13 +716,12 @@
         win.document.close();
     }
 
-    // FUNGSI UNTUK MENCETAK LAPORAN PDF GURU
+    // FUNCTION ACTION EXPORT LAPORAN PDF GURU
     function cetakPdfGuru() {
         if (dataGuruTerfilterGlobal.length === 0) {
             Swal.fire('Informasi', 'Tidak ada data guru untuk dicetak', 'warning');
             return;
         }
-
         const mapelSelected = document.getElementById('filterMapelGuru').value;
         const tglHariIni = document.getElementById('filterTanggalGuru').value;
         const blnHariIni = document.getElementById('filterBulanGuru').value;
@@ -700,7 +731,6 @@
         win.document.write(`<html><head><title>Laporan Absensi Guru</title>`);
         win.document.write(`<script src="https://cdn.tailwindcss.com"><\/script>`);
         win.document.write(`</head><body class="p-8 bg-white text-black font-sans">`);
-        
         win.document.write(`
             <div class="text-center mb-6 border-b-2 border-black pb-4">
                 <h2 class="text-xl font-bold uppercase tracking-wide">LAPORAN REKAPITULASI ABSENSI GURU</h2>
@@ -721,7 +751,6 @@
                 </thead>
                 <tbody>
         `);
-
         dataGuruTerfilterGlobal.forEach((g, idx) => {
             win.document.write(`
                 <tr class="border-b border-gray-300 hover:bg-gray-50">
@@ -736,7 +765,6 @@
                 </tr>
             `);
         });
-
         win.document.write(`
                 </tbody>
             </table>
