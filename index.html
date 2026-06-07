@@ -40,7 +40,7 @@
 <body class="antialiased min-h-screen flex">
 
   <script>
-    // TAUTAN API BERHASIL DISINKRONKAN SECARA OTOMATIS
+    // URL API Google Apps Script Anda yang sudah ditanam permanen
     const API_URL = "https://script.google.com/macros/s/AKfycby3UEozJmP_3mbSTHWu4szUJx1lwp7Gv5yKPP-s4lupyNY2ZBKsWKmjO51kKAFjOWEF/exec";
   </script>
 
@@ -131,14 +131,14 @@
             <div class="w-44 h-44 relative">
               <canvas id="chartPresensi"></canvas>
             </div>
-            <p class="text-[11px] text-bMuted mt-4 text-center">Data grafik mewakili rasio rekap presensi harian siswa sesuai dengan tanggal filter utama.</p>
+            <p class="text-[11px] text-bMuted mt-4 text-center">Data grafik mewakili rasio rekap presensi harian siswa.</p>
           </div>
           <div class="bg-bCard p-5 rounded-2xl border border-white/5 md:col-span-2 flex flex-col justify-between">
             <div>
               <h4 class="text-xs font-bold uppercase tracking-wider text-bMuted mb-2">Petunjuk Operasional</h4>
               <ul class="text-xs text-bMuted space-y-2 list-disc list-inside pt-2">
                 <li>Pastikan kamera terhubung dan diizinkan browser saat membuka menu <span class="text-white font-semibold">Scan QR Absensi</span>.</li>
-                <li>Laporan rekap otomatis mengonversi siswa ke status <span class="text-red-400 font-bold">Alpa</span> jika tidak melakukan *tap* barcode hingga jam operasional selesai.</li>
+                <li>Laporan rekap otomatis mengonversi siswa ke status <span class="text-red-400 font-bold">Alpa</span> jika tidak melakukan tap barcode hingga jam operasional selesai.</li>
                 <li>Gunakan fitur <span class="text-white font-semibold">Cetak PDF</span> pada panel rekap untuk mengunduh berkas laporan fisik siap cetak.</li>
               </ul>
             </div>
@@ -279,7 +279,7 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Nomor Induk Identitas (NISN / NIP)</label>
-              <input type="number" id="mNisn" required placeholder="Contoh: 0048123xxx" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+              <input type="text" id="mNisn" required placeholder="Contoh: 0048123xxx" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Status Keterangan Baru</label>
@@ -289,9 +289,6 @@
                 <option value="Alpa">Alpa (Tanpa Keterangan)</option>
                 <option value="Hadir">Hadir</option>
               </select>
-            </div>
-            <div class="hidden">
-              <input type="text" id="mTipe" value="Manual">
             </div>
             <button type="submit" class="w-full py-3 bg-bActive font-bold rounded-xl text-xs uppercase shadow-lg text-white">Simpan Keterangan Absen</button>
           </form>
@@ -696,9 +693,12 @@
       if (activeScanner) { activeScanner.clear().catch(e => console.log(e)); activeScanner = null; }
     }
 
+    // === PERBAIKAN PROTOKOL KIRIM DATA ANTI-CORS ===
     function kirimAbsenScanQR(nisnValue) {
       Swal.fire({ title: 'Memproses Absensi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-      fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: nisnValue }) })
+      
+      // Mengubah tembakan POST ke GET terenkripsi parameter url agar lolos kebijakan CORS
+      fetch(`${API_URL}?action=scanQR&nisn=${encodeURIComponent(nisnValue)}`)
       .then(res => res.json())
       .then(res => {
         if (res.success) {
@@ -707,22 +707,25 @@
           switchView('dashboard');
         } else {
           Swal.fire({ icon: 'error', title: 'Gagal', text: res.message });
-          mulaiScanner(); 
+          setTimeout(() => { mulaiScanner(); }, 2000);
         }
-      }).catch(() => { Swal.fire({ icon: 'error', title: 'Koneksi Bermasalah' }); mulaiScanner(); });
+      }).catch((err) => { 
+        console.error("Detail Error:", err);
+        Swal.fire({ icon: 'error', title: 'Gagal Memproses', text: 'Sistem absensi gagal mendata ID tersebut.' }); 
+        setTimeout(() => { mulaiScanner(); }, 2000);
+      });
     }
 
+    // === PERBAIKAN PROTOKOL ABSEN MANUAL ANTI-CORS ===
     function simpanManual(event) {
       event.preventDefault();
-      const payload = {
-        action: 'inputManualAbsen',
-        kategori: document.getElementById('mKategori').value,
-        idUser: document.getElementById('mNisn').value,
-        status: document.getElementById('mStatus').value,
-        tipe: document.getElementById('mTipe').value
-      };
+      const kat = document.getElementById('mKategori').value;
+      const idUser = document.getElementById('mNisn').value;
+      const stat = document.getElementById('mStatus').value;
+      
       Swal.fire({ title: 'Menyimpan Keterangan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+      
+      fetch(`${API_URL}?action=inputManualAbsen&kategori=${kat}&idUser=${encodeURIComponent(idUser)}&status=${stat}`)
       .then(res => res.json())
       .then(res => {
         if(res.success) {
@@ -730,6 +733,8 @@
           document.getElementById('mNisn').value = '';
           muatSemuaData();
         } else { Swal.fire({ icon: 'error', title: 'Gagal', text: res.message }); }
+      }).catch((err) => {
+        Swal.fire({ icon: 'error', title: 'Koneksi Bermasalah', text: 'Periksa master database id anda.' });
       });
     }
 
