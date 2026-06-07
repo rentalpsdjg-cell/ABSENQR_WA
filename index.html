@@ -1,6 +1,163 @@
-<script>
-        // PASTIKAN URL API INI SESUAI DENGAN WEB APP URL GOOGLE APPS SCRIPT ANDA
-        const API_URL = "https://script.google.com/macros/s/AKfycbwSecDGlRvoUIIFto3fVziMH9gaQFu3VnPaNSYtGXkz9DfMBcmx3S_idYgNMaL8NF8U/exec"; 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Kehadiran Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bDark: '#0B0F19', bCard: '#151D30', bActive: '#2563EB', bMuted: '#64748B'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-bDark text-slate-100 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+
+    <aside class="w-full md:w-64 bg-bCard border-b md:border-r border-white/5 flex flex-col justify-between p-4 md:p-6 shrink-0">
+        <div class="space-y-6">
+            <div class="flex items-center gap-3 px-2">
+                <div class="bg-bActive p-2 rounded-xl text-white"><i class="fas fa-user-check text-lg"></i></div>
+                <div><h1 class="text-sm font-bold tracking-wide">E-ABSENSI</h1><p class="text-[10px] text-bMuted">Management System</p></div>
+            </div>
+            <nav class="space-y-1">
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-white bg-bActive transition-all"><i class="fas fa-th-large w-5"></i> Dashboard</button>
+                <button onclick="switchView('scan')" id="nav-scan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-qrcode w-5"></i> Scan Kamera QR</button>
+                <button onclick="switchView('rekap')" id="nav-rekap" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-file-invoice w-5"></i> Laporan Rekap</button>
+                <button onclick="switchView('siswa')" id="nav-siswa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-user-graduate w-5"></i> Master Siswa</button>
+                <button onclick="switchView('manual')" id="nav-manual" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-edit w-5"></i> Absen Manual</button>
+                <button onclick="switchView('jam-config')" id="nav-jam-config" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-clock w-5"></i> Atur Jam Operasional</button>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
+        <header class="flex justify-between items-center bg-bCard/40 p-4 rounded-2xl border border-white/5">
+            <h2 id="pageTitle" class="text-base md:text-xl font-bold text-white">Dashboard Absensi</h2>
+            <div id="loadingStatus" class="hidden text-xs bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-xl border border-amber-500/30 animate-pulse font-mono">
+                <i class="fas fa-spinner fa-spin mr-1"></i> Memproses Data Cloud...
+            </div>
+        </header>
+
+        <div id="view-dashboard" class="view-section grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-bCard p-5 rounded-2xl border border-white/5"><p class="text-xs font-medium text-bMuted">Total Siswa</p><h3 id="statSiswa" class="text-2xl font-bold mt-2 text-white">0</h3></div>
+            <div class="bg-bCard p-5 rounded-2xl border border-white/5"><p class="text-xs font-medium text-bMuted">Hadir Hari Ini</p><h3 id="statHadir" class="text-2xl font-bold mt-2 text-green-400">0</h3></div>
+            <div class="bg-bCard p-5 rounded-2xl border border-white/5"><p class="text-xs font-medium text-bMuted">Sakit/Izin/Alpa</p><h3 id="statAbsen" class="text-2xl font-bold mt-2 text-amber-500">0</h3></div>
+            <div class="bg-bCard p-5 rounded-2xl border border-white/5"><p class="text-xs font-medium text-bMuted">Sudah Pulang</p><h3 id="statPulang" class="text-2xl font-bold mt-2 text-blue-400">0</h3></div>
+        </div>
+
+        <div id="view-scan" class="view-section hidden bg-bCard p-6 rounded-2xl border border-white/5 text-center max-w-md mx-auto space-y-4">
+            <p class="text-xs text-bMuted">Arahkan Kode QR Siswa ke Kamera</p>
+            <div id="qr-reader" class="w-full bg-bDark rounded-xl border border-dashed border-white/10 overflow-hidden"></div>
+            <div id="scan-result" class="text-sm font-semibold p-2 rounded hidden"></div>
+        </div>
+
+        <div id="view-rekap" class="view-section hidden space-y-4">
+            <div class="bg-bCard p-4 rounded-2xl border border-white/5 flex flex-wrap gap-3 items-end">
+                <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-bMuted">Filter Tanggal</label><input type="date" id="fRekapTgl" class="block w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-bMuted">Filter Kelas</label><input type="text" id="fRekapKelas" placeholder="Semua Kelas" class="block w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                <button onclick="downloadLaporanPDF()" class="bg-red-600 hover:bg-red-700 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all"><i class="fas fa-file-pdf"></i> Cetak Laporan PDF</button>
+            </div>
+            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">Tanggal</th><th class="p-4">NISN</th><th class="p-4">Nama</th><th class="p-4">Kelas</th><th class="p-4">Masuk</th><th class="p-4">Status</th><th class="p-4">Pulang</th></tr></thead><tbody id="tableAbsenBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
+        </div>
+
+        <div id="view-siswa" class="view-section hidden space-y-4">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <span class="text-xs font-bold text-bMuted uppercase tracking-wider">Database Siswa (Cloud)</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="openUploadModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-file-upload"></i> Upload Masal</button>
+                    <button onclick="openModal()" class="bg-bActive hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-plus"></i> Tambah Siswa</button>
+                </div>
+            </div>
+            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th><th class="p-4 text-center">Aksi Kartu</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
+        </div>
+
+        <div id="view-manual" class="view-section hidden max-w-xl mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
+            <form id="formManual" class="space-y-4" onsubmit="handleManualAbsen(event)">
+                <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Masukkan NISN Siswa</label><input type="number" id="mNisn" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Tipe Sesi Absen</label><select id="mTipe" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white bg-bCard"><option value="Masuk">Absen Datang (Masuk)</option><option value="Pulang">Absen Pulang</option></select></div>
+                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Pilih Status Keterangan</label><select id="mStatus" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white bg-bCard"><option value="Hadir">Hadir</option><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">Simpan Keterangan Absen</button>
+            </form>
+        </div>
+
+        <div id="view-jam-config" class="view-section hidden max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
+            <form id="formConfig" class="space-y-4" onsubmit="handleConfigJam(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Batas Toleransi Masuk</label><input type="time" id="cMasuk" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-center text-white"></div>
+                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Jam Mulai Pulang</label><input type="time" id="cPulang" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-center text-white"></div>
+                </div>
+                <button type="submit" class="w-full py-3 bg-bActive hover:bg-blue-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">Perbarui Waktu Operasional</button>
+            </form>
+        </div>
+    </main>
+
+    <div id="inputModal" class="fixed inset-0 bg-bDark/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-bCard w-full max-w-md rounded-2xl border border-white/5 p-6 space-y-4 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Tambah Data Siswa</h3>
+            <form id="dynamicForm" class="space-y-3" onsubmit="handleTambahSiswa(event)">
+                <input type="number" id="fNisn" placeholder="NISN Siswa" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fNama" placeholder="Nama Lengkap" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fKelas" placeholder="Kelas (Contoh: XII TPMG)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="number" id="fWa" placeholder="Nomor WhatsApp Ortu (628xx)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-2.5 bg-bActive hover:bg-blue-700 rounded-xl font-bold text-xs uppercase transition-all">Simpan Data Siswa</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="fixed inset-0 bg-bDark/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-bCard w-full max-w-md rounded-2xl border border-white/5 p-6 space-y-4 relative">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider"><i class="fas fa-file-csv text-amber-500 mr-2"></i>Upload Data Masal (CSV)</h3>
+            <p class="text-xs text-bMuted leading-relaxed">Unggah file teks berekstensi <b>.csv</b>. Pastikan baris pertama berisi kolom header berurutan seperti ini:<br>
+            <code class="block bg-bDark p-2 rounded mt-1 font-mono text-[11px] text-slate-300">NISN,Nama,Kelas,WhatsApp</code></p>
+            <div class="space-y-3 pt-2">
+                <input type="file" id="csvFile" accept=".csv" class="w-full text-xs text-bMuted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-slate-200 hover:file:bg-white/20 cursor-pointer">
+                <button onclick="prosesUploadCsv()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 rounded-xl font-bold text-xs text-white uppercase transition-all">Mulai Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cardModal" class="fixed inset-0 bg-bDark/90 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-bCard w-full max-w-sm rounded-2xl border border-white/10 p-6 space-y-5 relative flex flex-col items-center">
+            <button onclick="closeCardModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider self-start"><i class="fas fa-id-card text-bActive mr-2"></i>Kartu Absensi QR Berhasil Dibuat</h3>
+            
+            <div id="id-card-render" class="w-full bg-gradient-to-br from-blue-900 to-slate-900 p-5 rounded-2xl border border-white/20 text-center relative shadow-2xl overflow-hidden min-h-[320px] flex flex-col justify-between items-center">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
+                <div class="w-full flex items-center justify-center gap-2 pb-3 border-b border-white/10">
+                    <i class="fas fa-user-check text-bActive text-sm"></i>
+                    <span class="text-xs font-bold tracking-widest text-slate-200">KARTU ABSENSI DIGITAL</span>
+                </div>
+                <div class="bg-white p-2 rounded-xl my-4 inline-block shadow-lg" id="qrcode-space"></div>
+                <div class="space-y-0.5">
+                    <h4 id="card-nama" class="text-sm font-bold text-white tracking-wide uppercase">-</h4>
+                    <p id="card-kelas" class="text-[11px] text-blue-400 font-medium tracking-wider">-</p>
+                    <p id="card-nisn" class="text-[10px] text-slate-400 font-mono mt-1">-</p>
+                </div>
+            </div>
+
+            <button onclick="window.print()" class="w-full py-2.5 bg-bActive hover:bg-blue-700 text-white font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all"><i class="fas fa-print"></i> Cetak / Print Kartu</button>
+        </div>
+    </div>
+
+    <script>
+        // URL WEB APP BARU YANG SUDAH TERINTEGRASI
+        const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec"; 
 
         let cloudSiswa = [];
         let cloudAbsen = [];
@@ -8,7 +165,6 @@
         let html5QrcodeScanner = null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Set default input filter tanggal ke tanggal lokal hari ini (Format: YYYY-MM-DD)
             const kini = new Date();
             const lokalTgl = kini.getFullYear() + '-' + String(kini.getMonth() + 1).padStart(2, '0') + '-' + String(kini.getDate()).padStart(2, '0');
             
@@ -52,21 +208,18 @@
                 .finally(() => showLoading(false));
         }
 
-        // PERBAIKAN: Fungsi hitung statistik dashboard agar membaca variasi object key & format tanggal
         function updateDashboardStats() {
-            const tglHariIni = document.getElementById('fRekapTgl').value; // Format: YYYY-MM-DD
+            const tglHariIni = document.getElementById('fRekapTgl').value;
 
             const absenHariIni = cloudAbsen.filter(a => {
                 const tglRaw = a.tanggal || a.TANGGAL || '';
                 if (!tglRaw) return false;
-                // Ambil 10 karakter pertama (YYYY-MM-DD) baik dari format ISO maupun teks biasa
                 const tglClean = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
                 return tglClean === tglHariIni;
             });
 
             const totalSiswa = cloudSiswa.length;
             
-            // Hitung status kehadiran (Mendukung Huruf Kapital / Kecil dari Sheets)
             const hadir = absenHariIni.filter(a => {
                 const st = (a.status || a.STATUS || '').toLowerCase();
                 return st === 'hadir' || st === 'terlambat';
@@ -223,7 +376,6 @@
             .finally(() => showLoading(false));
         }
 
-        // PERBAIKAN: Fungsi render tabel laporan agar fleksibel menyaring tanggal & properti kapital/kecil
         function renderTableAbsen() {
             const tbody = document.getElementById('tableAbsenBody');
             tbody.innerHTML = '';
@@ -348,7 +500,6 @@
             reader.readAsText(file);
         }
 
-        // PERBAIKAN: Menstabilkan fungsi restart scanner kamera agar sinkronisasi cloud berjalan lancar
         function startQRScanner() {
             const resultDiv = document.getElementById('scan-result');
             if (resultDiv) resultDiv.classList.add('hidden');
@@ -359,7 +510,6 @@
             
             html5QrcodeScanner.render((decodedText) => {
                 showLoading(true);
-                // Matikan scanner sementara agar tidak terjadi double-trigger data kembar
                 stopQRScanner();
 
                 const payload = { action: "scanQR", nisn: decodedText.trim() };
@@ -375,8 +525,6 @@
                     }
                     
                     resultDiv.innerText = res.message;
-                    
-                    // Ambil ulang data terbaru dari Cloud agar Dashboard & Laporan langsung ter-update
                     syncDataFromCloud();
                 })
                 .catch(err => {
@@ -385,7 +533,6 @@
                 })
                 .finally(() => {
                     showLoading(false);
-                    // Jalankan kembali scanner otomatis setelah delay 3 detik
                     setTimeout(startQRScanner, 3000);
                 });
             }, (error) => {});
@@ -456,3 +603,5 @@
             doc.save(`Laporan_Absen_${filterTgl}.pdf`);
         }
     </script>
+</body>
+</html>
