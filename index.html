@@ -44,6 +44,9 @@
     <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
         <header class="flex justify-between items-center bg-bCard/40 p-4 rounded-2xl border border-white/5">
             <h2 id="pageTitle" class="text-base md:text-xl font-bold text-white">Dashboard Absensi</h2>
+            <div id="loadingStatus" class="hidden text-xs bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-xl border border-amber-500/30 animate-pulse font-mono">
+                <i class="fas fa-spinner fa-spin mr-1"></i> Memproses Data Cloud...
+            </div>
         </header>
 
         <div id="view-dashboard" class="view-section grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -54,7 +57,7 @@
         </div>
 
         <div id="view-scan" class="view-section hidden bg-bCard p-6 rounded-2xl border border-white/5 text-center max-w-md mx-auto space-y-4">
-            <p class="text-xs text-bMuted">Arahkan Kode QR Siswa ke Kamera (Isi QR berupa NISN)</p>
+            <p class="text-xs text-bMuted">Arahkan Kode QR Siswa ke Kamera</p>
             <div id="qr-reader" class="w-full bg-bDark rounded-xl border border-dashed border-white/10 overflow-hidden"></div>
             <div id="scan-result" class="text-sm font-semibold p-2 rounded hidden"></div>
         </div>
@@ -69,8 +72,14 @@
         </div>
 
         <div id="view-siswa" class="view-section hidden space-y-4">
-            <div class="flex justify-between items-center"><span class="text-xs font-bold text-bMuted uppercase">Database Siswa</span><button onclick="openModal()" class="bg-bActive text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5"><i class="fas fa-plus"></i> Tambah Siswa</button></div>
-            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th><th class="p-4">Aksi</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <span class="text-xs font-bold text-bMuted uppercase tracking-wider">Database Siswa (Cloud)</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="openUploadModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-file-upload"></i> Upload Masal</button>
+                    <button onclick="openModal()" class="bg-bActive hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-plus"></i> Tambah Siswa</button>
+                </div>
+            </div>
+            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
         </div>
 
         <div id="view-manual" class="view-section hidden max-w-xl mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
@@ -102,40 +111,90 @@
             <form id="dynamicForm" class="space-y-3" onsubmit="handleTambahSiswa(event)">
                 <input type="number" id="fNisn" placeholder="NISN Siswa" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                 <input type="text" id="fNama" placeholder="Nama Lengkap" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="text" id="fKelas" placeholder="Kelas (Contoh: X-RPL)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fKelas" placeholder="Kelas (Contoh: XII TPMG)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                 <input type="number" id="fWa" placeholder="Nomor WhatsApp Ortu (628xx)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                 <button type="submit" class="w-full py-2.5 bg-bActive hover:bg-blue-700 rounded-xl font-bold text-xs uppercase transition-all">Simpan Data Siswa</button>
             </form>
         </div>
     </div>
 
-    <script>
-        // Database lokal menggunakan localStorage
-        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswa')) || [];
-        let dbAbsen = JSON.parse(localStorage.getItem('dbAbsen')) || [];
-        let configJam = JSON.parse(localStorage.getItem('configJam')) || { masuk: "07:30", pulang: "15:00" };
+    <div id="uploadModal" class="fixed inset-0 bg-bDark/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-bCard w-full max-w-md rounded-2xl border border-white/5 p-6 space-y-4 relative">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider"><i class="fas fa-file-csv text-amber-500 mr-2"></i>Upload Data Masal (CSV)</h3>
+            <p class="text-xs text-bMuted leading-relaxed">Unggah file teks berekstensi <b>.csv</b>. Pastikan baris pertama berisi kolom header berurutan seperti ini:<br>
+            <code class="block bg-bDark p-2 rounded mt-1 font-mono text-[11px] text-slate-300">NISN,Nama,Kelas,WhatsApp</code></p>
+            <div class="space-y-3 pt-2">
+                <input type="file" id="csvFile" accept=".csv" class="w-full text-xs text-bMuted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-slate-200 hover:file:bg-white/20 cursor-pointer">
+                <button onclick="prosesUploadCsv()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 rounded-xl font-bold text-xs text-white uppercase transition-all">Mulai Import Data</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // GANTI URL INI dengan URL Web App Google Apps Script Anda setelah di-deploy ulang
+        const API_URL = "https://script.google.com/macros/s/1WMYIE4pgtCajtlfITHxM3iworYvErPrpBVtpCCqfM7E/exec"; 
+
+        let cloudSiswa = [];
+        let cloudAbsen = [];
+        let configJam = { jamMasuk: "07:30", jamPulang: "14:00" };
         let html5QrcodeScanner = null;
 
-        // Inisialisasi awal saat dokumen selesai dimuat
         document.addEventListener("DOMContentLoaded", () => {
-            // Set default value filter tanggal ke hari ini
             const hariIni = new Date().toISOString().split('T')[0];
             document.getElementById('fRekapTgl').value = hariIni;
             
-            // Set default konfigurasi jam operasional di input form
-            document.getElementById('cMasuk').value = configJam.masuk;
-            document.getElementById('cPulang').value = configJam.pulang;
-
-            // Pasang event listener untuk filter rekapitulasi agar otomatis ter-update saat diubah
             document.getElementById('fRekapTgl').addEventListener('change', renderTableAbsen);
             document.getElementById('fRekapKelas').addEventListener('input', renderTableAbsen);
 
-            // Perbarui visualisasi data di dashboard
-            updateDashboardStats();
-            renderTableSiswa();
-            renderTableAbsen();
+            // Tarik data asli langsung dari Google Sheets saat aplikasi pertama dibuka
+            syncDataFromCloud();
         });
+
+        function showLoading(status) {
+            const loader = document.getElementById('loadingStatus');
+            if (status) loader.classList.remove('hidden');
+            else loader.classList.add('hidden');
+        }
+
+        // Fungsi fetch data utama dari Google Sheets (GET)
+        function syncDataFromCloud() {
+            showLoading(true);
+            fetch(`${API_URL}?action=getAllData`)
+                .then(res => res.json())
+                .then(data => {
+                    // Header data dipetakan ke penulisan lowercase + underscore dari skrip GAS Anda
+                    cloudSiswa = data.siswa || [];
+                    cloudAbsen = data.absensi || [];
+                    if (data.settings) {
+                        configJam = data.settings;
+                        document.getElementById('cMasuk').value = configJam.jamMasuk;
+                        document.getElementById('cPulang').value = configJam.jamPulang;
+                    }
+                    
+                    updateDashboardStats(data.hadir, data.sakitIzin, data.pulang);
+                    renderTableSiswa();
+                    renderTableAbsen();
+                })
+                .catch(err => console.error("Sinkronisasi Cloud Gagal:", err))
+                .finally(() => showLoading(false));
+        }
+
+        function updateDashboardStats(h, s, p) {
+            // Hitung statistik dashboard dari database cloud real-time
+            const tglHariIni = document.getElementById('fRekapTgl').value;
+            const absenHariIni = cloudAbsen.filter(a => a.tanggal === tglHariIni);
+
+            const totalSiswa = cloudSiswa.length;
+            const hadir = absenHariIni.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
+            const nonHadir = absenHariIni.filter(a => ['Sakit', 'Izin', 'Alpa'].includes(a.status)).length;
+            const pulang = absenHariIni.filter(a => a.pulang !== '-').length;
+
+            document.getElementById('statSiswa').innerText = totalSiswa;
+            document.getElementById('statHadir').innerText = hadir;
+            document.getElementById('statAbsen').innerText = nonHadir;
+            document.getElementById('statPulang').innerText = pulang;
+        }
 
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
@@ -150,12 +209,8 @@
             const titles = { dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera QR', rekap: 'Laporan Rekapitulasi', siswa: 'Master Data Siswa', manual: 'Kelola Absen Manual', 'jam-config': 'Atur Waktu Absensi' };
             document.getElementById('pageTitle').innerText = titles[viewId] || 'Sistem Absensi';
 
-            // Logika khusus kontrol Kamera Scanner QR
-            if (viewId === 'scan') {
-                startQRScanner();
-            } else {
-                stopQRScanner();
-            }
+            if (viewId === 'scan') startQRScanner();
+            else stopQRScanner();
         }
 
         function openModal() { document.getElementById('inputModal').classList.remove('hidden'); }
@@ -164,146 +219,93 @@
             document.getElementById('dynamicForm').reset();
         }
 
-        // ================= STRUKTUR LOGIKA CORE ABSENSI =================
-
-        function updateDashboardStats() {
-            const hariIni = new Date().toISOString().split('T')[0];
-            const absenHariIni = dbAbsen.filter(a => a.tanggal === hariIni);
-
-            const totalSiswa = dbSiswa.length;
-            const hadir = absenHariIni.filter(a => a.status === 'Hadir').length;
-            const nonHadir = absenHariIni.filter(a => ['Sakit', 'Izin', 'Alpa'].includes(a.status)).length;
-            const pulang = absenHariIni.filter(a => a.pulang !== '-').length;
-
-            document.getElementById('statSiswa').innerText = totalSiswa;
-            document.getElementById('statHadir').innerText = hadir;
-            document.getElementById('statAbsen').innerText = nonHadir;
-            document.getElementById('statPulang').innerText = pulang;
+        function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
+        function closeModalUpload() { document.getElementById('uploadModal').classList.add('hidden'); }
+        function closeUploadModal() { 
+            document.getElementById('uploadModal').classList.add('hidden'); 
+            document.getElementById('csvFile').value = '';
         }
 
+        // Kirim Data Tambah Siswa Individual ke Google Sheets (POST)
         function handleTambahSiswa(e) {
             e.preventDefault();
-            const nisn = document.getElementById('fNisn').value.trim();
-            const nama = document.getElementById('fNama').value.trim();
-            const kelas = document.getElementById('fKelas').value.trim();
-            const wa = document.getElementById('fWa').value.trim();
+            showLoading(true);
 
-            if (dbSiswa.some(s => s.nisn === nisn)) {
-                alert("Siswa dengan NISN tersebut sudah terdaftar!");
-                return;
-            }
+            const payload = {
+                action: "tambahSiswa",
+                nisn: document.getElementById('fNisn').value.trim(),
+                nama: document.getElementById('fNama').value.trim(),
+                kelas: document.getElementById('fKelas').value.trim(),
+                whatsapp: document.getElementById('fWa').value.trim()
+            };
 
-            dbSiswa.push({ nisn, nama, kelas, wa });
-            localStorage.setItem('dbSiswa', JSON.stringify(dbSiswa));
-            
-            closeModal();
-            updateDashboardStats();
-            renderTableSiswa();
-            alert("Data siswa berhasil ditambahkan!");
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                if(res.success) {
+                    closeModal();
+                    syncDataFromCloud();
+                }
+            })
+            .catch(err => alert("Gagal koneksi ke server script."))
+            .finally(() => showLoading(false));
         }
 
-        function hapusSiswa(nisn) {
-            if (confirm(`Apakah Anda yakin ingin menghapus siswa dengan NISN ${nisn}?`)) {
-                dbSiswa = dbSiswa.filter(s => s.nisn !== nisn);
-                localStorage.setItem('dbSiswa', JSON.stringify(dbSiswa));
-                updateDashboardStats();
-                renderTableSiswa();
-            }
-        }
-
+        // Tampilkan Master Siswa dari Data Google Sheets
         function renderTableSiswa() {
             const tbody = document.getElementById('tableSiswaBody');
             tbody.innerHTML = '';
             
-            if(dbSiswa.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-bMuted">Belum ada data siswa.</td></tr>`;
+            if(cloudSiswa.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-bMuted">Belum ada data siswa dari Google Sheets.</td></tr>`;
                 return;
             }
 
-            dbSiswa.forEach(s => {
+            cloudSiswa.forEach(s => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-colors">
-                        <td class="p-4 font-mono font-bold text-white">${s.nisn}</td>
-                        <td class="p-4">${s.nama}</td>
-                        <td class="p-4"><span class="bg-white/10 px-2 py-1 rounded text-xs">${s.kelas}</span></td>
-                        <td class="p-4 text-emerald-400"><i class="fab fa-whatsapp"></i> ${s.wa}</td>
-                        <td class="p-4">
-                            <button onclick="hapusSiswa('${s.nisn}')" class="text-red-400 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
-                        </td>
+                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
+                        <td class="p-4 font-mono font-bold text-white">${s.nisn || s.nisn_siswa || '-'}</td>
+                        <td class="p-4">${s.nama || s.nama_lengkap || '-'}</td>
+                        <td class="p-4"><span class="bg-white/10 px-2 py-1 rounded text-xs">${s.kelas || '-'}</span></td>
+                        <td class="p-4 text-emerald-400"><i class="fab fa-whatsapp"></i> ${s.whatsapp || s.whatsapp_ortu || '-'}</td>
                     </tr>
                 `;
             });
         }
 
-        function prosesAbsensi(nisn, tipe, statusTerpilih = 'Hadir') {
-            const siswa = dbSiswa.find(s => s.nisn === nisn);
-            if (!siswa) {
-                return { sukses: false, pesan: `Siswa dengan NISN ${nisn} tidak ditemukan di database!` };
-            }
-
-            const sekarang = new Date();
-            const tanggal = sekarang.toISOString().split('T')[0];
-            const jam = sekarang.toTimeString().split(' ')[0].substring(0, 5); // Format "HH:MM"
-
-            let dataAbsenIndex = dbAbsen.findIndex(a => a.tanggal === tanggal && a.nisn === nisn);
-
-            if (tipe === 'Masuk') {
-                if (dataAbsenIndex !== -1) {
-                    return { sukses: false, pesan: `${siswa.nama} sudah melakukan absen masuk hari ini.` };
-                }
-
-                // Cek keterlambatan jika statusnya Hadir
-                let statusFinal = statusTerpilih;
-                if (statusTerpilih === 'Hadir' && jam > configJam.masuk) {
-                    statusFinal = 'Hadir (Terlambat)';
-                }
-
-                dbAbsen.push({
-                    tanggal,
-                    nisn,
-                    nama: siswa.nama,
-                    kelas: siswa.kelas,
-                    masuk: jam,
-                    status: statusFinal,
-                    pulang: '-'
-                });
-            } else if (tipe === 'Pulang') {
-                if (dataAbsenIndex === -1) {
-                    // Jika belum absen masuk, otomatis buat sesi masuknya kosong / Alpha
-                    dbAbsen.push({
-                        tanggal,
-                        nisn,
-                        nama: siswa.nama,
-                        kelas: siswa.kelas,
-                        masuk: '-',
-                        status: statusTerpilih,
-                        pulang: jam
-                    });
-                } else {
-                    if (dbAbsen[dataAbsenIndex].pulang !== '-') {
-                        return { sukses: false, pesan: `${siswa.nama} sudah melakukan absen pulang hari ini.` };
-                    }
-                    dbAbsen[dataAbsenIndex].pulang = jam;
-                }
-            }
-
-            localStorage.setItem('dbAbsen', JSON.stringify(dbAbsen));
-            updateDashboardStats();
-            renderTableAbsen();
-            return { sukses: true, pesan: `Absen ${tipe} berhasil untuk ${siswa.nama} (${statusTerpilih})` };
-        }
-
+        // Kirim Absen Manual ke Google Sheets (POST)
         function handleManualAbsen(e) {
             e.preventDefault();
-            const nisn = document.getElementById('mNisn').value.trim();
-            const tipe = document.getElementById('mTipe').value;
-            const status = document.getElementById('mStatus').value;
+            showLoading(true);
 
-            const hasil = prosesAbsensi(nisn, tipe, status);
-            alert(hasil.pesan);
-            if(hasil.sukses) document.getElementById('formManual').reset();
+            const payload = {
+                action: "absenManual",
+                nisn: document.getElementById('mNisn').value.trim(),
+                tipe: document.getElementById('mTipe').value,
+                status: document.getElementById('mStatus').value
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                if(res.success) {
+                    document.getElementById('formManual').reset();
+                    syncDataFromCloud();
+                }
+            })
+            .catch(err => alert("Gagal simpan absen manual."))
+            .finally(() => showLoading(false));
         }
 
+        // Tampilkan Log Rekapitulasi Absensi dari Google Sheets
         function renderTableAbsen() {
             const tbody = document.getElementById('tableAbsenBody');
             tbody.innerHTML = '';
@@ -311,25 +313,25 @@
             const filterTgl = document.getElementById('fRekapTgl').value;
             const filterKelas = document.getElementById('fRekapKelas').value.toLowerCase();
 
-            let dataFilter = dbAbsen;
+            let dataFilter = cloudAbsen;
             if (filterTgl) dataFilter = dataFilter.filter(a => a.tanggal === filterTgl);
-            if (filterKelas) dataFilter = dataFilter.filter(a => a.kelas.toLowerCase().includes(filterKelas));
+            if (filterKelas) dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas));
 
             if(dataFilter.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi yang cocok dengan filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi.</td></tr>`;
                 return;
             }
 
             dataFilter.forEach(a => {
                 let statusColor = 'text-amber-400';
-                if(a.status.includes('Hadir')) statusColor = 'text-green-400';
+                if(a.status === 'Hadir' || a.status === 'Terlambat') statusColor = 'text-green-400';
                 if(a.status === 'Alpa') statusColor = 'text-red-400';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-colors">
+                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
                         <td class="p-4">${a.tanggal}</td>
                         <td class="p-4 font-mono">${a.nisn}</td>
-                        <td class="p-4 font-semibold text-white">${a.nama}</td>
+                        <td class="p-4 font-semibold text-white">${a.nama || a.nama_siswa}</td>
                         <td class="p-4">${a.kelas}</td>
                         <td class="p-4">${a.masuk}</td>
                         <td class="p-4 ${statusColor} font-medium">${a.status}</td>
@@ -339,40 +341,127 @@
             });
         }
 
+        // Simpan Jam Pengaturan Operasional ke Google Sheets (POST)
         function handleConfigJam(e) {
             e.preventDefault();
-            configJam.masuk = document.getElementById('cMasuk').value;
-            configJam.pulang = document.getElementById('cPulang').value;
-            localStorage.setItem('configJam', JSON.stringify(configJam));
-            alert("Jam operasional absensi berhasil diperbarui!");
+            showLoading(true);
+
+            const payload = {
+                action: "saveSettings",
+                jamMasuk: document.getElementById('cMasuk').value,
+                jamPulang: document.getElementById('cPulang').value
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                if(res.success) syncDataFromCloud();
+            })
+            .catch(err => alert("Gagal memperbarui jam operasional."))
+            .finally(() => showLoading(false));
         }
 
-        // ================= INTEGRASI KAMERA QR SCANNER =================
+        // Fungsi Membaca File CSV Lokal & Mengunggahnya Secara Masal ke Cloud
+        function prosesUploadCsv() {
+            const fileInput = document.getElementById('csvFile');
+            if (fileInput.files.length === 0) {
+                alert("Pilih file CSV terlebih dahulu!");
+                return;
+            }
 
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            showLoading(true);
+
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const baris = text.split("\n");
+                
+                let suksesCount = 0;
+                let janjiProses = [];
+
+                // Mulai membaca dari baris indeks ke-1 (melewati baris header)
+                for (let i = 1; i < baris.length; i++) {
+                    if (baris[i].trim() === "") continue;
+                    
+                    const kolom = baris[i].split(",");
+                    if (kolom.length < 4) continue;
+
+                    const payload = {
+                        action: "tambahSiswa",
+                        nisn: kolom[0].trim(),
+                        nama: kolom[1].trim(),
+                        kelas: kolom[2].trim(),
+                        whatsapp: kolom[3].trim()
+                    };
+
+                    // Kirim antrean request POST secara simultan ke Google Apps Script
+                    let request = fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => res.json())
+                    .then(res => { if(res.success) suksesCount++; });
+
+                    janjiProses.push(request);
+                }
+
+                Promise.all(janjiProses).then(() => {
+                    showLoading(false);
+                    alert(`Proses selesai! ${suksesCount} data siswa berhasil diimport secara massal ke Cloud.`);
+                    closeUploadModal();
+                    syncDataFromCloud();
+                }).catch(err => {
+                    showLoading(false);
+                    alert("Terjadi masalah parsial saat mengunggah database massal.");
+                });
+            };
+
+            reader.readAsText(file);
+        }
+
+        // ================= LOGIKA QR SCANNER REAL-TIME =================
         function startQRScanner() {
             const resultDiv = document.getElementById('scan-result');
             resultDiv.classList.add('hidden');
 
             html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
             html5QrcodeScanner.render((decodedText) => {
-                // Berhasil scan data text kode QR (diasumsikan isinya adalah nomor NISN)
-                const hasil = prosesAbsensi(decodedText.trim(), 'Masuk', 'Hadir');
+                showLoading(true);
                 
-                resultDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-400', 'bg-green-500/20', 'text-green-400');
-                if(hasil.sukses) {
-                    resultDiv.classList.add('bg-green-500/20', 'text-green-400');
-                } else {
-                    resultDiv.classList.add('bg-red-500/20', 'text-red-400');
-                }
-                resultDiv.innerText = hasil.pesan;
+                const payload = {
+                    action: "scanQR",
+                    nisn: decodedText.trim()
+                };
 
-                // Stop & start ulang scanner agar tidak membeku/spamming hasil scan yang sama
-                html5QrcodeScanner.clear();
-                setTimeout(startQRScanner, 2000); 
+                fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    resultDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-400', 'bg-green-500/20', 'text-green-400');
+                    if(res.success) resultDiv.classList.add('bg-green-500/20', 'text-green-400');
+                    else resultDiv.classList.add('bg-red-500/20', 'text-red-400');
+                    
+                    resultDiv.innerText = res.message;
+                    syncDataFromCloud();
+                })
+                .catch(err => {
+                    resultDiv.className = "text-sm font-semibold p-2 rounded bg-red-500/20 text-red-400";
+                    resultDiv.innerText = "Koneksi terputus saat memproses QR.";
+                })
+                .finally(() => {
+                    showLoading(false);
+                    html5QrcodeScanner.clear();
+                    setTimeout(startQRScanner, 3000); // Istirahat 3 detik sebelum siap scan siswa berikutnya
+                });
 
-            }, (error) => {
-                // Abaikan error scanning real-time biasa
-            });
+            }, (error) => {});
         }
 
         function stopQRScanner() {
@@ -383,7 +472,6 @@
         }
 
         // ================= CETAK EXPORT PDF LAPORAN =================
-
         function downloadLaporanPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -397,13 +485,13 @@
             doc.setFont("Helvetica", "normal");
             doc.text(`Tanggal Laporan: ${filterTgl} | Filter Kelas: ${filterKelas}`, 14, 22);
 
-            let dataFilter = dbAbsen;
+            let dataFilter = cloudAbsen;
             if (filterTgl !== 'Semua') dataFilter = dataFilter.filter(a => a.tanggal === filterTgl);
-            if (filterKelas !== 'Semua') dataFilter = dataFilter.filter(a => a.kelas.toLowerCase().includes(filterKelas.toLowerCase()));
+            if (filterKelas !== 'Semua') dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas.toLowerCase()));
 
             const tableRows = [];
             dataFilter.forEach(a => {
-                tableRows.push([a.tanggal, a.nisn, a.nama, a.kelas, a.masuk, a.status, a.pulang]);
+                tableRows.push([a.tanggal, a.nisn, a.nama || a.nama_siswa, a.kelas, a.masuk, a.status, a.pulang]);
             });
 
             doc.autoTable({
@@ -411,7 +499,7 @@
                 body: tableRows,
                 startY: 28,
                 styles: { fontSize: 9 },
-                headStyles: { fillColor: [37, 99, 235] } // Warna bActive biru
+                headStyles: { fillColor: [37, 99, 235] }
             });
 
             doc.save(`Laporan_Absen_${filterTgl}.pdf`);
