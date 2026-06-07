@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzu6VKReuUh2FOLO35gV3wjtCRflADg1POL3kxdqnOPYO8pbMzyGQZ-TZfE9GYdP0eK/exec"; 
+    // URL Web App Google Apps Script terbaru Anda
+    const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec"; 
     
     tailwind.config = {
       theme: {
@@ -497,7 +498,6 @@
         }).catch(() => {});
     }
 
-    /* FIX PADA PENCARIAN TANGGAL LAPORAN SISWA */
     function renderDataRekap() {
         const search = document.getElementById('searchRekapSiswa').value.toLowerCase();
         const status = document.getElementById('filterStatusSiswa').value;
@@ -574,7 +574,6 @@
         document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap tidak ditemukan.</p>';
     }
 
-    /* FIX PADA PENCARIAN TANGGAL LAPORAN GURU */
     function renderDataRekapGuru() {
         const search = document.getElementById('searchRekapGuru').value.toLowerCase();
         const status = document.getElementById('filterStatusGuru').value;
@@ -651,7 +650,6 @@
         document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap guru tidak ditemukan.</p>';
     }
 
-    // FUNCTION ACTION EXPORT LAPORAN PDF SISWA 
     function cetakPdfSiswa() {
         if (dataSiswaTerfilterGlobal.length === 0) {
             Swal.fire('Informasi', 'Tidak ada data siswa untuk dicetak', 'warning');
@@ -716,7 +714,6 @@
         win.document.close();
     }
 
-    // FUNCTION ACTION EXPORT LAPORAN PDF GURU
     function cetakPdfGuru() {
         if (dataGuruTerfilterGlobal.length === 0) {
             Swal.fire('Informasi', 'Tidak ada data guru untuk dicetak', 'warning');
