@@ -132,7 +132,6 @@
     </div>
 
     <script>
-        // Tautan API Google Apps Script Anda yang aktif
         const API_URL = "https://script.google.com/macros/s/AKfycbwSecDGlRvoUIIFto3fVziMH9gaQFu3VnPaNSYtGXkz9DfMBcmx3S_idYgNMaL8NF8U/exec"; 
 
         let cloudSiswa = [];
@@ -144,10 +143,12 @@
             const hariIni = new Date().toISOString().split('T')[0];
             document.getElementById('fRekapTgl').value = hariIni;
             
-            document.getElementById('fRekapTgl').addEventListener('change', renderTableAbsen);
+            document.getElementById('fRekapTgl').addEventListener('change', () => {
+                renderTableAbsen();
+                updateDashboardStats();
+            });
             document.getElementById('fRekapKelas').addEventListener('input', renderTableAbsen);
 
-            // Tarik data asli langsung dari Google Sheets saat aplikasi pertama dibuka
             syncDataFromCloud();
         });
 
@@ -157,7 +158,6 @@
             else loader.classList.add('hidden');
         }
 
-        // Fungsi fetch data utama dari Google Sheets (GET)
         function syncDataFromCloud() {
             showLoading(true);
             fetch(`${API_URL}?action=getAllData`)
@@ -171,22 +171,30 @@
                         document.getElementById('cPulang').value = configJam.jamPulang;
                     }
                     
-                    updateDashboardStats(data.hadir, data.sakitIzin, data.pulang);
+                    // Render tabel dan perbarui angka statistik
                     renderTableSiswa();
                     renderTableAbsen();
+                    updateDashboardStats();
                 })
                 .catch(err => console.error("Sinkronisasi Cloud Gagal:", err))
                 .finally(() => showLoading(false));
         }
 
-        function updateDashboardStats(h, s, p) {
+        function updateDashboardStats() {
             const tglHariIni = document.getElementById('fRekapTgl').value;
-            const absenHariIni = cloudAbsen.filter(a => a.tanggal === tglHariIni);
+            
+            // Filter data absensi khusus tanggal yang sedang dipilih/hari ini
+            const absenHariIni = cloudAbsen.filter(a => {
+                if (!a.tanggal) return false;
+                // Menangani format tanggal dari Apps Script jika berupa string ISO atau standar YYYY-MM-DD
+                const tglClean = a.tanggal.split('T')[0];
+                return tglClean === tglHariIni;
+            });
 
             const totalSiswa = cloudSiswa.length;
             const hadir = absenHariIni.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
             const nonHadir = absenHariIni.filter(a => ['Sakit', 'Izin', 'Alpa'].includes(a.status)).length;
-            const pulang = absenHariIni.filter(a => a.pulang !== '-').length;
+            const pulang = absenHariIni.filter(a => a.pulang && a.pulang !== '-').length;
 
             document.getElementById('statSiswa').innerText = totalSiswa;
             document.getElementById('statHadir').innerText = hadir;
@@ -218,7 +226,6 @@
         }
 
         function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
-        function closeModalUpload() { document.getElementById('uploadModal').classList.add('hidden'); }
         function closeUploadModal() { 
             document.getElementById('uploadModal').classList.add('hidden'); 
             document.getElementById('csvFile').value = '';
@@ -308,8 +315,12 @@
             const filterKelas = document.getElementById('fRekapKelas').value.toLowerCase();
 
             let dataFilter = cloudAbsen;
-            if (filterTgl) dataFilter = dataFilter.filter(a => a.tanggal === filterTgl);
-            if (filterKelas) dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas));
+            if (filterTgl) {
+                dataFilter = dataFilter.filter(a => a.tanggal && a.tanggal.split('T')[0] === filterTgl);
+            }
+            if (filterKelas) {
+                dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas));
+            }
 
             if(dataFilter.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi.</td></tr>`;
@@ -321,15 +332,18 @@
                 if(a.status === 'Hadir' || a.status === 'Terlambat') statusColor = 'text-green-400';
                 if(a.status === 'Alpa') statusColor = 'text-red-400';
 
+                // Bersihkan tampilan tanggal dari format ISO jika ada
+                const tglDisplay = a.tanggal ? a.tanggal.split('T')[0] : '-';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
-                        <td class="p-4">${a.tanggal}</td>
+                        <td class="p-4">${tglDisplay}</td>
                         <td class="p-4 font-mono">${a.nisn}</td>
-                        <td class="p-4 font-semibold text-white">${a.nama || a.nama_siswa}</td>
-                        <td class="p-4">${a.kelas}</td>
-                        <td class="p-4">${a.masuk}</td>
-                        <td class="p-4 ${statusColor} font-medium">${a.status}</td>
-                        <td class="p-4 text-blue-400">${a.pulang}</td>
+                        <td class="p-4 font-semibold text-white">${a.nama || a.nama_siswa || '-'}</td>
+                        <td class="p-4">${a.kelas || '-'}</td>
+                        <td class="p-4">${a.masuk || '-'}</td>
+                        <td class="p-4 ${statusColor} font-medium">${a.status || '-'}</td>
+                        <td class="p-4 text-blue-400">${a.pulang || '-'}</td>
                     </tr>
                 `;
             });
@@ -474,12 +488,13 @@
             doc.text(`Tanggal Laporan: ${filterTgl} | Filter Kelas: ${filterKelas}`, 14, 22);
 
             let dataFilter = cloudAbsen;
-            if (filterTgl !== 'Semua') dataFilter = dataFilter.filter(a => a.tanggal === filterTgl);
+            if (filterTgl !== 'Semua') dataFilter = dataFilter.filter(a => a.tanggal && a.tanggal.split('T')[0] === filterTgl);
             if (filterKelas !== 'Semua') dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas.toLowerCase()));
 
             const tableRows = [];
             dataFilter.forEach(a => {
-                tableRows.push([a.tanggal, a.nisn, a.nama || a.nama_siswa, a.kelas, a.masuk, a.status, a.pulang]);
+                const tglClean = a.tanggal ? a.tanggal.split('T')[0] : '-';
+                tableRows.push([tglClean, a.nisn, a.nama || a.nama_siswa || '-', a.kelas || '-', a.masuk || '-', a.status || '-', a.pulang || '-']);
             });
 
             doc.autoTable({
