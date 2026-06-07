@@ -1,871 +1,673 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-ABSENSI ADMIN SYSTEM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script>
-    // URL Web App Google Apps Script Anda
-    const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec"; 
-    
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-          colors: { bDark: '#090A1A', bCard: '#131535', bActive: '#545BE6', bMuted: '#797CA6' }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { background-color: #090A1A; overflow-x: hidden; }
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-    .nav-active { background-color: #545BE6 !important; color: white !important; border-radius: 12px; }
-    .custom-scroll::-webkit-scrollbar { width: 6px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #131535; border-radius: 10px; }
-    
-    @media print {
-      body * { visibility: hidden; background: none !important; }
-      #printCardArea, #printCardArea * { visibility: visible; }
-      #printCardArea { 
-        position: absolute; 
-        left: 50%; 
-        top: 40%; 
-        transform: translate(-50%, -50%) scale(1.2);
-        width: 350px !important;
-        box-shadow: none !important;
-        border: 1px solid #333 !important;
-      }
-    }
-  </style>
-</head>
-<body class="text-white font-sans antialiased flex h-screen w-screen overflow-hidden relative">
-
-  <aside id="sidebarMenu" class="w-64 bg-bCard/95 md:bg-bCard/40 border-r border-white/5 flex flex-col p-5 shrink-0 fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:relative z-50 transition-transform duration-300 ease-in-out">
-      <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-bMuted hover:text-white text-xl">
-          <i class="fas fa-times"></i>
-      </button>
-
-      <div class="flex items-center gap-3 mb-8 px-2">
-          <div class="w-10 h-10 rounded-xl bg-bActive flex items-center justify-center shadow-lg"><i class="fas fa-th-large text-white text-sm"></i></div>
-          <div>
-              <h2 class="font-bold text-sm tracking-wide">E-ABSENSI</h2>
-              <p class="text-[10px] text-bMuted uppercase font-semibold">School System</p>
-          </div>
-      </div>
-      <div class="bg-bCard/80 p-3.5 rounded-xl border border-white/5 flex items-center gap-3 mb-6">
-          <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-xs">A</div>
-          <div>
-              <h4 class="text-xs font-bold">admin</h4>
-              <span class="text-[9px] bg-white/10 px-2 py-0.5 rounded text-cyan-400 font-bold uppercase">Admin</span>
-          </div>
-      </div>
-      <nav class="flex-1 space-y-1 overflow-y-auto custom-scroll">
-          <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-home w-5"></i> Dashboard</button>
-          <button onclick="switchView('siswa')" id="nav-siswa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-user-graduate w-5"></i> Data Siswa</button>
-          <button onclick="switchView('guru')" id="nav-guru" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-chalkboard-teacher w-5"></i> Data Guru</button>
-          
-          <div class="pt-2 border-t border-white/5 my-2"></div>
-          
-          <button onclick="switchView('rekap')" id="nav-rekap" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-file-invoice w-5"></i> Laporan Siswa</button>
-          <button onclick="switchView('rekap-guru')" id="nav-rekap-guru" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-file-signature w-5"></i> Laporan Guru</button>
-          
-          <button onclick="switchView('manual')" id="nav-manual" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-calendar-check w-5"></i> Kelola Absen</button>
-          <button onclick="switchView('scan')" id="nav-scan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-qrcode w-5"></i> Scan Absensi</button>
-          <button onclick="switchView('jam-config')" id="nav-jam-config" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-clock w-5"></i> Set Jam Operasional</button>
-      </nav>
-  </aside>
-
-  <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
-
-  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-      <header class="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 bg-bDark">
-          <div class="flex items-center gap-3">
-              <button onclick="toggleSidebar()" class="md:hidden p-2 text-bMuted hover:text-white focus:outline-none">
-                  <i class="fas fa-bars text-lg"></i>
-              </button>
-              <h2 id="viewTitle" class="font-bold text-sm md:text-base truncate">Dashboard Absensi</h2>
-          </div>
-          <div id="clockDisplay" class="text-[10px] md:text-xs bg-bCard px-2.5 py-1.5 rounded-lg border border-white/5 font-semibold text-bMuted">-</div>
-      </header>
-      
-      <main class="flex-1 overflow-y-auto p-4 md:p-6 custom-scroll">
-          
-          <div id="view-dashboard" class="view-section active space-y-6">
-              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                  <div class="bg-bCard p-4 md:p-5 rounded-xl border border-white/5"><p class="text-[9px] md:text-[10px] font-bold text-bMuted uppercase tracking-wider">Siswa Terdaftar</p><h3 id="dashSiswa" class="text-xl md:text-3xl font-bold mt-2">0</h3></div>
-                  <div class="bg-bCard p-4 md:p-5 rounded-xl border border-white/5"><p class="text-[9px] md:text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Scan Datang</p><h3 id="dashHadir" class="text-xl md:text-3xl font-bold text-emerald-400 mt-2">0</h3></div>
-                  <div class="bg-bCard p-4 md:p-5 rounded-xl border border-white/5"><p class="text-[9px] md:text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Scan Pulang</p><h3 id="dashPulang" class="text-xl md:text-3xl font-bold text-cyan-400 mt-2">0</h3></div>
-                  <div class="bg-bCard p-4 md:p-5 rounded-xl border border-white/5"><p class="text-[9px] md:text-[10px] font-bold text-amber-400 uppercase tracking-wider">Ket. S/I/A</p><h3 id="dashSakitIzin" class="text-xl md:text-3xl font-bold text-amber-400 mt-2">0</h3></div>
-              </div>
-              <div class="bg-bCard p-4 md:p-6 rounded-xl border border-white/5 max-w-sm flex items-center justify-center mx-auto">
-                  <div class="w-40 md:w-48"><canvas id="chartPresensi"></canvas></div>
-              </div>
-          </div>
-
-          <div id="view-scan" class="view-section max-w-xl mx-auto bg-bCard p-4 md:p-6 rounded-2xl border border-white/5 text-center space-y-4">
-              <p class="text-xs md:text-sm font-semibold text-bMuted">Arahkan Kartu QR Siswa/Guru ke Kamera</p>
-              <div class="w-full aspect-video rounded-xl overflow-hidden bg-bDark border border-white/10 p-1 flex items-center justify-center relative">
-                  <div id="reader" class="w-full"></div>
-              </div>
-          </div>
-
-          <div id="view-jam-config" class="view-section max-w-md mx-auto bg-bCard p-5 md:p-6 rounded-2xl border border-white/5 space-y-4">
-              <h3 class="font-bold text-sm border-b border-white/5 pb-2 text-center"><i class="fas fa-sliders-h mr-1 text-bActive"></i> Atur Waktu Absensi</h3>
-              <div class="space-y-4">
-                  <div>
-                      <label class="text-xs text-bMuted font-bold block mb-1">Batas Akhir Jam Masuk Pagi</label>
-                      <input type="time" id="cfgJamMasuk" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white focus:border-bActive focus:outline-none">
-                  </div>
-                  <div>
-                      <label class="text-xs text-bMuted font-bold block mb-1">Jam Mulai Scan Pulang</label>
-                      <input type="time" id="cfgJamPulang" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white focus:border-bActive focus:outline-none">
-                  </div>
-                  <button onclick="simpanConfigJam()" class="w-full py-3.5 bg-bActive rounded-xl font-bold text-xs uppercase tracking-wider">Simpan Setting Jam</button>
-              </div>
-          </div>
-
-          <div id="view-rekap" class="view-section space-y-4">
-              <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col gap-4">
-                  <div class="flex flex-col sm:flex-row gap-3 items-center justify-between border-b border-white/5 pb-3">
-                      <div class="flex gap-2 w-full sm:w-auto justify-center">
-                          <button id="btnTabHarian" onclick="setRekapTab('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
-                          <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
-                      </div>
-                      <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                          <div id="filterTanggalArea" class="flex-1 sm:flex-none"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                          <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                          
-                          <button onclick="cetakPdfSiswa()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all">
-                              <i class="fas fa-file-pdf"></i> PDF Per Kelas
-                          </button>
-                      </div>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input type="text" id="searchRekapSiswa" onkeyup="renderDataRekap()" placeholder="Cari nama siswa / NISN..." class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white placeholder-bMuted">
-                      <select id="filterStatusSiswa" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
-                          <option value="SEMUA">-- Semua Status --</option>
-                          <option value="Hadir">Hadir</option>
-                          <option value="Terlambat">Terlambat</option>
-                          <option value="Sakit">Sakit</option>
-                          <option value="Izin">Izin</option>
-                          <option value="Alpa">Alpa</option>
-                      </select>
-                      <select id="filterKelasSiswa" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
-                          <option value="SEMUA">-- Semua Kelas --</option>
-                      </select>
-                  </div>
-              </div>
-              <div id="rekapListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div id="view-rekap-guru" class="view-section space-y-4">
-              <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col gap-4">
-                  <div class="flex flex-col sm:flex-row gap-3 items-center justify-between border-b border-white/5 pb-3">
-                      <div class="flex gap-2 w-full sm:w-auto justify-center">
-                          <button id="btnTabHarianGuru" onclick="setRekapTabGuru('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian Guru</button>
-                          <button id="btnTabBulananGuru" onclick="setRekapTabGuru('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan Guru</button>
-                      </div>
-                      <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                          <div id="filterTanggalAreaGuru" class="flex-1 sm:flex-none"><input type="date" id="filterTanggalGuru" onchange="renderDataRekapGuru()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                          <div id="filterBulanAreaGuru" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulanGuru" onchange="renderDataRekapGuru()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                          
-                          <button onclick="cetakPdfGuru()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all">
-                              <i class="fas fa-file-pdf"></i> PDF Guru
-                          </button>
-                      </div>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input type="text" id="searchRekapGuru" onkeyup="renderDataRekapGuru()" placeholder="Cari nama guru / NIP..." class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white placeholder-bMuted">
-                      <select id="filterStatusGuru" onchange="renderDataRekapGuru()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
-                          <option value="SEMUA">-- Semua Status --</option>
-                          <option value="Hadir">Hadir</option>
-                          <option value="Terlambat">Terlambat</option>
-                          <option value="Sakit">Sakit</option>
-                          <option value="Izin">Izin</option>
-                          <option value="Alpa">Alpa</option>
-                      </select>
-                      <select id="filterMapelGuru" onchange="renderDataRekapGuru()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
-                          <option value="SEMUA">-- Semua Mapel --</option>
-                      </select>
-                  </div>
-              </div>
-              <div id="rekapGuruListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div id="view-siswa" class="view-section space-y-4">
-              <div class="flex justify-between items-center">
-                  <span class="text-xs md:text-sm font-bold text-bMuted">Database Siswa</span>
-                  <div class="flex gap-2">
-                      <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="prosesUploadMassal(event)">
-                      <button onclick="triggerUploadClick()" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1">
-                          <i class="fas fa-file-upload"></i> Upload Massal (.CSV)
-                      </button>
-                      <button onclick="openModal('siswa')" class="bg-bActive hover:bg-opacity-80 text-white text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl transition-all">
-                          <i class="fas fa-plus mr-1"></i> Siswa
-                      </button>
-                  </div>
-              </div>
-              <div id="listSiswa" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div id="view-guru" class="view-section space-y-4">
-              <div class="flex justify-between items-center">
-                  <span class="text-xs md:text-sm font-bold text-bMuted">Database Guru</span>
-                  <button onclick="openModal('guru')" class="bg-cyan-600 text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus mr-1"></i> Guru</button>
-              </div>
-              <div id="listGuru" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div id="view-manual" class="view-section max-w-md mx-auto bg-bCard p-5 md:p-6 rounded-2xl border border-white/5 space-y-4">
-              <h3 class="font-bold text-sm text-center">Input Keterangan Manual</h3>
-              <form onsubmit="simpanManual(event)" class="space-y-3">
-                  <select id="mKategori" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                      <option value="Siswa">Siswa (Gunakan NISN)</option>
-                      <option value="Guru">Guru (Gunakan NIP)</option>
-                  </select>
-                  <input type="number" id="mNisn" placeholder="Nomor Induk / NISN / NIP" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                  <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                      <option value="Sakit">Sakit</option>
-                      <option value="Izin">Izin</option>
-                      <option value="Alpa">Alpa</option>
-                      <option value="Hadir">Hadir (Manual)</option>
-                      <option value="Terlambat">Terlambat (Manual)</option>
-                  </select>
-                  <select id="mTipe" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Masuk">Absen Pagi (Masuk)</option><option value="Pulang">Absen Siang (Pulang)</option></select>
-                  <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Simpan Absen</button>
-              </form>
-          </div>
-      </main>
-  </div>
-
-  <div id="inputModal" class="hidden fixed inset-0 bg-bDark/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-bCard border border-white/10 w-full max-w-sm p-5 md:p-6 rounded-2xl space-y-4">
-          <div class="flex justify-between items-center"><h3 id="modalHeaderTitle" class="font-bold text-sm">Form Data</h3><button onclick="closeModal()" class="text-bMuted"><i class="fas fa-times"></i></button></div>
-          <form id="dynamicForm" onsubmit="handleFormSubmit(event)" class="space-y-3"></form>
-      </div>
-  </div>
-
-  <div id="qrModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-      <div class="bg-bCard border border-white/10 p-6 rounded-2xl text-center space-y-4 max-w-sm w-full">
-          <h3 class="font-bold text-sm text-emerald-400 tracking-wider">KARTU QR GENERATED</h3>
-          <div id="printCardArea" class="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 rounded-xl border border-white/20 text-center shadow-2xl inline-block w-full">
-              <div class="text-[10px] font-bold tracking-widest text-indigo-400 uppercase mb-0.5">KARTU DIGITAL ABSENSI</div>
-              <div class="text-[9px] text-slate-500 border-b border-white/10 pb-2 mb-4 font-medium">SMK/SMP CLOUD SYSTEM</div>
-              <div class="bg-white p-3 rounded-xl inline-block shadow-lg mb-4">
-                  <img id="modalQrImg" src="" alt="QR Code" class="w-36 h-36 block mx-auto">
-              </div>
-              <h4 id="modalQrNama" class="font-bold text-base text-white truncate">-</h4>
-              <p id="modalQrNisn" class="text-xs text-indigo-300 font-semibold tracking-wider mt-0.5">-</p>
-              <div class="mt-2"><span id="modalQrKelas" class="text-[10px] bg-white/10 text-slate-300 font-bold px-3 py-1 rounded-full border border-white/5">-</span></div>
-          </div>
-          <div class="flex gap-2 pt-2">
-              <button onclick="window.print()" class="flex-1 py-2.5 bg-bActive text-white font-bold text-xs rounded-xl uppercase shadow-md transition-all hover:bg-indigo-700"><i class="fas fa-print mr-1"></i> Cetak Kartu</button>
-              <button onclick="closeQrModal()" class="flex-1 py-2.5 bg-bDark text-bMuted font-bold text-xs rounded-xl uppercase border border-white/5">Tutup</button>
-          </div>
-      </div>
-  </div>
-
-  <script>
+<script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', currentTabGuru = 'harian', cacheAbsensi = [], cacheSiswa = [], cacheGuru = [], currentModalType = '';
     let dataSiswaTerfilterGlobal = [], dataGuruTerfilterGlobal = []; 
-    
+
     window.addEventListener('DOMContentLoaded', () => {
+      // Set default tanggal hari ini ke input filter
       const hariIni = new Date().toISOString().split('T')[0];
-      const bulanIni = hariIni.substring(0,7);
-      if(document.getElementById('filterTanggal')) document.getElementById('filterTanggal').value = hariIni;
-      if(document.getElementById('filterTanggalGuru')) document.getElementById('filterTanggalGuru').value = hariIni;
-      if(document.getElementById('filterBulan')) document.getElementById('filterBulan').value = bulanIni;
-      if(document.getElementById('filterBulanGuru')) document.getElementById('filterBulanGuru').value = bulanIni;
-      loadStats();
+      document.getElementById('filterTanggal').value = hariIni;
+      document.getElementById('filterTanggalGuru').value = hariIni;
+      
+      const bulanIni = hariIni.substring(0, 7);
+      document.getElementById('filterBulan').value = bulanIni;
+      document.getElementById('filterBulanGuru').value = bulanIni;
+
+      muatSemuaData();
+      mulaiJamSistem();
     });
 
-    setInterval(() => {
-      const skrg = new Date();
-      document.getElementById('clockDisplay').innerText = skrg.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + " - " + skrg.toLocaleTimeString('id-ID') + " WIB";
-    }, 1000);
+    function mulaiJamSistem() {
+      setInterval(() => {
+        const sekarang = new Date();
+        document.getElementById('clockDisplay').innerText = sekarang.toLocaleDateString('id-ID', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        }) + " | " + sekarang.toLocaleTimeString('id-ID') + " WIB";
+      }, 1000);
+    }
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebarMenu');
-      const overlay = document.getElementById('sidebarOverlay');
-      if (sidebar.classList.contains('-translate-x-full')) {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-      } else {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-      }
+      document.getElementById('sidebarMenu').classList.toggle('-translate-x-full');
+      document.getElementById('sidebarOverlay').classList.toggle('hidden');
     }
 
     function switchView(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('nav-active'));
-      document.getElementById(`view-${viewId}`).classList.add('active');
-      document.getElementById(`nav-${viewId}`).classList.add('nav-active');
       
-      const titles = { 
-        dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera QR', 'jam-config': 'Atur Waktu Absensi', 
-        rekap: 'Laporan Rekapitulasi Siswa', 'rekap-guru': 'Laporan Rekapitulasi Guru',
-        siswa: 'Master Data Siswa', guru: 'Master Data Guru', manual: 'Kelola Absen Manual' 
+      document.getElementById('view-' + viewId).classList.add('active');
+      const navBtn = document.getElementById('nav-' + viewId);
+      if (navBtn) navBtn.classList.add('nav-active');
+
+      const titles = {
+        'dashboard': 'Dashboard Absensi', 'siswa': 'Database Siswa', 'guru': 'Database Guru',
+        'rekap': 'Laporan Presensi Siswa', 'rekap-guru': 'Laporan Presensi Guru',
+        'manual': 'Input Keterangan Manual', 'scan': 'Scan Absensi QR', 'jam-config': 'Set Jam Operasional'
       };
-      document.getElementById('viewTitle').innerText = titles[viewId] || 'System';
+      document.getElementById('viewTitle').innerText = titles[viewId] || 'E-Absensi';
       
-      if (window.innerWidth < 768) {
-        const sidebar = document.getElementById('sidebarMenu');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
+      if (viewId === 'scan') {
+        mulaiScanner();
+      } else {
+        matikanScanner();
+      }
+      toggleSidebar();
+    }
+
+    function muatSemuaData() {
+      fetch(`${API_URL}?action=getAllData`)
+        .then(res => res.json())
+        .then(data => {
+          cacheSiswa = data.siswa || [];
+          cacheGuru = data.guru || [];
+          cacheAbsensi = data.absensi || [];
+          
+          updateDropdownFilters();
+          renderDataSiswa();
+          renderDataGuru();
+          renderDataRekap();
+          renderDataRekapGuru();
+          updateDashboardStats();
+        })
+        .catch(err => console.error("Gagal memuat data: ", err));
+    }
+
+    function updateDropdownFilters() {
+      const kSet = new Set(cacheSiswa.map(s => s.kelas));
+      const selKelas = document.getElementById('filterKelasSiswa');
+      selKelas.innerHTML = '<option value="SEMUA">-- Semua Kelas --</option>';
+      kSet.forEach(k => selKelas.innerHTML += `<option value="${k}">${k}</option>`);
+
+      const mSet = new Set(cacheGuru.map(g => g.mapel));
+      const selMapel = document.getElementById('filterMapelGuru');
+      selMapel.innerHTML = '<option value="SEMUA">-- Semua Mapel --</option>';
+      mSet.forEach(m => selMapel.innerHTML += `<option value="${m}">${m}</option>`);
+    }
+
+    function renderDataSiswa() {
+      const container = document.getElementById('listSiswa');
+      container.innerHTML = '';
+      cacheSiswa.forEach(s => {
+        container.innerHTML += `
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-3 relative overflow-hidden group">
+            <div class="flex items-start justify-between">
+              <div>
+                <h4 class="font-bold text-sm text-white">${s.nama}</h4>
+                <p class="text-xs text-bMuted mt-0.5">NISN: ${s.nisn}</p>
+              </div>
+              <span class="text-[10px] bg-bActive/20 text-indigo-300 font-bold px-2.5 py-1 rounded-lg">${s.kelas}</span>
+            </div>
+            <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+              <span class="text-[10px] text-bMuted truncate max-w-[150px]"><i class="fab fa-whatsapp text-emerald-400 mr-1"></i>${s.whatsapp}</span>
+              <button onclick="bukaKartuDigital('${s.nisn}', '${s.nama}', '${s.kelas}', 'Siswa')" class="text-[10px] bg-white/5 hover:bg-bActive px-3 py-1.5 rounded-lg font-semibold transition-all">Lihat QR</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function renderDataGuru() {
+      const container = document.getElementById('listGuru');
+      container.innerHTML = '';
+      cacheGuru.forEach(g => {
+        container.innerHTML += `
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-3">
+            <div>
+              <h4 class="font-bold text-sm text-white">${g.nama}</h4>
+              <p class="text-xs text-bMuted mt-0.5">NIP: ${g.nip}</p>
+            </div>
+            <div class="pt-2 border-t border-white/5 flex items-center justify-between">
+              <span class="text-[10px] bg-cyan-500/10 text-cyan-400 font-bold px-2.5 py-1 rounded-lg">${g.mapel}</span>
+              <button onclick="bukaKartuDigital('${g.nip}', '${g.nama}', '${g.mapel}', 'Guru')" class="text-[10px] bg-white/5 hover:bg-cyan-600 px-3 py-1.5 rounded-lg font-semibold transition-all">Lihat QR</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    // === LOGIKA UTAMA: SINKRONISASI ALPA OTOMATIS ===
+    function setRekapTab(type) {
+      currentTab = type;
+      document.getElementById('btnTabHarian').className = type === 'harian' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
+      document.getElementById('btnTabBulanan').className = type === 'bulanan' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
+      document.getElementById('filterTanggalArea').style.display = type === 'harian' ? 'block' : 'none';
+      document.getElementById('filterBulanArea').style.display = type === 'bulanan' ? 'block' : 'none';
+      renderDataRekap();
+    }
+
+    function renderDataRekap() {
+      const container = document.getElementById('rekapListContainer');
+      container.innerHTML = '';
+      
+      const keyword = document.getElementById('searchRekapSiswa').value.toLowerCase();
+      const statusFilt = document.getElementById('filterStatusSiswa').value;
+      const kelasFilt = document.getElementById('filterKelasSiswa').value;
+      
+      const tglFilt = document.getElementById('filterTanggal').value;
+      const blnFilt = document.getElementById('filterBulan').value;
+
+      let hasilData = [];
+
+      if (currentTab === 'harian') {
+        // Gabungkan seluruh master siswa untuk pengecekan Alpa otomatis
+        cacheSiswa.forEach(siswa => {
+          // Cari record di data absensi berdasarkan NISN dan Tanggal terpilih
+          let match = cacheAbsensi.find(a => a.id_User === siswa.nisn && a.tanggal === tglFilt);
+          
+          if (match) {
+            hasilData.push({
+              nisn: siswa.nisn,
+              nama: siswa.nama,
+              kelas: siswa.kelas,
+              jam_Masuk: match.jam_Masuk,
+              jam_Pulang: match.jam_Pulang,
+              status: match.status
+            });
+          } else {
+            // Jika tidak melakukan tap, status otomatis dikonversi sebagai Alpa
+            hasilData.push({
+              nisn: siswa.nisn,
+              nama: siswa.nama,
+              kelas: siswa.kelas,
+              jam_Masuk: '-',
+              jam_Pulang: '-',
+              status: 'Alpa'
+            });
+          }
+        });
+      } else {
+        // Tab Bulanan
+        cacheAbsensi.forEach(a => {
+          if (a.tipe_User === 'Siswa' && a.tanggal.substring(0, 7) === blnFilt) {
+            let sObj = cacheSiswa.find(s => s.nisn === a.id_User);
+            hasilData.push({
+              nisn: a.id_User,
+              nama: a.nama,
+              kelas: sObj ? sObj.kelas : '-',
+              jam_Masuk: a.jam_Masuk,
+              jam_Pulang: a.jam_Pulang,
+              status: a.status
+            });
+          }
+        });
       }
 
-      if (viewId === 'scan') { setTimeout(startScanner, 200); } else { stopScanner(); }
-      if (viewId === 'dashboard') loadStats();
-      if (viewId === 'jam-config') fetchJamConfig();
-      if (viewId === 'rekap' || viewId === 'rekap-guru' || viewId === 'siswa' || viewId === 'guru') refreshDatabase();
+      // Filter Berdasarkan Input Form Filter
+      dataSiswaTerfilterGlobal = hasilData.filter(item => {
+        const cocokKeyword = item.nama.toLowerCase().includes(keyword) || item.nisn.includes(keyword);
+        const cocokStatus = statusFilt === 'SEMUA' || item.status === statusFilt;
+        const cocokKelas = kelasFilt === 'SEMUA' || item.kelas === kelasFilt;
+        return cocokKeyword && cocokStatus && cocokKelas;
+      });
+
+      if (dataSiswaTerfilterGlobal.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-bMuted">Tidak ada data laporan presensi siswa yang cocok.</div>';
+        return;
+      }
+
+      dataSiswaTerfilterGlobal.forEach(item => {
+        let colorStatus = "bg-amber-500/10 text-amber-400";
+        if (item.status === "Hadir") colorStatus = "bg-emerald-500/10 text-emerald-400";
+        if (item.status === "Terlambat") colorStatus = "bg-rose-500/10 text-rose-400";
+        if (item.status === "Alpa") colorStatus = "bg-red-500/10 text-red-500 font-bold";
+
+        container.innerHTML += `
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold text-xs">${item.nama}</h4>
+                <p class="text-[10px] text-bMuted mt-0.5">${item.nisn} | ${item.kelas}</p>
+              </div>
+              <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase ${colorStatus}">${item.status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-center">
+              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Masuk</p><p class="text-xs font-semibold mt-0.5">${item.jam_Masuk}</p></div>
+              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Pulang</p><p class="text-xs font-semibold mt-0.5">${item.jam_Pulang}</p></div>
+            </div>
+          </div>`;
+      });
     }
 
-    function startScanner() {
-      if (activeScanner) return;
-      activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-      activeScanner.render((decodedText) => {
-        stopScanner();
-        Swal.fire({ title: 'Memproses Absensi...', text: `ID: ${decodedText}`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        
-        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: decodedText.trim() }) })
-        .then(res => res.json()).then(res => {
-          if (res.success) {
-            Swal.fire({ title: 'Berhasil!', text: res.message, icon: 'success', timer: 3000 }).then(() => switchView('scan'));
+    // === REKAP ABSENSI GURU ===
+    function setRekapTabGuru(type) {
+      currentTabGuru = type;
+      document.getElementById('btnTabHarianGuru').className = type === 'harian' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
+      document.getElementById('btnTabBulananGuru').className = type === 'bulanan' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
+      document.getElementById('filterTanggalAreaGuru').style.display = type === 'harian' ? 'block' : 'none';
+      document.getElementById('filterBulanAreaGuru').style.display = type === 'bulanan' ? 'block' : 'none';
+      renderDataRekapGuru();
+    }
+
+    function renderDataRekapGuru() {
+      const container = document.getElementById('rekapGuruListContainer');
+      container.innerHTML = '';
+      
+      const keyword = document.getElementById('searchRekapGuru').value.toLowerCase();
+      const statusFilt = document.getElementById('filterStatusGuru').value;
+      const mapelFilt = document.getElementById('filterMapelGuru').value;
+      
+      const tglFilt = document.getElementById('filterTanggalGuru').value;
+      const blnFilt = document.getElementById('filterBulanGuru').value;
+
+      let hasilData = [];
+
+      if (currentTabGuru === 'harian') {
+        cacheGuru.forEach(guru => {
+          let match = cacheAbsensi.find(a => a.id_User === guru.nip && a.tanggal === tglFilt);
+          if (match) {
+            hasilData.push({ nip: guru.nip, nama: guru.nama, mapel: guru.mapel, jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status });
           } else {
-            Swal.fire({ title: 'Gagal', text: res.message, icon: 'error' }).then(() => switchView('scan'));
+            hasilData.push({ nip: guru.nip, nama: guru.nama, mapel: guru.mapel, jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa' });
           }
-        }).catch(err => {
-          Swal.fire('Error Sistem', 'Terjadi kesalahan: ' + err, 'error').then(() => switchView('scan'));
         });
-      }, () => {});
+      } else {
+        cacheAbsensi.forEach(a => {
+          if (a.tipe_User === 'Guru' && a.tanggal.substring(0, 7) === blnFilt) {
+            let gObj = cacheGuru.find(g => g.nip === a.id_User);
+            hasilData.push({ nip: a.id_User, nama: a.nama, mapel: gObj ? gObj.mapel : '-', jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status });
+          }
+        });
+      }
+
+      dataGuruTerfilterGlobal = hasilData.filter(item => {
+        const cocokKeyword = item.nama.toLowerCase().includes(keyword) || item.nip.includes(keyword);
+        const cocokStatus = statusFilt === 'SEMUA' || item.status === statusFilt;
+        const cocokMapel = mapelFilt === 'SEMUA' || item.mapel === mapelFilt;
+        return cocokKeyword && cocokStatus && cocokMapel;
+      });
+
+      if (dataGuruTerfilterGlobal.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-bMuted">Tidak ada data laporan presensi guru yang cocok.</div>';
+        return;
+      }
+
+      dataGuruTerfilterGlobal.forEach(item => {
+        let colorStatus = "bg-amber-500/10 text-amber-400";
+        if (item.status === "Hadir") colorStatus = "bg-emerald-500/10 text-emerald-400";
+        if (item.status === "Terlambat") colorStatus = "bg-rose-500/10 text-rose-400";
+        if (item.status === "Alpa") colorStatus = "bg-red-500/10 text-red-500 font-bold";
+
+        container.innerHTML += `
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold text-xs">${item.nama}</h4>
+                <p class="text-[10px] text-bMuted mt-0.5">${item.nip} | ${item.mapel}</p>
+              </div>
+              <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase ${colorStatus}">${item.status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-center">
+              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Masuk</p><p class="text-xs font-semibold mt-0.5">${item.jam_Masuk}</p></div>
+              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Pulang</p><p class="text-xs font-semibold mt-0.5">${item.jam_Pulang}</p></div>
+            </div>
+          </div>`;
+      });
     }
 
-    function stopScanner() {
-      if (activeScanner) { activeScanner.clear().then(() => { activeScanner = null; }).catch(() => {}); }
+    // === UPDATE REALTIME STATS & CHART DI DASHBOARD ===
+    function updateDashboardStats() {
+      const tglFilt = document.getElementById('filterTanggal').value;
+      let totalSiswa = cacheSiswa.length;
+      let hadir = 0, pulang = 0, sakitIzin = 0, alpa = 0;
+
+      cacheSiswa.forEach(siswa => {
+        let match = cacheAbsensi.find(a => a.id_User === siswa.nisn && a.tanggal === tglFilt);
+        if (match) {
+          if (match.status === "Hadir" || match.status === "Terlambat") hadir++;
+          if (match.jam_Pulang !== "-" && match.jam_Pulang !== "") pulang++;
+          if (match.status === "Sakit" || match.status === "Izin") sakitIzin++;
+          if (match.status === "Alpa") alpa++;
+        } else {
+          alpa++;
+        }
+      });
+
+      document.getElementById('dashSiswa').innerText = totalSiswa;
+      document.getElementById('dashHadir').innerText = hadir;
+      document.getElementById('dashPulang').innerText = pulang;
+      document.getElementById('dashSakitIzin').innerText = (sakitIzin + alpa);
+
+      if (mainChart) mainChart.destroy();
+      const ctx = document.getElementById('chartPresensi').getContext('2d');
+      mainChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Hadir', 'S/I', 'Alpa'],
+          datasets: [{
+            data: [hadir, sakitIzin, alpa],
+            backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          cutout: '75%'
+        }
+      });
+    }
+
+    // === CETAK PRINT LAPORAN SEPERTI GAMBAR ===
+    function cetakPdfSiswa() {
+      const kelasSelected = document.getElementById('filterKelasSiswa').value;
+      const tanggalSelected = document.getElementById('filterTanggal').value;
+      
+      let htmlCetak = `
+        <html>
+        <head>
+          <title>Cetak Laporan</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; background: #fff; }
+            .header-print { text-align: center; margin-bottom: 25px; }
+            .header-print h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+            .header-print p { margin: 5px 0 0; font-size: 12px; color: #333; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+            th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
+            .center-text { text-align: center; }
+            .ttd-section { margin-top: 40px; float: right; text-align: center; font-size: 12px; width: 200px; }
+            .ttd-space { height: 60px; }
+          </style>
+        </head>
+        <body>
+          <div class="header-print">
+            <h2>LAPORAN REKAPITULASI ABSENSI SISWA</h2>
+            <p>Kelas: ${kelasSelected} | Periode Tanggal: ${tanggalSelected}</p>
+          </div>
+          <hr style="border: 1px solid #000; margin-bottom: 20px;">
+          <table>
+            <thead>
+              <tr>
+                <th width="5%" class="center-text">NO</th>
+                <th width="15%">NISN</th>
+                <th width="35%">NAMA LENGKAP</th>
+                <th width="15%">KELAS</th>
+                <th width="14%">STATUS / REKAP</th>
+                <th width="8%" class="center-text">JAM MASUK</th>
+                <th width="8%" class="center-text">JAM PULANG</th>
+              </tr>
+            </thead>
+            <tbody>`;
+            
+      dataSiswaTerfilterGlobal.forEach((item, index) => {
+        htmlCetak += `
+          <tr>
+            <td class="center-text">${index + 1}</td>
+            <td>${item.nisn}</td>
+            <td><strong>${item.nama.toUpperCase()}</strong></td>
+            <td>${item.kelas}</td>
+            <td>${item.status}</td>
+            <td class="center-text">${item.jam_Masuk}</td>
+            <td class="center-text">${item.jam_Pulang}</td>
+          </tr>`;
+      });
+
+      htmlCetak += `
+            </tbody>
+          </table>
+          <div class="ttd-section">
+            Banda Aceh, ${new Date(tanggalSelected).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
+            Administrator System
+            <div class="ttd-space"></div>
+            <hr style="border: 0.5px solid #000; width: 100%;">
+            <strong>E-Absensi Admin</strong>
+          </div>
+        </body>
+        </html>`;
+
+      const win = window.open("", "_blank");
+      win.document.write(htmlCetak);
+      win.document.close();
+      setTimeout(() => { win.print(); }, 500);
+    }
+
+    function cetakPdfGuru() {
+      const mapelSelected = document.getElementById('filterMapelGuru').value;
+      const tanggalSelected = document.getElementById('filterTanggalGuru').value;
+      
+      let htmlCetak = `
+        <html>
+        <head>
+          <title>Cetak Laporan Guru</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; }
+            .header-print { text-align: center; margin-bottom: 25px; }
+            .header-print h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+            .header-print p { margin: 5px 0 0; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+            th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
+            .center-text { text-align: center; }
+            .ttd-section { margin-top: 40px; float: right; text-align: center; font-size: 12px; width: 200px; }
+            .ttd-space { height: 60px; }
+          </style>
+        </head>
+        <body>
+          <div class="header-print">
+            <h2>LAPORAN REKAPITULASI ABSENSI GURU</h2>
+            <p>Mapel: ${mapelSelected} | Periode Tanggal: ${tanggalSelected}</p>
+          </div>
+          <hr style="border: 1px solid #000; margin-bottom: 20px;">
+          <table>
+            <thead>
+              <tr>
+                <th width="5%" class="center-text">NO</th>
+                <th width="15%">NIP</th>
+                <th width="35%">NAMA LENGKAP</th>
+                <th width="15%">MAPEL</th>
+                <th width="14%">STATUS</th>
+                <th width="8%" class="center-text">JAM MASUK</th>
+                <th width="8%" class="center-text">JAM PULANG</th>
+              </tr>
+            </thead>
+            <tbody>`;
+            
+      dataGuruTerfilterGlobal.forEach((item, index) => {
+        htmlCetak += `
+          <tr>
+            <td class="center-text">${index + 1}</td>
+            <td>${item.nip}</td>
+            <td><strong>${item.nama.toUpperCase()}</strong></td>
+            <td>${item.mapel}</td>
+            <td>${item.status}</td>
+            <td class="center-text">${item.jam_Masuk}</td>
+            <td class="center-text">${item.jam_Pulang}</td>
+          </tr>`;
+      });
+
+      htmlCetak += `
+            </tbody>
+          </table>
+          <div class="ttd-section">
+            Banda Aceh, ${new Date(tanggalSelected).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
+            Administrator System
+            <div class="ttd-space"></div>
+            <hr style="border: 0.5px solid #000; width: 100%;">
+            <strong>E-Absensi Admin</strong>
+          </div>
+        </body>
+        </html>`;
+
+      const win = window.open("", "_blank");
+      win.document.write(htmlCetak);
+      win.document.close();
+      setTimeout(() => { win.print(); }, 500);
+    }
+
+    // === UTILITAS KODE SCANNER, MANAJEMEN OPERASIONAL LAIN ===
+    function mulaiScanner() {
+      if (activeScanner) return;
+      activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      activeScanner.render((txt) => {
+        matikanScanner();
+        Swal.fire({ title: 'Memproses Absen...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        
+        fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "scanQR", nisn: txt })
+        })
+        .then(res => res.json())
+        .then(res => {
+          Swal.close();
+          if(res.success) {
+            Swal.fire('Berhasil!', res.message, 'success');
+          } else {
+            Swal.fire('Gagal', res.message, 'error');
+          }
+          muatSemuaData();
+          switchView('dashboard');
+        })
+        .catch(err => { Swal.close(); Swal.fire('Error', 'Terjadi masalah koneksi ke server.', 'error'); });
+      }, (err) => {});
+    }
+
+    function matikanScanner() {
+      if (activeScanner) {
+        activeScanner.clear().then(() => { activeScanner = null; }).catch(e => console.error(e));
+      }
+    }
+
+    function simpanConfigJam() {
+      const jM = document.getElementById('cfgJamMasuk').value;
+      const jP = document.getElementById('cfgJamPulang').value;
+      if(!jM || !jP) return Swal.fire('Gagal', 'Lengkapi seluruh formulir!', 'warning');
+      
+      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "saveSettings", jamMasuk: jM, jamPulang: jP })
+      })
+      .then(res => res.json())
+      .then(res => { Swal.close(); Swal.fire('Sukses', res.message, 'success'); muatSemuaData(); })
+      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pengaturan.', 'error'); });
+    }
+
+    function simpanManual(e) {
+      e.preventDefault();
+      const kat = document.getElementById('mKategori').value;
+      const idU = document.getElementById('mNisn').value;
+      const st = document.getElementById('mStatus').value;
+      const tp = document.getElementById('mTipe').value;
+
+      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "inputManualAbsen", kategori: kat, idUser: idU, status: st, tipe: tp })
+      })
+      .then(res => res.json())
+      .then(res => {
+        Swal.close();
+        if(res.success) {
+          Swal.fire('Sukses', res.message, 'success');
+          document.getElementById('mNisn').value = '';
+          muatSemuaData();
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
+      })
+      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal mengirim permintaan.', 'error'); });
     }
 
     function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
 
-    function prosesUploadMassal(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
-            const dataSiswa = [];
-            for (let i = 1; i < rows.length; i++) {
-                let columns = rows[i].includes(';') ? rows[i].split(';') : rows[i].split(',');
-                if (columns.length >= 4) {
-                    dataSiswa.push({
-                        nisn: columns[0].trim().replace(/['"]/g, ''),
-                        nama: columns[1].trim().replace(/['"]/g, ''),
-                        kelas: columns[2].trim().replace(/['"]/g, ''),
-                        whatsapp: columns[3].trim().replace(/['"]/g)
-                    });
-                }
-            }
-            Swal.fire({ title: 'Mengimpor Data...', didOpen: () => Swal.showLoading() });
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadMassalSiswa', data: dataSiswa }) })
-            .then(res => res.json()).then(res => {
-                document.getElementById('csvFileInput').value = '';
-                if (res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); } 
-                else { Swal.fire('Gagal', res.message, 'error'); }
-            }).catch(() => { document.getElementById('csvFileInput').value = ''; });
-        };
-        reader.readAsText(file);
-    }
-
-    function fetchJamConfig() {
-        fetch(`${API_URL}?action=getSettings`).then(res => res.json()).then(s => {
-            document.getElementById('cfgJamMasuk').value = s.jamMasuk || "07:30";
-            document.getElementById('cfgJamPulang').value = s.jamPulang || "14:00";
-        }).catch(() => {});
-    }
-    
-    function simpanConfigJam() {
-        Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-        const payload = { action: 'saveSettings', jamMasuk: document.getElementById('cfgJamMasuk').value, jamPulang: document.getElementById('cfgJamPulang').value };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) Swal.fire('Tersimpan!', res.message, 'success');
-        });
-    }
-    
-    function loadStats() {
-      fetch(`${API_URL}?action=getStats`).then(res => res.json()).then(s => {
-            document.getElementById('dashSiswa').innerText = s.totalSiswa || 0;
-            document.getElementById('dashHadir').innerText = s.hadir || 0;
-            document.getElementById('dashPulang').innerText = s.pulang || 0;
-            document.getElementById('dashSakitIzin').innerText = s.sakitIzin || 0;
-            renderPieChart(s.hadir || 0, s.pulang || 0, s.sakitIzin || 0);
-        }).catch(() => {});
-    }
-    
-    function renderPieChart(h, p, si) {
-      const ctx = document.getElementById('chartPresensi').getContext('2d');
-      if (mainChart) mainChart.destroy();
-      mainChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: { datasets: [{ data: [h, p, si], backgroundColor: ['#10B981', '#22D3EE', '#F59E0B'], borderWidth: 0 }] },
-        options: { responsive: true, cutout: '75%' }
-      });
-    }
-    
-    function setRekapTab(type) {
-        currentTab = type;
-        const areaTgl = document.getElementById('filterTanggalArea');
-        const areaBln = document.getElementById('filterBulanArea');
-        document.getElementById('btnTabHarian').className = type === 'harian' ? "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white" : "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
-        document.getElementById('btnTabBulanan').className = type === 'bulanan' ? "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white" : "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
-        if(type === 'harian') { areaTgl.classList.remove('hidden'); areaBln.classList.add('hidden'); } 
-        else { areaBln.classList.remove('hidden'); areaTgl.classList.add('hidden'); }
-        renderDataRekap();
-    }
-
-    function setRekapTabGuru(type) {
-        currentTabGuru = type;
-        const areaTgl = document.getElementById('filterTanggalAreaGuru');
-        const areaBln = document.getElementById('filterBulanAreaGuru');
-        document.getElementById('btnTabHarianGuru').className = type === 'harian' ? "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white" : "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
-        document.getElementById('btnTabBulananGuru').className = type === 'bulanan' ? "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white" : "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
-        if(type === 'harian') { areaTgl.classList.remove('hidden'); areaBln.classList.add('hidden'); } 
-        else { areaBln.classList.remove('hidden'); areaTgl.classList.add('hidden'); }
-        renderDataRekapGuru();
-    }
-    
-    function refreshDatabase() {
-        fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
-            cacheAbsensi = db.absensi || [];
-            cacheSiswa = db.siswa || [];
-            cacheGuru = db.guru || [];
-
-            let listKelas = new Set();
-            let sHtml = '';
-            cacheSiswa.forEach(s => {
-                if(s.kelas) listKelas.add(s.kelas.trim());
-                sHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-bActive">${s.nisn}</p>
-                        <h4 class="text-sm font-bold truncate">${s.nama}</h4>
-                        <p class="text-xs text-bMuted">Kelas: ${s.kelas}</p>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-white/5 flex gap-2">
-                        <button onclick="bukaKartuQR('${s.nisn}', '${s.nama.replace(/'/g, "\\'")}', '${s.kelas}')" class="w-full bg-bDark hover:bg-slate-800 text-[11px] font-semibold py-1.5 rounded-lg text-indigo-400 transition-all flex items-center justify-center gap-1 border border-white/5 shadow-sm">
-                            <i class="fas fa-qrcode"></i> Lihat Kartu QR
-                        </button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted">Belum ada data siswa.</p>';
-            
-            let selectKelas = document.getElementById('filterKelasSiswa');
-            selectKelas.innerHTML = '<option value="SEMUA">-- Semua Kelas --</option>';
-            Array.from(listKelas).sort().forEach(kls => { selectKelas.innerHTML += `<option value="${kls}">${kls}</option>`; });
-
-            let listMapel = new Set();
-            let gHtml = '';
-            cacheGuru.forEach(g => {
-                if(g.mapel) listMapel.add(g.mapel.trim());
-                gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-cyan-400">${g.nip}</p>
-                        <h4 class="text-sm font-bold truncate">${g.nama}</h4>
-                        <p class="text-xs text-bMuted">Mapel: ${g.mapel}</p>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-white/5 flex gap-2">
-                        <button onclick="bukaKartuQR('${g.nip}', '${g.nama.replace(/'/g, "\\'")}', '${g.mapel}')" class="w-full bg-bDark hover:bg-slate-800 text-[11px] font-semibold py-1.5 rounded-lg text-indigo-400 transition-all flex items-center justify-center gap-1 border border-white/5 shadow-sm">
-                            <i class="fas fa-qrcode"></i> Lihat Kartu QR
-                        </button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('listGuru').innerHTML = gHtml || '<p class="text-xs text-bMuted">Belum ada data guru.</p>';
-            
-            let selectMapel = document.getElementById('filterMapelGuru');
-            selectMapel.innerHTML = '<option value="SEMUA">-- Semua Mapel --</option>';
-            Array.from(listMapel).sort().forEach(mpl => { selectMapel.innerHTML += `<option value="${mpl}">${mpl}</option>`; });
-
-            renderDataRekap();
-            renderDataRekapGuru();
-        }).catch(() => {});
-    }
-
-    function renderDataRekap() {
-        const search = document.getElementById('searchRekapSiswa').value.toLowerCase();
-        const status = document.getElementById('filterStatusSiswa').value;
-        const kelas = document.getElementById('filterKelasSiswa').value;
-        const tglVal = document.getElementById('filterTanggal').value;
-        const blnVal = document.getElementById('filterBulan').value;
-
-        let targetTglStr = tglVal ? tglVal : new Date().toISOString().split('T')[0];
-
-        dataSiswaTerfilterGlobal = cacheSiswa.map(s => {
-            let log = cacheAbsensi.filter(a => String(a.id_User).trim() === String(s.nisn).trim());
-            let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
-
-            if (currentTab === 'harian') {
-                let hariIniLog = log.find(a => {
-                    if (!a.tanggal) return false;
-                    let logDateStr = "";
-                    if (a.tanggal instanceof Date) {
-                        logDateStr = a.tanggal.toISOString().split('T')[0];
-                    } else if (typeof a.tanggal === 'string') {
-                        logDateStr = a.tanggal.split('T')[0].trim();
-                    }
-                    return logDateStr === targetTglStr;
-                });
-
-                if (hariIniLog) {
-                    statusFinal = hariIniLog.status || "Hadir";
-                    jamMasuk = hariIniLog.jam_Masuk || "-";
-                    jamPulang = hariIniLog.jam_Pulang || "-";
-                }
-            } else {
-                let bulanLog = log.filter(a => {
-                    if (!a.tanggal) return false;
-                    let logBlnStr = "";
-                    if (a.tanggal instanceof Date) {
-                        logBlnStr = a.tanggal.toISOString().split('T')[0].substring(0,7);
-                    } else if (typeof a.tanggal === 'string') {
-                        logBlnStr = a.tanggal.split('T')[0].substring(0,7);
-                    }
-                    return logBlnStr === blnVal;
-                });
-                let hadirCount = bulanLog.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
-                let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
-                let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
-                let alpaCount = bulanLog.filter(a => a.status === 'Alpa').length;
-                statusFinal = `H:${hadirCount} S:${sakitCount} I:${izinCount} A:${alpaCount}`;
-            }
-
-            return { ...s, statusFinal, jamMasuk, jamPulang };
-        }).filter(s => {
-            return (s.nama.toLowerCase().includes(search) || s.nisn.includes(search)) &&
-                   (status === 'SEMUA' || s.statusFinal.includes(status) || (status === 'Hadir' && s.statusFinal === 'Terlambat')) &&
-                   (kelas === 'SEMUA' || s.kelas === kelas);
-        });
-
-        let html = '';
-        dataSiswaTerfilterGlobal.forEach(s => {
-            let color = 'text-emerald-400'; 
-            if (s.statusFinal === 'Alpa') {
-                color = 'text-rose-400';
-            } else if (s.statusFinal === 'Sakit' || s.statusFinal === 'Izin') {
-                color = 'text-amber-400';
-            }
-
-            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h4 class="font-bold text-sm truncate w-40">${s.nama}</h4>
-                        <p class="text-[11px] text-bMuted">${s.nisn} | Kelas ${s.kelas}</p>
-                    </div>
-                    <span class="text-xs font-bold ${color}">${s.statusFinal}</span>
-                </div>
-                ${currentTab === 'harian' ? `
-                <div class="grid grid-cols-2 gap-2 mt-3 text-[10px] bg-bDark/50 p-2 rounded-lg border border-white/5">
-                    <div><span class="text-bMuted block">Masuk:</span><span class="font-semibold">${s.jamMasuk}</span></div>
-                    <div><span class="text-bMuted block">Pulang:</span><span class="font-semibold">${s.jamPulang}</span></div>
-                </div>` : ''}
-            </div>`;
-        });
+    function prosesUploadMassal(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        const dataUpload = [];
         
-        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap tidak ditemukan.</p>';
-    }
-
-    function renderDataRekapGuru() {
-        const search = document.getElementById('searchRekapGuru').value.toLowerCase();
-        const status = document.getElementById('filterStatusGuru').value;
-        const mapel = document.getElementById('filterMapelGuru').value;
-        const tglVal = document.getElementById('filterTanggalGuru').value;
-        const blnVal = document.getElementById('filterBulanGuru').value;
-
-        let targetTglStr = tglVal ? tglVal : new Date().toISOString().split('T')[0];
-
-        dataGuruTerfilterGlobal = cacheGuru.map(g => {
-            let log = cacheAbsensi.filter(a => String(a.id_User).trim() === String(g.nip).trim());
-            let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
-
-            if (currentTabGuru === 'harian') {
-                let hariIniLog = log.find(a => {
-                    if (!a.tanggal) return false;
-                    let logDateStr = "";
-                    if (a.tanggal instanceof Date) {
-                        logDateStr = a.tanggal.toISOString().split('T')[0];
-                    } else if (typeof a.tanggal === 'string') {
-                        logDateStr = a.tanggal.split('T')[0].trim();
-                    }
-                    return logDateStr === targetTglStr;
-                });
-
-                if (hariIniLog) {
-                    statusFinal = hariIniLog.status || "Hadir";
-                    jamMasuk = hariIniLog.jam_Masuk || "-";
-                    jamPulang = hariIniLog.jam_Pulang || "-";
-                }
-            } else {
-                let bulanLog = log.filter(a => {
-                    if (!a.tanggal) return false;
-                    let logBlnStr = "";
-                    if (a.tanggal instanceof Date) {
-                        logBlnStr = a.tanggal.toISOString().split('T')[0].substring(0,7);
-                    } else if (typeof a.tanggal === 'string') {
-                        logBlnStr = a.tanggal.split('T')[0].substring(0,7);
-                    }
-                    return logBlnStr === blnVal;
-                });
-                let hadirCount = bulanLog.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
-                let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
-                let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
-                let alpaCount = bulanLog.filter(a => a.status === 'Alpa').length;
-                statusFinal = `H:${hadirCount} S:${sakitCount} I:${izinCount} A:${alpaCount}`;
-            }
-
-            return { ...g, statusFinal, jamMasuk, jamPulang };
-        }).filter(g => {
-            return (g.nama.toLowerCase().includes(search) || g.nip.includes(search)) &&
-                   (status === 'SEMUA' || g.statusFinal.includes(status) || (status === 'Hadir' && g.statusFinal === 'Terlambat')) &&
-                   (mapel === 'SEMUA' || g.mapel === mapel);
-        });
-
-        let html = '';
-        dataGuruTerfilterGlobal.forEach(g => {
-            let color = 'text-emerald-400';
-            if (g.statusFinal === 'Alpa') {
-                color = 'text-rose-400';
-            } else if (g.statusFinal === 'Sakit' || g.statusFinal === 'Izin') {
-                color = 'text-amber-400';
-            }
-
-            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h4 class="font-bold text-sm truncate w-40">${g.nama}</h4>
-                        <p class="text-[11px] text-bMuted">${g.nip} | Mapel: ${g.mapel}</p>
-                    </div>
-                    <span class="text-xs font-bold ${color}">${g.statusFinal}</span>
-                </div>
-                ${currentTabGuru === 'harian' ? `
-                <div class="grid grid-cols-2 gap-2 mt-3 text-[10px] bg-bDark/50 p-2 rounded-lg border border-white/5">
-                    <div><span class="text-bMuted block">Masuk:</span><span class="font-semibold">${g.jamMasuk}</span></div>
-                    <div><span class="text-bMuted block">Pulang:</span><span class="font-semibold">${g.jamPulang}</span></div>
-                </div>` : ''}
-            </div>`;
-        });
-
-        document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-3 col-span-full text-center">Data rekap guru tidak ditemukan.</p>';
-    }
-
-    function cetakPdfSiswa() {
-        if (dataSiswaTerfilterGlobal.length === 0) {
-            Swal.fire('Informasi', 'Tidak ada data siswa untuk dicetak', 'warning');
-            return;
+        for(let i = 1; i < lines.length; i++) {
+          if(!lines[i].trim()) continue;
+          const cols = lines[i].split(',');
+          if(cols.length >= 4) {
+            dataUpload.push({
+              nisn: cols[0].trim(),
+              nama: cols[1].trim(),
+              kelas: cols[2].trim(),
+              whatsapp: cols[3].trim()
+            });
+          }
         }
-        const kelasSelected = document.getElementById('filterKelasSiswa').value;
-        const tglHariIni = document.getElementById('filterTanggal').value;
-        const blnHariIni = document.getElementById('filterBulan').value;
-        const periodeInfo = currentTab === 'harian' ? `Tanggal: ${tglHariIni}` : `Bulan: ${blnHariIni}`;
+        
+        if (dataUpload.length === 0) return Swal.fire('Format Salah', 'Data CSV kosong atau tidak valid.', 'error');
 
-        let win = window.open('', '_blank');
-        win.document.write(`<html><head><title>Laporan Absensi Siswa</title>`);
-        win.document.write(`<script src="https://cdn.tailwindcss.com"><\/script>`);
-        win.document.write(`</head><body class="p-8 bg-white text-black font-sans">`);
-        win.document.write(`
-            <div class="text-center mb-6 border-b-2 border-black pb-4">
-                <h2 class="text-xl font-bold uppercase tracking-wide">LAPORAN REKAPITULASI ABSENSI SISWA</h2>
-                <p class="text-sm font-medium text-gray-700">Kelas: ${kelasSelected} | Periode ${periodeInfo}</p>
-            </div>
-            <table class="w-full text-left text-xs border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100 text-gray-800 uppercase font-bold border-b border-gray-300">
-                        <th class="p-2 border-r border-gray-300 text-center w-10">No</th>
-                        <th class="p-2 border-r border-gray-300 w-32">NISN</th>
-                        <th class="p-2 border-r border-gray-300">Nama Lengkap</th>
-                        <th class="p-2 border-r border-gray-300 text-center w-24">Kelas</th>
-                        <th class="p-2 border-r border-gray-300 text-center">Status / Rekap</th>
-                        ${currentTab === 'harian' ? `
-                        <th class="p-2 border-r border-gray-300 text-center w-20">Jam Masuk</th>
-                        <th class="p-2 text-center w-20">Jam Pulang</th>` : ''}
-                    </tr>
-                </thead>
-                <tbody>
-        `);
-        dataSiswaTerfilterGlobal.forEach((s, idx) => {
-            win.document.write(`
-                <tr class="border-b border-gray-300 hover:bg-gray-50">
-                    <td class="p-2 border-r border-gray-300 text-center font-medium">${idx + 1}</td>
-                    <td class="p-2 border-r border-gray-300 font-mono">${s.nisn}</td>
-                    <td class="p-2 border-r border-gray-300 font-bold">${s.nama}</td>
-                    <td class="p-2 border-r border-gray-300 text-center">${s.kelas}</td>
-                    <td class="p-2 border-r border-gray-300 text-center font-semibold">${s.statusFinal}</td>
-                    ${currentTab === 'harian' ? `
-                    <td class="p-2 border-r border-gray-300 text-center font-mono">${s.jamMasuk}</td>
-                    <td class="p-2 text-center font-mono">${s.jamPulang}</td>` : ''}
-                </tr>
-            `);
-        });
-        win.document.write(`
-                </tbody>
-            </table>
-            <div class="mt-8 flex justify-end text-xs">
-                <div class="text-center">
-                    <p>Banda Aceh, ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
-                    <p class="mt-1 font-medium">Administrator System</p>
-                    <div class="h-16"></div>
-                    <p class="font-bold border-t border-black w-36 mx-auto pt-1">E-Absensi Admin</p>
-                </div>
-            </div>
-            <script>setTimeout(() => { window.print(); window.close(); }, 800);<\/script>
-        </body></html>`);
-        win.document.close();
-    }
-
-    function cetakPdfGuru() {
-        if (dataGuruTerfilterGlobal.length === 0) {
-            Swal.fire('Informasi', 'Tidak ada data guru untuk dicetak', 'warning');
-            return;
-        }
-        const mapelSelected = document.getElementById('filterMapelGuru').value;
-        const tglHariIni = document.getElementById('filterTanggalGuru').value;
-        const blnHariIni = document.getElementById('filterBulanGuru').value;
-        const periodeInfo = currentTabGuru === 'harian' ? `Tanggal: ${tglHariIni}` : `Bulan: ${blnHariIni}`;
-
-        let win = window.open('', '_blank');
-        win.document.write(`<html><head><title>Laporan Absensi Guru</title>`);
-        win.document.write(`<script src="https://cdn.tailwindcss.com"><\/script>`);
-        win.document.write(`</head><body class="p-8 bg-white text-black font-sans">`);
-        win.document.write(`
-            <div class="text-center mb-6 border-b-2 border-black pb-4">
-                <h2 class="text-xl font-bold uppercase tracking-wide">LAPORAN REKAPITULASI ABSENSI GURU</h2>
-                <p class="text-sm font-medium text-gray-700">Mata Pelajaran: ${mapelSelected} | Periode ${periodeInfo}</p>
-            </div>
-            <table class="w-full text-left text-xs border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100 text-gray-800 uppercase font-bold border-b border-gray-300">
-                        <th class="p-2 border-r border-gray-300 text-center w-10">No</th>
-                        <th class="p-2 border-r border-gray-300 w-32">NIP</th>
-                        <th class="p-2 border-r border-gray-300">Nama Guru</th>
-                        <th class="p-2 border-r border-gray-300 text-center">Mata Pelajaran</th>
-                        <th class="p-2 border-r border-gray-300 text-center">Status / Rekap</th>
-                        ${currentTabGuru === 'harian' ? `
-                        <th class="p-2 border-r border-gray-300 text-center w-20">Jam Masuk</th>
-                        <th class="p-2 text-center w-20">Jam Pulang</th>` : ''}
-                    </tr>
-                </thead>
-                <tbody>
-        `);
-        dataGuruTerfilterGlobal.forEach((g, idx) => {
-            win.document.write(`
-                <tr class="border-b border-gray-300 hover:bg-gray-50">
-                    <td class="p-2 border-r border-gray-300 text-center font-medium">${idx + 1}</td>
-                    <td class="p-2 border-r border-gray-300 font-mono">${g.nip}</td>
-                    <td class="p-2 border-r border-gray-300 font-bold">${g.nama}</td>
-                    <td class="p-2 border-r border-gray-300 text-center">${g.mapel}</td>
-                    <td class="p-2 border-r border-gray-300 text-center font-semibold">${g.statusFinal}</td>
-                    ${currentTabGuru === 'harian' ? `
-                    <td class="p-2 border-r border-gray-300 text-center font-mono">${g.jamMasuk}</td>
-                    <td class="p-2 text-center font-mono">${g.jamPulang}</td>` : ''}
-                </tr>
-            `);
-        });
-        win.document.write(`
-                </tbody>
-            </table>
-            <div class="mt-8 flex justify-end text-xs">
-                <div class="text-center">
-                    <p>Banda Aceh, ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
-                    <p class="mt-1 font-medium">Kepala Sekolah / Admin</p>
-                    <div class="h-16"></div>
-                    <p class="font-bold border-t border-black w-36 mx-auto pt-1">E-Absensi Admin</p>
-                </div>
-            </div>
-            <script>setTimeout(() => { window.print(); window.close(); }, 800);<\/script>
-        </body></html>`);
-        win.document.close();
+        Swal.fire({ title: 'Mengunggah massal...', didOpen: () => { Swal.showLoading(); } });
+        fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "uploadMassalSiswa", data: dataUpload })
+        })
+        .then(res => res.json())
+        .then(res => {
+          Swal.close();
+          Swal.fire('Sukses', res.message, 'success');
+          document.getElementById('csvFileInput').value = '';
+          muatSemuaData();
+        })
+        .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal mengupload data csv.', 'error'); });
+      };
+      reader.readAsText(file);
     }
 
     function openModal(type) {
-        currentModalType = type;
-        document.getElementById('inputModal').classList.remove('hidden');
-        let f = document.getElementById('dynamicForm');
-        if(type === 'siswa') {
-            document.getElementById('modalHeaderTitle').innerText = 'Tambah Data Siswa';
-            f.innerHTML = `
-                <input type="number" id="fNisn" placeholder="Nomor NISN" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <input type="text" id="fNama" placeholder="Nama Lengkap Siswa" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <input type="text" id="fKelas" placeholder="Kelas (Contoh: XII-RPL)" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <input type="text" id="fWa" placeholder="Nomor WhatsApp Orangtua" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <button type="submit" class="w-full py-2.5 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Data</button>`;
-        } else {
-            document.getElementById('modalHeaderTitle').innerText = 'Tambah Data Guru';
-            f.innerHTML = `
-                <input type="number" id="fNip" placeholder="Nomor NIP" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <input type="text" id="fNama" placeholder="Nama Lengkap Guru" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <input type="text" id="fMapel" placeholder="Mata Pelajaran Utama" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs">
-                <button type="submit" class="w-full py-2.5 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Data</button>`;
-        }
+      currentModalType = type;
+      const f = document.getElementById('dynamicForm');
+      document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa Baru' : 'Tambah Data Guru Baru';
+      
+      if (type === 'siswa') {
+        f.innerHTML = `
+          <input type="number" id="f_nisn" placeholder="Nomor Induk / NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <input type="text" id="f_nama" placeholder="Nama Lengkap Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <input type="text" id="f_kelas" placeholder="Kelas (Contoh: XII TPMG)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <input type="text" id="f_wa" placeholder="WhatsApp Orang Tua (628xxx)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Siswa</button>`;
+      } else {
+        f.innerHTML = `
+          <input type="number" id="f_nip" placeholder="Nomor Induk / NIP" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <input type="text" id="f_nama" placeholder="Nama Lengkap Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <input type="text" id="f_mapel" placeholder="Mata Pelajaran Diampu" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+          <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Guru</button>`;
+      }
+      document.getElementById('inputModal').classList.remove('hidden');
     }
 
     function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
     function handleFormSubmit(e) {
-        e.preventDefault();
-        Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-        let payload = { action: currentModalType === 'siswa' ? 'addSiswa' : 'addGuru' };
-        
-        if(currentModalType === 'siswa') {
-            payload.nisn = document.getElementById('fNisn').value;
-            payload.nama = document.getElementById('fNama').value;
-            payload.kelas = document.getElementById('fKelas').value;
-            payload.whatsapp = document.getElementById('fWa').value;
-        } else {
-            payload.nip = document.getElementById('fNip').value;
-            payload.nama = document.getElementById('fNama').value;
-            payload.mapel = document.getElementById('fMapel').value;
-        }
-
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); closeModal(); refreshDatabase(); }
-            else { Swal.fire('Gagal', res.message, 'error'); }
-        });
-    }
-
-    function simpanManual(e) {
-        e.preventDefault();
-        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
-        const payload = {
-            action: 'inputManualAbsen',
-            kategori: document.getElementById('mKategori').value,
-            idUser: document.getElementById('mNisn').value,
-            status: document.getElementById('mStatus').value,
-            tipe: document.getElementById('mTipe').value
+      e.preventDefault();
+      let payload = {};
+      
+      if(currentModalType === 'siswa') {
+        payload = {
+          action: "addSiswa",
+          nisn: document.getElementById('f_nisn').value,
+          nama: document.getElementById('f_nama').value,
+          kelas: document.getElementById('f_kelas').value,
+          whatsapp: document.getElementById('f_wa').value
         };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); document.getElementById('mNisn').value = ''; refreshDatabase(); }
-            else { Swal.fire('Gagal', res.message, 'error'); }
-        });
+      } else {
+        payload = {
+          action: "addGuru",
+          nip: document.getElementById('f_nip').value,
+          nama: document.getElementById('f_nama').value,
+          mapel: document.getElementById('f_mapel').value
+        };
+      }
+
+      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+      .then(res => res.json())
+      .then(res => { Swal.close(); closeModal(); Swal.fire('Sukses', res.message, 'success'); muatSemuaData(); })
+      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pengiriman data.', 'error'); });
     }
 
-    function bukaKartuQR(id, nama, sub) {
-        document.getElementById('qrModal').classList.remove('hidden');
-        document.getElementById('modalQrNama').innerText = nama;
-        document.getElementById('modalQrNisn').innerText = id;
-        document.getElementById('modalQrKelas').innerText = sub;
-        document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
+    function bukaKartuDigital(id, nama, sub, tipe) {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
+      document.getElementById('modalQrImg').src = qrUrl;
+      document.getElementById('modalQrNama').innerText = nama;
+      document.getElementById('modalQrNisn').innerText = id;
+      document.getElementById('modalQrKelas').innerText = sub;
+      document.getElementById('qrModal').classList.remove('hidden');
     }
 
     function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
   </script>
-</body>
-</html>
