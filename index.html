@@ -325,7 +325,7 @@
       
       const titles = { 
         dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera QR', 'jam-config': 'Atur Waktu Absensi', 
-        rekap: 'Laporan Laporan Siswa', 'rekap-guru': 'Laporan Laporan Guru',
+        rekap: 'Laporan Siswa', 'rekap-guru': 'Laporan Guru',
         siswa: 'Master Data Siswa', guru: 'Master Data Guru', manual: 'Kelola Absen Manual' 
       };
       document.getElementById('viewTitle').innerText = titles[viewId] || 'System';
@@ -472,18 +472,16 @@
                         <h4 class="text-sm font-bold truncate">${s.nama}</h4>
                         <p class="text-xs text-bMuted">Kelas: ${s.kelas}</p>
                     </div>
-                    <div class="mt-3 pt-2.5 border-t border-white/5 flex gap-2">
-                        <button onclick="bukaKartuQR('${s.nisn}', '${s.nama.replace(/'/g, "\\'")}', '${s.kelas}')" class="w-full bg-bDark hover:bg-slate-800 text-[11px] font-semibold py-1.5 rounded-lg text-indigo-400 transition-all flex items-center justify-center gap-1 border border-white/5 shadow-sm">
-                            <i class="fas fa-qrcode"></i> Lihat Kartu QR
-                        </button>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="generateQrCard('${s.nisn}', '${s.nama}', '${s.kelas}')" class="flex-1 py-2 bg-bActive/20 text-bActive hover:bg-bActive hover:text-white rounded-xl text-xs font-bold transition-all"><i class="fas fa-qrcode mr-1"></i> Kartu QR</button>
                     </div>
                 </div>`;
             });
-            document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted">Belum ada data siswa.</p>';
-            
-            let selectKelas = document.getElementById('filterKelasSiswa');
-            selectKelas.innerHTML = '<option value="SEMUA">-- Semua Kelas --</option>';
-            Array.from(listKelas).sort().forEach(kls => { selectKelas.innerHTML += `<option value="${kls}">${kls}</option>`; });
+            document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted p-2">Tidak ada data siswa.</p>';
+
+            let optKelas = '<option value="SEMUA">-- Semua Kelas --</option>';
+            Array.from(listKelas).sort().forEach(k => { optKelas += `<option value="${k}">${k}</option>`; });
+            document.getElementById('filterKelasSiswa').innerHTML = optKelas;
 
             let listMapel = new Set();
             let gHtml = '';
@@ -491,280 +489,292 @@
                 if(g.mapel) listMapel.add(g.mapel.trim());
                 gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
                     <div>
-                        <p class="text-xs font-bold text-cyan-400">${g.nip || 'NIP -'}</p>
+                        <p class="text-xs font-bold text-cyan-400">${g.nip}</p>
                         <h4 class="text-sm font-bold truncate">${g.nama}</h4>
                         <p class="text-xs text-bMuted">Mapel: ${g.mapel}</p>
                     </div>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="generateQrCard('${g.nip}', '${g.nama}', '${g.mapel}')" class="flex-1 py-2 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-xl text-xs font-bold transition-all"><i class="fas fa-qrcode mr-1"></i> Kartu QR</button>
+                    </div>
                 </div>`;
             });
-            document.getElementById('listGuru').innerHTML = gHtml || '<p class="text-xs text-bMuted">Belum ada data guru.</p>';
+            document.getElementById('listGuru').innerHTML = gHtml || '<p class="text-xs text-bMuted p-2">Tidak ada data guru.</p>';
 
-            let selectMapel = document.getElementById('filterMapelGuru');
-            selectMapel.innerHTML = '<option value="SEMUA">-- Semua Mapel --</option>';
-            Array.from(listMapel).sort().forEach(mpl => { selectMapel.innerHTML += `<option value="${mpl}">${mpl}</option>`; });
+            let optMapel = '<option value="SEMUA">-- Semua Mapel --</option>';
+            Array.from(listMapel).sort().forEach(m => { optMapel += `<option value="${m}">${m}</option>`; });
+            document.getElementById('filterMapelGuru').innerHTML = optMapel;
 
             renderDataRekap();
             renderDataRekapGuru();
         }).catch(() => {});
     }
 
+    // =======================================================
+    // FIX RENDER DATA REKAP SISWA (MENYELESAIKAN UNDEFINED)
+    // =======================================================
     function renderDataRekap() {
-        const tab = currentTab;
+        const tglFilter = document.getElementById('filterTanggal').value;
+        const blnFilter = document.getElementById('filterBulan').value;
         const search = document.getElementById('searchRekapSiswa').value.toLowerCase();
-        const status = document.getElementById('filterStatusSiswa').value;
-        const kelas = document.getElementById('filterKelasSiswa').value;
-        const tgl = document.getElementById('filterTanggal').value;
-        const bln = document.getElementById('filterBulan').value;
-
-        let html = '';
-        cacheSiswa.forEach(s => {
-            if(kelas !== 'SEMUA' && s.kelas !== kelas) return;
-            if(search && !s.nama.toLowerCase().includes(search) && !s.nisn.includes(search)) return;
-
-            let log = cacheAbsensi.filter(a => a.nisn == s.nisn);
-            let statusFinal = 'Alpa', jamMasuk = '-', jamPulang = '-';
-
-            if(tab === 'harian') {
-                let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tgl);
-                if(hariIniLog) {
-                    statusFinal = hariIniLog.status;
-                    jamMasuk = hariIniLog.jamMasuk || '-';
-                    jamPulang = hariIniLog.jamPulang || '-';
-                }
-            } else {
-                let bulanLog = log.filter(a => a.tanggal.substring(0,7) === bln);
-                let h = bulanLog.filter(a => a.status === 'Hadir').length;
-                let s_ = bulanLog.filter(a => a.status === 'Sakit').length;
-                let i = bulanLog.filter(a => a.status === 'Izin').length;
-                let a = bulanLog.filter(a => a.status === 'Alpa').length;
-                statusFinal = `Hadir:${h} | S:${s_} | I:${i} | A:${a}`;
-            }
-
-            if(status !== 'SEMUA' && tab === 'harian' && statusFinal !== status) return;
-
-            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 text-xs">
-                <p class="font-bold text-bActive">${s.nisn} - ${s.kelas}</p>
-                <h4 class="text-sm font-bold truncate my-0.5">${s.nama}</h4>
-                <p class="text-bMuted">Status: <span class="font-bold text-white">${statusFinal}</span></p>
-                ${tab === 'harian' ? `<p class="text-bMuted">Jam: ${jamMasuk} / ${jamPulang}</p>` : ''}
-            </div>`;
-        });
-        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data rekapitulasi.</p>';
-    }
-
-    function renderDataRekapGuru() {
-        const tab = currentTabGuru;
-        const search = document.getElementById('searchRekapGuru').value.toLowerCase();
-        const status = document.getElementById('filterStatusGuru').value;
-        const mapel = document.getElementById('filterMapelGuru').value;
-        const tgl = document.getElementById('filterTanggalGuru').value;
-        const bln = document.getElementById('filterBulanGuru').value;
-
-        let html = '';
-        cacheGuru.forEach(g => {
-            if(mapel !== 'SEMUA' && g.mapel !== mapel) return;
-            if(search && !g.nama.toLowerCase().includes(search) && !(g.nip && g.nip.includes(search))) return;
-
-            let log = cacheAbsensi.filter(a => a.nisn == g.nip);
-            let statusFinal = 'Alpa', jamMasuk = '-', jamPulang = '-';
-
-            if(tab === 'harian') {
-                let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tgl);
-                if(hariIniLog) {
-                    statusFinal = hariIniLog.status;
-                    jamMasuk = hariIniLog.jamMasuk || '-';
-                    jamPulang = hariIniLog.jamPulang || '-';
-                }
-            } else {
-                let bulanLog = log.filter(a => a.tanggal.substring(0,7) === bln);
-                let h = bulanLog.filter(a => a.status === 'Hadir').length;
-                let s_ = bulanLog.filter(a => a.status === 'Sakit').length;
-                let i = bulanLog.filter(a => a.status === 'Izin').length;
-                let a = bulanLog.filter(a => a.status === 'Alpa').length;
-                statusFinal = `Hadir:${h} | S:${s_} | I:${i} | A:${a}`;
-            }
-
-            if(status !== 'SEMUA' && tab === 'harian' && statusFinal !== status) return;
-
-            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 text-xs">
-                <p class="font-bold text-cyan-400">${g.nip || 'NIP -'} - ${g.mapel}</p>
-                <h4 class="text-sm font-bold truncate my-0.5">${g.nama}</h4>
-                <p class="text-bMuted">Status: <span class="font-bold text-white">${statusFinal}</span></p>
-                ${tab === 'harian' ? `<p class="text-bMuted">Jam: ${jamMasuk} / ${jamPulang}</p>` : ''}
-            </div>`;
-        });
-        document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data rekapitulasi guru.</p>';
-    }
-
-    // ==========================================
-    // JAVASCRIPT UTK PROSES PRINT LAPORAN KE PDF
-    // ==========================================
-    function cetakLaporanPDF(kategori) {
-        let printArea = document.getElementById('printReportArea');
-        let htmlContent = '';
+        const fStatus = document.getElementById('filterStatusSiswa').value;
+        const fKelas = document.getElementById('filterKelasSiswa').value;
         
-        if (kategori === 'siswa') {
-            const tab = currentTab;
-            const tgl = document.getElementById('filterTanggal').value;
-            const bln = document.getElementById('filterBulan').value;
-            const infoWaktu = tab === 'harian' ? tgl : bln;
-            
-            htmlContent += `
-                <div style="font-family: sans-serif; padding: 20px;">
-                    <h2 style="text-align:center; margin-bottom:5px;">LAPORAN REKAPITULASI ABSENSI SISWA</h2>
-                    <h4 style="text-align:center; margin-top:0; font-weight:normal;">Periode ${tab.toUpperCase()}: ${infoWaktu}</h4>
-                    <hr style="border: 1px solid black; margin-bottom: 20px;">
-                    <table style="width:100%; border-collapse:collapse;" border="1">
-                        <thead>
-                            <tr style="background-color: #f2f2f2;">
-                                <th style="padding:8px;">NISN</th>
-                                <th style="padding:8px;">Nama Siswa</th>
-                                <th style="padding:8px;">Kelas</th>
-                                <th style="padding:8px;">Status / Rekapitulasi</th>
-                                ${tab === 'harian' ? '<th style="padding:8px;">Jam Masuk</th><th style="padding:8px;">Jam Pulang</th>' : ''}
-                            </tr>
-                        </thead>
-                        <tbody>`;
-            
-            cacheSiswa.forEach(s => {
-                let log = cacheAbsensi.filter(a => a.nisn == s.nisn);
-                let statusFinal = 'Alpa', jamMasuk = '-', jamPulang = '-';
-                if(tab === 'harian') {
-                    let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tgl);
-                    if(hariIniLog) { statusFinal = hariIniLog.status; jamMasuk = hariIniLog.jamMasuk || '-'; jamPulang = hariIniLog.jamPulang || '-'; }
-                } else {
-                    let bulanLog = log.filter(a => a.tanggal.substring(0,7) === bln);
-                    statusFinal = `Hadir: ${bulanLog.filter(a=>a.status==='Hadir').length} | Sakit: ${bulanLog.filter(a=>a.status==='Sakit').length} | Izin: ${bulanLog.filter(a=>a.status==='Izin').length} | Alpa: ${bulanLog.filter(a=>a.status==='Alpa').length}`;
-                }
-                htmlContent += `
-                    <tr>
-                        <td style="padding:8px;">${s.nisn}</td>
-                        <td style="padding:8px;">${s.nama}</td>
-                        <td style="padding:8px;">${s.kelas}</td>
-                        <td style="padding:8px;">${statusFinal}</td>
-                        ${tab === 'harian' ? `<td style="padding:8px;">${jamMasuk}</td><td style="padding:8px;">${jamPulang}</td>` : ''}
-                    </tr>`;
-            });
+        let html = '';
+        
+        // Filter data absensi khusus kategori Role: Siswa
+        let filtered = cacheAbsensi.filter(item => item.role !== "Guru");
+
+        if (currentTab === 'harian') {
+            filtered = filtered.filter(item => item.tanggal === tglFilter);
         } else {
-            // Untuk Laporan Guru
-            const tab = currentTabGuru;
-            const tgl = document.getElementById('filterTanggalGuru').value;
-            const bln = document.getElementById('filterBulanGuru').value;
-            const infoWaktu = tab === 'harian' ? tgl : bln;
-            
-            htmlContent += `
-                <div style="font-family: sans-serif; padding: 20px;">
-                    <h2 style="text-align:center; margin-bottom:5px;">LAPORAN REKAPITULASI ABSENSI GURU</h2>
-                    <h4 style="text-align:center; margin-top:0; font-weight:normal;">Periode ${tab.toUpperCase()}: ${infoWaktu}</h4>
-                    <hr style="border: 1px solid black; margin-bottom: 20px;">
-                    <table style="width:100%; border-collapse:collapse;" border="1">
-                        <thead>
-                            <tr style="background-color: #f2f2f2;">
-                                <th style="padding:8px;">NIP</th>
-                                <th style="padding:8px;">Nama Guru</th>
-                                <th style="padding:8px;">Mata Pelajaran</th>
-                                <th style="padding:8px;">Status / Rekapitulasi</th>
-                                ${tab === 'harian' ? '<th style="padding:8px;">Jam Masuk</th><th style="padding:8px;">Jam Pulang</th>' : ''}
-                            </tr>
-                        </thead>
-                        <tbody>`;
-            
-            cacheGuru.forEach(g => {
-                let log = cacheAbsensi.filter(a => a.nisn == g.nip);
-                let statusFinal = 'Alpa', jamMasuk = '-', jamPulang = '-';
-                if(tab === 'harian') {
-                    let hariIniLog = log.find(a => a.tanggal.split('T')[0] === tgl);
-                    if(hariIniLog) { statusFinal = hariIniLog.status; jamMasuk = hariIniLog.jamMasuk || '-'; jamPulang = hariIniLog.jamPulang || '-'; }
-                } else {
-                    let bulanLog = log.filter(a => a.tanggal.substring(0,7) === bln);
-                    statusFinal = `Hadir: ${bulanLog.filter(a=>a.status==='Hadir').length} | Sakit: ${bulanLog.filter(a=>a.status==='Sakit').length} | Izin: ${bulanLog.filter(a=>a.status==='Izin').length} | Alpa: ${bulanLog.filter(a=>a.status==='Alpa').length}`;
-                }
-                htmlContent += `
-                    <tr>
-                        <td style="padding:8px;">${g.nip || '-'}</td>
-                        <td style="padding:8px;">${g.nama}</td>
-                        <td style="padding:8px;">${g.mapel}</td>
-                        <td style="padding:8px;">${statusFinal}</td>
-                        ${tab === 'harian' ? `<td style="padding:8px;">${jamMasuk}</td><td style="padding:8px;">${jamPulang}</td>` : ''}
-                    </tr>`;
-            });
+            filtered = filtered.filter(item => item.tanggal.substring(0, 7) === blnFilter);
         }
 
-        htmlContent += `</tbody></table></div>`;
-        printArea.innerHTML = htmlContent;
-        
-        // Eksekusi print bawaan browser (Gunakan Save as PDF pada opsi printer)
-        window.print();
-        printArea.innerHTML = ""; // Bersihkan kembali setelah dicetak
+        filtered.forEach(item => {
+            const nama = item.nama ? item.nama.toLowerCase() : '';
+            const nisn = item.nisn ? item.nisn.toString().toLowerCase() : '';
+            const kelas = item.kelas ? item.kelas : '';
+            const status = item.status ? item.status : 'Alpa';
+            const jamDisplay = item.jam ? item.jam : '- / -';
+            
+            // Filter Pencarian kata kunci & Dropdown
+            if (search && !nama.includes(search) && !nisn.includes(search)) return;
+            if (fStatus !== 'SEMUA' && status !== fStatus) return;
+            if (fKelas !== 'SEMUA' && kelas !== fKelas) return;
+
+            let colorStatus = 'bg-emerald-500/20 text-emerald-400';
+            if(status === 'Sakit' || status === 'Izin') colorStatus = 'bg-amber-500/20 text-amber-400';
+            if(status === 'Alpa') colorStatus = 'bg-red-500/20 text-red-400';
+
+            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] text-bMuted">${item.tanggal}</span>
+                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama || 'Tanpa Nama'}</h4>
+                        <p class="text-xs text-bMuted">${item.nisn} | Kelas ${kelas}</p>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-1 rounded ${colorStatus}">${status}</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 flex justify-between text-[11px] text-bMuted">
+                    <span><i class="far fa-clock mr-1"></i>Jam: <b>${jamDisplay}</b></span>
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-3 p-4 text-center">Data presensi tidak ditemukan.</p>';
     }
 
-    function bukaKartuQR(nisn, nama, kelas) {
+    // =======================================================
+    // FIX RENDER DATA REKAP GURU (MENYELESAIKAN UNDEFINED)
+    // =======================================================
+    function renderDataRekapGuru() {
+        const tglFilter = document.getElementById('filterTanggalGuru').value;
+        const blnFilter = document.getElementById('filterBulanGuru').value;
+        const search = document.getElementById('searchRekapGuru').value.toLowerCase();
+        const fStatus = document.getElementById('filterStatusGuru').value;
+        const fMapel = document.getElementById('filterMapelGuru').value;
+        
+        let html = '';
+        let filtered = cacheAbsensi.filter(item => item.role === "Guru");
+
+        if (currentTabGuru === 'harian') {
+            filtered = filtered.filter(item => item.tanggal === tglFilter);
+        } else {
+            filtered = filtered.filter(item => item.tanggal.substring(0, 7) === blnFilter);
+        }
+
+        filtered.forEach(item => {
+            const nama = item.nama ? item.nama.toLowerCase() : '';
+            const nip = item.nisn ? item.nisn.toString().toLowerCase() : '';
+            const mapel = item.mapel ? item.mapel : '';
+            const status = item.status ? item.status : 'Alpa';
+            const jamDisplay = item.jam ? item.jam : '- / -';
+
+            if (search && !nama.includes(search) && !nip.includes(search)) return;
+            if (fStatus !== 'SEMUA' && status !== fStatus) return;
+            if (fMapel !== 'SEMUA' && mapel !== fMapel) return;
+
+            let colorStatus = 'bg-emerald-500/20 text-emerald-400';
+            if(status === 'Sakit' || status === 'Izin') colorStatus = 'bg-amber-500/20 text-amber-400';
+            if(status === 'Alpa') colorStatus = 'bg-red-500/20 text-red-400';
+
+            html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] text-bMuted">${item.tanggal}</span>
+                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama || 'Tanpa Nama'}</h4>
+                        <p class="text-xs text-cyan-400">${item.nisn} <span class="text-bMuted">| ${mapel}</span></p>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-1 rounded ${colorStatus}">${status}</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 flex justify-between text-[11px] text-bMuted">
+                    <span><i class="far fa-clock mr-1"></i>Jam: <b>${jamDisplay}</b></span>
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-3 p-4 text-center">Data presensi guru tidak ditemukan.</p>';
+    }
+
+    // =======================================================
+    // FIX GENERATOR STRUKTUR TABEL PRATINJAU CETAK LAPORAN PDF
+    // =======================================================
+    function cetakLaporanPDF(kategori) {
+        let titleReport = kategori === 'siswa' ? 'LAPORAN PRESENSI ABSENSI SISWA' : 'LAPORAN PRESENSI ABSENSI GURU';
+        let subTitle = currentTab === 'harian' ? `Periode Tanggal: ${document.getElementById('filterTanggal').value}` : `Periode Bulan: ${document.getElementById('filterBulan').value}`;
+        
+        if(kategori === 'guru') {
+            subTitle = currentTabGuru === 'harian' ? `Periode Tanggal: ${document.getElementById('filterTanggalGuru').value}` : `Periode Bulan: ${document.getElementById('filterBulanGuru').value}`;
+        }
+
+        let filtered = cacheAbsensi.filter(item => kategori === 'siswa' ? item.role !== "Guru" : item.role === "Guru");
+        
+        if (kategori === 'siswa') {
+            const tgl = document.getElementById('filterTanggal').value;
+            const bln = document.getElementById('filterBulan').value;
+            filtered = currentTab === 'harian' ? filtered.filter(i => i.tanggal === tgl) : filtered.filter(i => i.tanggal.substring(0,7) === bln);
+        } else {
+            const tgl = document.getElementById('filterTanggalGuru').value;
+            const bln = document.getElementById('filterBulanGuru').value;
+            filtered = currentTabGuru === 'harian' ? filtered.filter(i => i.tanggal === tgl) : filtered.filter(i => i.tanggal.substring(0,7) === bln);
+        }
+
+        let tableRows = '';
+        let no = 1;
+        
+        filtered.forEach(item => {
+            let subInfoText = kategori === 'siswa' ? (item.kelas || '-') : (item.mapel || '-');
+            tableRows += `<tr>
+                <td>${no++}</td>
+                <td>${item.tanggal}</td>
+                <td>${item.nisn}</td>
+                <td>${item.nama}</td>
+                <td>${subInfoText}</td>
+                <td>${item.status || 'Alpa'}</td>
+                <td>${item.jam_datang || '-'}</td>
+                <td>${item.jam_pulang || '-'}</td>
+            </tr>`;
+        });
+
+        if(filtered.length === 0) {
+            tableRows = `<tr><td colspan="8" style="text-align:center;">Tidak ada data laporan untuk dicetak.</td></tr>`;
+        }
+
+        let printTemplate = `
+            <div style="padding:30px; font-family:'Helvetica Neue', Arial, sans-serif; color: black !important;">
+                <div style="text-align:center; border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px;">
+                    <h2 style="margin:0; font-size:18px; letter-spacing:1px;">${titleReport}</h2>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#555;">${subTitle}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>NISN/NIP</th>
+                            <th>Nama Lengkap</th>
+                            <th>${kategori === 'siswa' ? 'Kelas' : 'Mata Pelajaran'}</th>
+                            <th>Status</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Pulang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        const printArea = document.getElementById('printReportArea');
+        printArea.innerHTML = printTemplate;
+        
+        // Triger jalankan perintah cetak printer browser
+        window.print();
+    }
+
+    function generateQrCard(id, nama, sub) {
         document.getElementById('modalQrNama').innerText = nama;
-        document.getElementById('modalQrNisn').innerText = nisn;
-        document.getElementById('modalQrKelas').innerText = kelas;
-        document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${nisn}`;
+        document.getElementById('modalQrNisn').innerText = id;
+        document.getElementById('modalQrKelas').innerText = sub;
+        document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
         document.getElementById('qrModal').classList.remove('hidden');
     }
 
     function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
-    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
     function openModal(type) {
         currentModalType = type;
-        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa' : 'Tambah Data Guru';
-        let form = document.getElementById('dynamicForm');
-        if(type === 'siswa') {
+        const form = document.getElementById('dynamicForm');
+        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa Baru' : 'Tambah Data Guru Baru';
+        
+        if (type === 'siswa') {
             form.innerHTML = `
-                <input type="number" id="fNisn" placeholder="NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <input type="text" id="fNama" placeholder="Nama Lengkap" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <input type="text" id="fKelas" placeholder="Kelas (Contoh: X-RPL)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <input type="number" id="fWa" placeholder="WhatsApp Orang Tua (628...)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Siswa</button>`;
+                <input type="number" id="fNisn" placeholder="Nomor NISN Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fNama" placeholder="Nama Lengkap Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fKelas" placeholder="Kelas (Contoh: XII ATU)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="number" id="fWa" placeholder="WhatsApp Wali Murid (628...)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Data Siswa</button>
+            `;
         } else {
             form.innerHTML = `
-                <input type="number" id="fNip" placeholder="NIP (Kosongkan jika tidak ada)" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <input type="text" id="fNama" placeholder="Nama Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <input type="text" id="fMapel" placeholder="Mata Pelajaran" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Guru</button>`;
+                <input type="number" id="fNip" placeholder="Nomor NIP/ID Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fNama" placeholder="Nama Lengkap Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fMapel" placeholder="Mata Pelajaran Diampu" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Data Guru</button>
+            `;
         }
         document.getElementById('inputModal').classList.remove('hidden');
     }
 
+    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
+
     function handleFormSubmit(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan Data...', didOpen: () => Swal.showLoading() });
-        let payload = { action: currentModalType === 'siswa' ? 'addSiswa' : 'addGuru' };
-        if(currentModalType === 'siswa') {
-            payload.nisn = document.getElementById('fNisn').value.trim();
-            payload.nama = document.getElementById('fNama').value.trim();
-            payload.kelas = document.getElementById('fKelas').value.trim();
-            payload.whatsapp = document.getElementById('fWa').value.trim();
+        let payload = {};
+        
+        if (currentModalType === 'siswa') {
+            payload = {
+                action: 'tambahSiswa',
+                nisn: document.getElementById('fNisn').value,
+                nama: document.getElementById('fNama').value,
+                kelas: document.getElementById('fKelas').value,
+                whatsapp: document.getElementById('fWa').value
+            };
         } else {
-            payload.nip = document.getElementById('fNip').value.trim() || ("G-" + Date.now());
-            payload.nama = document.getElementById('fNama').value.trim();
-            payload.mapel = document.getElementById('fMapel').value.trim();
+            payload = {
+                action: 'tambahGuru',
+                nip: document.getElementById('fNip').value,
+                nama: document.getElementById('fNama').value,
+                mapel: document.getElementById('fMapel').value
+            };
         }
 
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => {
             closeModal();
             if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
-            else { Swal.fire('Gagal', res.message, 'error'); }
         });
     }
 
     function simpanManual(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Memproses Absen...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Memproses data...', didOpen: () => Swal.showLoading() });
         const payload = {
             action: 'inputManual',
             kategori: document.getElementById('mKategori').value,
-            nisn: document.getElementById('mNisn').value.trim(),
+            nisn: document.getElementById('mNisn').value,
             status: document.getElementById('mStatus').value,
             tipe: document.getElementById('mTipe').value
         };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
-            else { Swal.fire('Gagal', res.message, 'error'); }
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                Swal.fire('Tercatat!', res.message, 'success');
+                document.getElementById('mNisn').value = '';
+                refreshDatabase();
+            }
         });
     }
   </script>
