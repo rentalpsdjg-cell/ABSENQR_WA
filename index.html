@@ -137,7 +137,7 @@
                       <div id="filterTanggalArea" class="flex-1 sm:flex-none"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
                       
-                      <button onclick="Swal.fire('Fitur Cetak', 'Laporan otomatis terekam di Google Sheet Anda.', 'info')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
+                      <button onclick="eksekusiCetakPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
                           <i class="fas fa-file-pdf"></i> PDF Per Kelas
                       </button>
                   </div>
@@ -216,6 +216,7 @@
 
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
+    let cacheSiswa = []; // Menampung koleksi kelas terdaftar untuk filter cetak PDF
     
     setInterval(() => {
       const skrg = new Date();
@@ -282,6 +283,74 @@
       }
     }
 
+    // FUNGSI BARU: Logika Cetak Berkas PDF Otomatis terintegrasi ke Apps Script Backend
+    function eksekusiCetakPDF() {
+      // Dapatkan list kelas unik dari database siswa
+      let listKelasUnik = [...new Set(cacheSiswa.map(s => s.kelas))].filter(k => k);
+      
+      if(listKelasUnik.length === 0) {
+        Swal.fire('Informasi', 'Data siswa belum termuat atau database kosong.', 'warning');
+        return;
+      }
+
+      // Buat elemen pilihan kelas berbentuk dropdown select untuk opsi pop-up SweetAlert
+      let opsiHtml = `<select id="swalSelectKelas" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+                        <option value="">-- Cetak Semua Kelas --</option>
+                        ${listKelasUnik.map(k => `<option value="${k}">${k}</option>`).join('')}
+                      </select>`;
+
+      Swal.fire({
+        title: 'Pilih Kelas Laporan',
+        html: opsiHtml,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-print mr-1"></i> Proses Cetak',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#545BE6',
+        preConfirm: () => {
+          return document.getElementById('swalSelectKelas').value;
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const kelasTerpilih = result.value;
+          const filterTgl = document.getElementById('filterTanggal').value || "";
+          const filterBln = document.getElementById('filterBulan').value || "";
+          
+          // Pilih parameter tanggal sesuai tab rekap harian/bulanan yang sedang aktif
+          let tanggalQuery = (currentTab === 'harian') ? filterTgl : filterBln;
+
+          Swal.fire({
+            title: 'Sedang Membuat PDF',
+            text: 'Mohon tunggu berkas sedang dijenerasikan oleh server...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+
+          // Panggil endpoint downloadPDF di Google Apps Script Anda
+          fetch(`${API_URL}?action=downloadPDF&kelas=${encodeURIComponent(kelasTerpilih)}&tanggal=${tanggalQuery}`)
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
+              Swal.close();
+              // Download file PDF Base64 secara instan di browser admin
+              const dLink = document.createElement("a");
+              dLink.href = `data:application/pdf;base64,${res.pdfBlobBase64}`;
+              dLink.download = res.fileName;
+              document.body.appendChild(dLink);
+              dLink.click();
+              document.body.removeChild(dLink);
+              
+              Swal.fire('Berhasil!', 'Berkas PDF laporan absensi berhasil diunduh.', 'success');
+            } else {
+              Swal.fire('Gagal Cetak', res.message, 'error');
+            }
+          })
+          .catch(err => {
+            Swal.fire('Error Jaringan', 'Gagal terhubung dengan server Apps Script: ' + err, 'error');
+          });
+        }
+      });
+    }
+
     function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
 
     function prosesUploadMassal(event) {
@@ -330,7 +399,7 @@
     }
     
     function loadStats() {
-      fetch(`${API_URL}?action=getStats`).then(res => res.json()).then(s => {
+        fetch(`${API_URL}?action=getStats`).then(res => res.json()).then(s => {
             document.getElementById('dashSiswa').innerText = s.totalSiswa || 0;
             document.getElementById('dashHadir').innerText = s.hadir || 0;
             document.getElementById('dashPulang').innerText = s.pulang || 0;
@@ -370,6 +439,7 @@
     function refreshDatabase() {
         fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
             cacheAbsensi = db.absensi || [];
+            cacheSiswa = db.siswa || []; // Disimpan ke cache lokal untuk keperluan dropdown list kelas cetak PDF
             let sHtml = '';
             if(db.siswa) {
                 db.siswa.forEach(s => {
@@ -473,6 +543,7 @@
 
     function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
+    // SOLUSI PERBAIKAN: Tag kurung tutup fungsi handleFormSubmit yang sebelumnya terpotong
     function handleFormSubmit(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
@@ -499,41 +570,36 @@
             } else {
                 Swal.fire('Gagal', res.message, 'error');
             }
-        })
-        .catch(err => {
-            Swal.fire('Error', 'Gagal menyambung ke server: ' + err, 'error');
+        }).catch(err => {
+            Swal.fire('Error', 'Gagal memproses data: ' + err, 'error');
         });
     }
 
     function simpanManual(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Menyimpan Absensi...', didOpen: () => Swal.showLoading() });
-        
+        Swal.fire({ title: 'Menyimpan Absen...', didOpen: () => Swal.showLoading() });
         const payload = {
-            action: 'inputManual',
+            action: 'absenManual',
             nisn: document.getElementById('mNisn').value,
             status: document.getElementById('mStatus').value,
             tipe: document.getElementById('mTipe').value
         };
-
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(res => {
-            if (res.success) {
+        .then(res => res.json()).then(res => {
+            if(res.success) {
                 Swal.fire('Berhasil!', res.message, 'success');
                 document.getElementById('mNisn').value = '';
+                refreshDatabase();
             } else {
                 Swal.fire('Gagal', res.message, 'error');
             }
-        })
-        .catch(err => {
-            Swal.fire('Error', 'Gagal memproses data: ' + err, 'error');
-        });
+        }).catch(() => Swal.fire('Error', 'Terjadi gangguan koneksi.', 'error'));
     }
 
-    // Load data default saat pertama kali web dibuka
-    window.onload = () => {
+    // Pemuatan data awal saat aplikasi pertama kali dibuka
+    window.onload = function() {
         loadStats();
+        refreshDatabase();
     };
   </script>
 </body>
