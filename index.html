@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -79,7 +80,7 @@
                     <button onclick="openModal()" class="bg-bActive hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-plus"></i> Tambah Siswa</button>
                 </div>
             </div>
-            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
+            <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th><th class="p-4 text-center">Aksi Kartu</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
         </div>
 
         <div id="view-manual" class="view-section hidden max-w-xl mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
@@ -131,6 +132,29 @@
         </div>
     </div>
 
+    <div id="cardModal" class="fixed inset-0 bg-bDark/90 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-bCard w-full max-w-sm rounded-2xl border border-white/10 p-6 space-y-5 relative flex flex-col items-center">
+            <button onclick="closeCardModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider self-start"><i class="fas fa-id-card text-bActive mr-2"></i>Kartu Absensi QR Berhasil Dibuat</h3>
+            
+            <div id="id-card-render" class="w-full bg-gradient-to-br from-blue-900 to-slate-900 p-5 rounded-2xl border border-white/20 text-center relative shadow-2xl overflow-hidden min-h-[320px] flex flex-col justify-between items-center">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
+                <div class="w-full flex items-center justify-center gap-2 pb-3 border-b border-white/10">
+                    <i class="fas fa-user-check text-bActive text-sm"></i>
+                    <span class="text-xs font-bold tracking-widest text-slate-200">KARTU ABSENSI DIGITAL</span>
+                </div>
+                <div class="bg-white p-2 rounded-xl my-4 inline-block shadow-lg" id="qrcode-space"></div>
+                <div class="space-y-0.5">
+                    <h4 id="card-nama" class="text-sm font-bold text-white tracking-wide uppercase">-</h4>
+                    <p id="card-kelas" class="text-[11px] text-blue-400 font-medium tracking-wider">-</p>
+                    <p id="card-nisn" class="text-[10px] text-slate-400 font-mono mt-1">-</p>
+                </div>
+            </div>
+
+            <button onclick="window.print()" class="w-full py-2.5 bg-bActive hover:bg-blue-700 text-white font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all"><i class="fas fa-print"></i> Cetak / Print Kartu</button>
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwSecDGlRvoUIIFto3fVziMH9gaQFu3VnPaNSYtGXkz9DfMBcmx3S_idYgNMaL8NF8U/exec"; 
 
@@ -171,7 +195,6 @@
                         document.getElementById('cPulang').value = configJam.jamPulang;
                     }
                     
-                    // Render tabel dan perbarui angka statistik
                     renderTableSiswa();
                     renderTableAbsen();
                     updateDashboardStats();
@@ -182,13 +205,9 @@
 
         function updateDashboardStats() {
             const tglHariIni = document.getElementById('fRekapTgl').value;
-            
-            // Filter data absensi khusus tanggal yang sedang dipilih/hari ini
             const absenHariIni = cloudAbsen.filter(a => {
                 if (!a.tanggal) return false;
-                // Menangani format tanggal dari Apps Script jika berupa string ISO atau standar YYYY-MM-DD
-                const tglClean = a.tanggal.split('T')[0];
-                return tglClean === tglHariIni;
+                return a.tanggal.split('T')[0] === tglHariIni;
             });
 
             const totalSiswa = cloudSiswa.length;
@@ -231,17 +250,40 @@
             document.getElementById('csvFile').value = '';
         }
 
+        // FUNGSI KARTU KODE QR OTOMATIS
+        function openCardModal(nisn, nama, kelas) {
+            document.getElementById('qrcode-space').innerHTML = '';
+            document.getElementById('card-nama').innerText = nama;
+            document.getElementById('card-kelas').innerText = "KELAS: " + kelas;
+            document.getElementById('card-nisn').innerText = "NISN. " + nisn;
+            
+            // Generate QR Code otomatis dari NISN di dalam modal box
+            new QRCode(document.getElementById("qrcode-space"), {
+                text: nisn.toString(),
+                width: 120,
+                height: 120,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('cardModal').classList.remove('hidden');
+        }
+
+        function closeCardModal() {
+            document.getElementById('cardModal').classList.add('hidden');
+        }
+
         function handleTambahSiswa(e) {
             e.preventDefault();
             showLoading(true);
 
-            const payload = {
-                action: "tambahSiswa",
-                nisn: document.getElementById('fNisn').value.trim(),
-                nama: document.getElementById('fNama').value.trim(),
-                kelas: document.getElementById('fKelas').value.trim(),
-                whatsapp: document.getElementById('fWa').value.trim()
-            };
+            const n = document.getElementById('fNisn').value.trim();
+            const nm = document.getElementById('fNama').value.trim();
+            const kl = document.getElementById('fKelas').value.trim();
+            const wa = document.getElementById('fWa').value.trim();
+
+            const payload = { action: "tambahSiswa", nisn: n, nama: nm, kelas: kl, whatsapp: wa };
 
             fetch(API_URL, {
                 method: "POST",
@@ -253,6 +295,8 @@
                 if(res.success) {
                     closeModal();
                     syncDataFromCloud();
+                    // Langsung panggil modal pembuatan kartu otomatis setelah disimpan sukses
+                    setTimeout(() => { openCardModal(n, nm, kl); }, 800);
                 }
             })
             .catch(err => alert("Gagal koneksi ke server script."))
@@ -264,17 +308,26 @@
             tbody.innerHTML = '';
             
             if(cloudSiswa.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-bMuted">Belum ada data siswa dari Google Sheets.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-bMuted">Belum ada data siswa dari Google Sheets.</td></tr>`;
                 return;
             }
 
             cloudSiswa.forEach(s => {
+                const cleanNisn = (s.nisn || s.nisn_siswa || '-').toString();
+                const cleanNama = (s.nama || s.nama_lengkap || '-').replace(/'/g, "\\'");
+                const cleanKelas = (s.kelas || '-').replace(/'/g, "\\'");
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
-                        <td class="p-4 font-mono font-bold text-white">${s.nisn || s.nisn_siswa || '-'}</td>
+                        <td class="p-4 font-mono font-bold text-white">${cleanNisn}</td>
                         <td class="p-4">${s.nama || s.nama_lengkap || '-'}</td>
                         <td class="p-4"><span class="bg-white/10 px-2 py-1 rounded text-xs">${s.kelas || '-'}</span></td>
                         <td class="p-4 text-emerald-400"><i class="fab fa-whatsapp"></i> ${s.whatsapp || s.whatsapp_ortu || '-'}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="openCardModal('${cleanNisn}', '${cleanNama}', '${cleanKelas}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all">
+                                <i class="fas fa-qrcode mr-1"></i> Lihat Kartu
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -315,12 +368,8 @@
             const filterKelas = document.getElementById('fRekapKelas').value.toLowerCase();
 
             let dataFilter = cloudAbsen;
-            if (filterTgl) {
-                dataFilter = dataFilter.filter(a => a.tanggal && a.tanggal.split('T')[0] === filterTgl);
-            }
-            if (filterKelas) {
-                dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas));
-            }
+            if (filterTgl) dataFilter = dataFilter.filter(a => a.tanggal && a.tanggal.split('T')[0] === filterTgl);
+            if (filterKelas) dataFilter = dataFilter.filter(a => a.kelas && a.kelas.toLowerCase().includes(filterKelas));
 
             if(dataFilter.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi.</td></tr>`;
@@ -332,7 +381,6 @@
                 if(a.status === 'Hadir' || a.status === 'Terlambat') statusColor = 'text-green-400';
                 if(a.status === 'Alpa') statusColor = 'text-red-400';
 
-                // Bersihkan tampilan tanggal dari format ISO jika ada
                 const tglDisplay = a.tanggal ? a.tanggal.split('T')[0] : '-';
 
                 tbody.innerHTML += `
@@ -374,10 +422,7 @@
 
         function prosesUploadCsv() {
             const fileInput = document.getElementById('csvFile');
-            if (fileInput.files.length === 0) {
-                alert("Pilih file CSV terlebih dahulu!");
-                return;
-            }
+            if (fileInput.files.length === 0) { alert("Pilih file CSV terlebih dahulu!"); return; }
 
             const file = fileInput.files[0];
             const reader = new FileReader();
@@ -404,10 +449,7 @@
                         whatsapp: kolom[3].trim()
                     };
 
-                    let request = fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify(payload)
-                    })
+                    let request = fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
                     .then(res => res.json())
                     .then(res => { if(res.success) suksesCount++; });
 
@@ -424,7 +466,6 @@
                     alert("Terjadi masalah parsial saat mengunggah database massal.");
                 });
             };
-
             reader.readAsText(file);
         }
 
@@ -435,16 +476,9 @@
             html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
             html5QrcodeScanner.render((decodedText) => {
                 showLoading(true);
-                
-                const payload = {
-                    action: "scanQR",
-                    nisn: decodedText.trim()
-                };
+                const payload = { action: "scanQR", nisn: decodedText.trim() };
 
-                fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                })
+                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
                 .then(res => res.json())
                 .then(res => {
                     resultDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-400', 'bg-green-500/20', 'text-green-400');
@@ -463,7 +497,6 @@
                     html5QrcodeScanner.clear();
                     setTimeout(startQRScanner, 3000);
                 });
-
             }, (error) => {});
         }
 
