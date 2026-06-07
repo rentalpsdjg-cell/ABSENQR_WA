@@ -12,7 +12,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
+    // URL Utama: Kelola Absen, Scan QR, dan Manajemen Database
     const API_URL = "https://script.google.com/macros/s/AKfycbzu6VKReuUh2FOLO35gV3wjtCRflADg1POL3kxdqnOPYO8pbMzyGQZ-TZfE9GYdP0eK/exec"; 
+    
+    // URL Khusus PDF: Jenerasi dan Download PDF Per Kelas (URL Baru)
+    const PDF_API_URL = "https://script.google.com/macros/s/AKfycbxyaT6dVPIa38pIInuaI59wBZISKHwUvzeqrwCYLjRixT7owLgr1tV2_eDVskCZhS4/exec";
     
     tailwind.config = {
       theme: {
@@ -216,7 +220,7 @@
 
   <script>
     let activeScanner = null, mainChart = null, currentTab = 'harian', cacheAbsensi = [], currentModalType = '';
-    let cacheSiswa = []; // Menampung koleksi kelas terdaftar untuk filter cetak PDF
+    let cacheSiswa = []; 
     
     setInterval(() => {
       const skrg = new Date();
@@ -283,9 +287,8 @@
       }
     }
 
-    // FUNGSI BARU: Logika Cetak Berkas PDF Otomatis terintegrasi ke Apps Script Backend
+    // Eksekusi Download PDF Terintegrasi dengan URL Baru Anda
     function eksekusiCetakPDF() {
-      // Dapatkan list kelas unik dari database siswa
       let listKelasUnik = [...new Set(cacheSiswa.map(s => s.kelas))].filter(k => k);
       
       if(listKelasUnik.length === 0) {
@@ -293,7 +296,6 @@
         return;
       }
 
-      // Buat elemen pilihan kelas berbentuk dropdown select untuk opsi pop-up SweetAlert
       let opsiHtml = `<select id="swalSelectKelas" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
                         <option value="">-- Cetak Semua Kelas --</option>
                         ${listKelasUnik.map(k => `<option value="${k}">${k}</option>`).join('')}
@@ -314,8 +316,6 @@
           const kelasTerpilih = result.value;
           const filterTgl = document.getElementById('filterTanggal').value || "";
           const filterBln = document.getElementById('filterBulan').value || "";
-          
-          // Pilih parameter tanggal sesuai tab rekap harian/bulanan yang sedang aktif
           let tanggalQuery = (currentTab === 'harian') ? filterTgl : filterBln;
 
           Swal.fire({
@@ -325,13 +325,12 @@
             didOpen: () => { Swal.showLoading(); }
           });
 
-          // Panggil endpoint downloadPDF di Google Apps Script Anda
-          fetch(`${API_URL}?action=downloadPDF&kelas=${encodeURIComponent(kelasTerpilih)}&tanggal=${tanggalQuery}`)
+          // Menembak endpoint jenerasi file PDF (PDF_API_URL)
+          fetch(`${PDF_API_URL}?action=downloadPDF&kelas=${encodeURIComponent(kelasTerpilih)}&tanggal=${tanggalQuery}`)
           .then(res => res.json())
           .then(res => {
             if (res.success) {
               Swal.close();
-              // Download file PDF Base64 secara instan di browser admin
               const dLink = document.createElement("a");
               dLink.href = `data:application/pdf;base64,${res.pdfBlobBase64}`;
               dLink.download = res.fileName;
@@ -345,7 +344,7 @@
             }
           })
           .catch(err => {
-            Swal.fire('Error Jaringan', 'Gagal terhubung dengan server Apps Script: ' + err, 'error');
+            Swal.fire('Error Jaringan', 'Gagal terhubung dengan server Apps Script PDF: ' + err, 'error');
           });
         }
       });
@@ -439,7 +438,7 @@
     function refreshDatabase() {
         fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
             cacheAbsensi = db.absensi || [];
-            cacheSiswa = db.siswa || []; // Disimpan ke cache lokal untuk keperluan dropdown list kelas cetak PDF
+            cacheSiswa = db.siswa || []; 
             let sHtml = '';
             if(db.siswa) {
                 db.siswa.forEach(s => {
@@ -543,7 +542,6 @@
 
     function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
-    // SOLUSI PERBAIKAN: Tag kurung tutup fungsi handleFormSubmit yang sebelumnya terpotong
     function handleFormSubmit(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
@@ -596,7 +594,6 @@
         }).catch(() => Swal.fire('Error', 'Terjadi gangguan koneksi.', 'error'));
     }
 
-    // Pemuatan data awal saat aplikasi pertama kali dibuka
     window.onload = function() {
         loadStats();
         refreshDatabase();
