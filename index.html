@@ -12,7 +12,6 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    /* Custom Styling & Theme Variables */
     :root {
       --bg-dark: #0F172A;
       --bg-card: #1E293B;
@@ -29,7 +28,6 @@
     .text-bMuted { color: var(--bg-muted); }
     .bg-bActive { background-color: var(--bg-active); }
     
-    /* View Visibility Management */
     .view-section { display: none; }
     .view-section.active { display: block; }
     .nav-active {
@@ -42,7 +40,8 @@
 <body class="antialiased min-h-screen flex">
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz...UBAH_DENGAN_URL_GAS_ANDA.../exec";
+    // TAUTAN API BERHASIL DISINKRONKAN SECARA OTOMATIS
+    const API_URL = "https://script.google.com/macros/s/AKfycby3UEozJmP_3mbSTHWu4szUJx1lwp7Gv5yKPP-s4lupyNY2ZBKsWKmjO51kKAFjOWEF/exec";
   </script>
 
   <aside id="sidebarMenu" class="fixed inset-y-0 left-0 w-64 bg-bCard border-r border-white/5 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
@@ -144,7 +143,7 @@
               </ul>
             </div>
             <div class="pt-4 border-t border-white/5 flex justify-end">
-              <button onclick="muatSemuaData()" class="px-4 py-2 bg-bActive text-white rounded-xl font-bold text-xs"><i class="fas fa-sync-alt mr-2 animate-spin-hover"></i>Refresh Data Server</button>
+              <button onclick="muatSemuaData()" class="px-4 py-2 bg-bActive text-white rounded-xl font-bold text-xs"><i class="fas fa-sync-alt mr-2"></i>Refresh Data Server</button>
             </div>
           </div>
         </div>
@@ -248,7 +247,7 @@
         <div class="flex items-center justify-between bg-bCard p-4 rounded-2xl border border-white/5">
           <div class="text-xs text-bMuted">Manajemen master data siswa terdaftar sistem.</div>
           <div class="flex items-center space-x-2">
-            <input type="file" id="csvFileInput" accept=".csv" onchange="prosesUploadMassal(e)" class="hidden">
+            <input type="file" id="csvFileInput" accept=".csv" onchange="prosesUploadMassal(event)" class="hidden">
             <button onclick="triggerUploadClick()" class="px-3 py-2 bg-white/5 hover:bg-white/10 text-xs font-bold rounded-xl"><i class="fas fa-file-csv mr-1.5"></i>Upload Massal (CSV)</button>
             <button onclick="openModal('siswa')" class="px-3 py-2 bg-bActive text-white text-xs font-bold rounded-xl"><i class="fas fa-plus mr-1.5"></i>Tambah Siswa</button>
           </div>
@@ -329,7 +328,7 @@
         <button onclick="closeModal()" class="text-bMuted hover:text-white"><i class="fas fa-times"></i></button>
       </div>
       <form id="dynamicForm" onsubmit="handleFormSubmit(event)" class="p-5 space-y-3 text-white">
-        </form>
+      </form>
     </div>
   </div>
 
@@ -354,23 +353,11 @@
         color: '#FFF'
       });
     }
-  </script>
 
-  <script>
-    // === DEKLARASI VARIABEL GLOBAL ===
-    let activeScanner = null, 
-        mainChart = null, 
-        currentTab = 'harian', 
-        currentTabGuru = 'harian', 
-        cacheAbsensi = [], 
-        cacheSiswa = [], 
-        cacheGuru = [], 
-        currentModalType = '';
+    let activeScanner = null, mainChart = null, currentTab = 'harian', currentTabGuru = 'harian', 
+        cacheAbsensi = [], cacheSiswa = [], cacheGuru = [], currentModalType = '';
+    let dataSiswaTerfilterGlobal = [], dataGuruTerfilterGlobal = []; 
 
-    let dataSiswaTerfilterGlobal = [], 
-        dataGuruTerfilterGlobal = []; 
-
-    // === STARTUP HANDLER ===
     window.addEventListener('DOMContentLoaded', () => {
       const hariIni = new Date().toISOString().split('T')[0];
       document.getElementById('filterTanggal').value = hariIni;
@@ -413,19 +400,10 @@
       };
       document.getElementById('viewTitle').innerText = titles[viewId] || 'E-Absensi';
       
-      if (viewId === 'scan') {
-        mulaiScanner();
-      } else {
-        matikanScanner();
-      }
-      
-      // Jika di mobile, tutup sidebar sehabis klik menu navigasi
-      if(!document.getElementById('sidebarMenu').classList.contains('-translate-x-full')) {
-        toggleSidebar();
-      }
+      if (viewId === 'scan') { mulaiScanner(); } else { matikanScanner(); }
+      if(!document.getElementById('sidebarMenu').classList.contains('-translate-x-full')) { toggleSidebar(); }
     }
 
-    // === FETCHER DATA UTAMA DARI SERVER ===
     function muatSemuaData() {
       fetch(`${API_URL}?action=getAllData`)
         .then(res => res.json())
@@ -495,7 +473,6 @@
       });
     }
 
-    // === LOGIKA UTAMA: REKAP ABSENSI SISWA & ALPA OTOMATIS ===
     function setRekapTab(type) {
       currentTab = type;
       document.getElementById('btnTabHarian').className = type === 'harian' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
@@ -512,7 +489,6 @@
       const keyword = document.getElementById('searchRekapSiswa').value.toLowerCase();
       const statusFilt = document.getElementById('filterStatusSiswa').value;
       const kelasFilt = document.getElementById('filterKelasSiswa').value;
-      
       const tglFilt = document.getElementById('filterTanggal').value;
       const blnFilt = document.getElementById('filterBulan').value;
 
@@ -553,34 +529,39 @@
       });
 
       if (dataSiswaTerfilterGlobal.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-bMuted">Tidak ada data laporan presensi siswa yang cocok.</div>';
+        container.innerHTML = `<div class="col-span-full text-center p-8 bg-bCard rounded-2xl border border-white/5 text-xs text-bMuted">Tidak ada data presensi siswa yang cocok dengan filter.</div>`;
         return;
       }
 
       dataSiswaTerfilterGlobal.forEach(item => {
-        let colorStatus = "bg-amber-500/10 text-amber-400";
-        if (item.status === "Hadir") colorStatus = "bg-emerald-500/10 text-emerald-400";
-        if (item.status === "Terlambat") colorStatus = "bg-rose-500/10 text-rose-400";
-        if (item.status === "Alpa") colorStatus = "bg-red-500/10 text-red-500 font-bold";
+        let badgeColor = "bg-red-500/10 text-red-400 border border-red-500/20";
+        if (item.status === 'Hadir') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        if (item.status === 'Terlambat') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+        if (item.status === 'Sakit' || item.status === 'Izin') badgeColor = "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
 
         container.innerHTML += `
-          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-bold text-xs">${item.nama}</h4>
-                <p class="text-[10px] text-bMuted mt-0.5">${item.nisn} | ${item.kelas}</p>
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1 pr-2">
+                <h4 class="font-bold text-sm text-white truncate">${item.nama}</h4>
+                <p class="text-[11px] text-bMuted mt-0.5">NISN: ${item.nisn} • <span class="text-indigo-300 font-semibold">${item.kelas}</span></p>
               </div>
-              <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase ${colorStatus}">${item.status}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${badgeColor}">${item.status}</span>
             </div>
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-center">
-              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Masuk</p><p class="text-xs font-semibold mt-0.5">${item.jam_Masuk}</p></div>
-              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Pulang</p><p class="text-xs font-semibold mt-0.5">${item.jam_Pulang}</p></div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-[11px] text-bMuted">
+              <div class="bg-bDark/40 p-2 rounded-lg border border-white/5 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-wider mb-0.5">Masuk</p>
+                <span class="${item.jam_Masuk !== '-' ? 'text-white font-medium' : ''}">${item.jam_Masuk}</span>
+              </div>
+              <div class="bg-bDark/40 p-2 rounded-lg border border-white/5 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-wider mb-0.5">Pulang</p>
+                <span class="${item.jam_Pulang !== '-' ? 'text-white font-medium' : ''}">${item.jam_Pulang}</span>
+              </div>
             </div>
           </div>`;
       });
     }
 
-    // === REKAP ABSENSI GURU ===
     function setRekapTabGuru(type) {
       currentTabGuru = type;
       document.getElementById('btnTabHarianGuru').className = type === 'harian' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
@@ -593,11 +574,10 @@
     function renderDataRekapGuru() {
       const container = document.getElementById('rekapGuruListContainer');
       container.innerHTML = '';
-      
+
       const keyword = document.getElementById('searchRekapGuru').value.toLowerCase();
       const statusFilt = document.getElementById('filterStatusGuru').value;
       const mapelFilt = document.getElementById('filterMapelGuru').value;
-      
       const tglFilt = document.getElementById('filterTanggalGuru').value;
       const blnFilt = document.getElementById('filterBulanGuru').value;
 
@@ -607,16 +587,25 @@
         cacheGuru.forEach(guru => {
           let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(guru.nip).trim() && a.tanggal === tglFilt);
           if (match) {
-            hasilData.push({ nip: guru.nip, nama: guru.nama, mapel: guru.mapel, jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status });
+            hasilData.push({
+              nip: guru.nip, nama: guru.nama, mapel: guru.mapel,
+              jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status
+            });
           } else {
-            hasilData.push({ nip: guru.nip, nama: guru.nama, mapel: guru.mapel, jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa' });
+            hasilData.push({
+              nip: guru.nip, nama: guru.nama, mapel: guru.mapel,
+              jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa'
+            });
           }
         });
       } else {
         cacheAbsensi.forEach(a => {
           if (a.tipe_User === 'Guru' && a.tanggal.substring(0, 7) === blnFilt) {
             let gObj = cacheGuru.find(g => String(g.nip).trim() === String(a.id_User).trim());
-            hasilData.push({ nip: a.id_User, nama: a.nama, mapel: gObj ? gObj.mapel : '-', jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status });
+            hasilData.push({
+              nip: a.id_User, nama: a.nama, mapel: gObj ? gObj.mapel : '-',
+              jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status
+            });
           }
         });
       }
@@ -629,400 +618,277 @@
       });
 
       if (dataGuruTerfilterGlobal.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-bMuted">Tidak ada data laporan presensi guru yang cocok.</div>';
+        container.innerHTML = `<div class="col-span-full text-center p-8 bg-bCard rounded-2xl border border-white/5 text-xs text-bMuted">Tidak ada data presensi guru yang cocok dengan filter.</div>`;
         return;
       }
 
       dataGuruTerfilterGlobal.forEach(item => {
-        let colorStatus = "bg-amber-500/10 text-amber-400";
-        if (item.status === "Hadir") colorStatus = "bg-emerald-500/10 text-emerald-400";
-        if (item.status === "Terlambat") colorStatus = "bg-rose-500/10 text-rose-400";
-        if (item.status === "Alpa") colorStatus = "bg-red-500/10 text-red-500 font-bold";
+        let badgeColor = "bg-red-500/10 text-red-400 border border-red-500/20";
+        if (item.status === 'Hadir') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        if (item.status === 'Terlambat') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+        if (item.status === 'Sakit' || item.status === 'Izin') badgeColor = "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
 
         container.innerHTML += `
-          <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-bold text-xs">${item.nama}</h4>
-                <p class="text-[10px] text-bMuted mt-0.5">${item.nip} | ${item.mapel}</p>
+          <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1 pr-2">
+                <h4 class="font-bold text-sm text-white truncate">${item.nama}</h4>
+                <p class="text-[11px] text-bMuted mt-0.5">NIP: ${item.nip} • <span class="text-cyan-400 font-semibold">${item.mapel}</span></p>
               </div>
-              <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase ${colorStatus}">${item.status}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${badgeColor}">${item.status}</span>
             </div>
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-center">
-              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Masuk</p><p class="text-xs font-semibold mt-0.5">${item.jam_Masuk}</p></div>
-              <div class="bg-bDark/50 p-1.5 rounded"><p class="text-[8px] text-bMuted uppercase font-bold">Pulang</p><p class="text-xs font-semibold mt-0.5">${item.jam_Pulang}</p></div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-[11px] text-bMuted">
+              <div class="bg-bDark/40 p-2 rounded-lg border border-white/5 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-wider mb-0.5">Masuk</p>
+                <span class="${item.jam_Masuk !== '-' ? 'text-white font-medium' : ''}">${item.jam_Masuk}</span>
+              </div>
+              <div class="bg-bDark/40 p-2 rounded-lg border border-white/5 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-wider mb-0.5">Pulang</p>
+                <span class="${item.jam_Pulang !== '-' ? 'text-white font-medium' : ''}">${item.jam_Pulang}</span>
+              </div>
             </div>
           </div>`;
       });
     }
 
-    // === UPDATE REALTIME STATS & CHART DI DASHBOARD ===
     function updateDashboardStats() {
       const tglFilt = document.getElementById('filterTanggal').value;
-      let totalSiswa = cacheSiswa.length;
-      let hadir = 0, pulang = 0, sakitIzin = 0, alpa = 0;
+      let totalSiswa = cacheSiswa.length, hadir = 0, pulang = 0, sakitIzinAlpa = 0;
 
       cacheSiswa.forEach(siswa => {
         let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(siswa.nisn).trim() && a.tanggal === tglFilt);
         if (match) {
-          if (match.status === "Hadir" || match.status === "Terlambat") hadir++;
-          if (match.jam_Pulang !== "-" && match.jam_Pulang !== "") pulang++;
-          if (match.status === "Sakit" || match.status === "Izin") sakitIzin++;
-          if (match.status === "Alpa") alpa++;
-        } else {
-          alpa++;
-        }
+          if (match.status === 'Hadir' || match.status === 'Terlambat') hadir++;
+          if (match.jam_Pulang !== '-' && match.jam_Pulang !== '') pulang++;
+          if (match.status === 'Sakit' || match.status === 'Izin' || match.status === 'Alpa') sakitIzinAlpa++;
+        } else { sakitIzinAlpa++; }
       });
 
       document.getElementById('dashSiswa').innerText = totalSiswa;
       document.getElementById('dashHadir').innerText = hadir;
       document.getElementById('dashPulang').innerText = pulang;
-      document.getElementById('dashSakitIzin').innerText = (sakitIzin + alpa);
+      document.getElementById('dashSakitIzin').innerText = sakitIzinAlpa;
+      renderChartPresensi(hadir, sakitIzinAlpa);
+    }
 
-      if (mainChart) mainChart.destroy();
+    function renderChartPresensi(hadir, absen) {
       const ctx = document.getElementById('chartPresensi').getContext('2d');
+      if (mainChart) mainChart.destroy();
       mainChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Hadir', 'S/I', 'Alpa'],
-          datasets: [{
-            data: [hadir, sakitIzin, alpa],
-            backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-            borderWidth: 0
-          }]
+          labels: ['Hadir/Telat', 'Sakit/Izin/Alpa'],
+          datasets: [{ data: [hadir, absen], backgroundColor: ['#10B981', '#F59E0B'], borderWidth: 0 }]
         },
-        options: {
-          plugins: { legend: { display: false } },
-          cutout: '75%'
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
       });
     }
 
-    // === CETAK PRINT LAPORAN SISWA ===
-    function cetakPdfSiswa() {
-      const kelasSelected = document.getElementById('filterKelasSiswa').value;
-      const tanggalSelected = document.getElementById('filterTanggal').value;
-      
-      let htmlCetak = `
-        <html>
-        <head>
-          <title>Cetak Laporan</title>
-          <style>
-            body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; background: #fff; }
-            .header-print { text-align: center; margin-bottom: 25px; }
-            .header-print h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-            .header-print p { margin: 5px 0 0; font-size: 12px; color: #333; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-            th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
-            .center-text { text-align: center; }
-            .ttd-section { margin-top: 40px; float: right; text-align: center; font-size: 12px; width: 200px; }
-            .ttd-space { height: 60px; }
-          </style>
-        </head>
-        <body>
-          <div class="header-print">
-            <h2>LAPORAN REKAPITULASI ABSENSI SISWA</h2>
-            <p>Kelas: ${kelasSelected} | Periode Tanggal: ${tanggalSelected}</p>
-          </div>
-          <hr style="border: 1px solid #000; margin-bottom: 20px;">
-          <table>
-            <thead>
-              <tr>
-                <th width="5%" class="center-text">NO</th>
-                <th width="15%">NISN</th>
-                <th width="35%">NAMA LENGKAP</th>
-                <th width="15%">KELAS</th>
-                <th width="14%">STATUS / REKAP</th>
-                <th width="8%" class="center-text">JAM MASUK</th>
-                <th width="8%" class="center-text">JAM PULANG</th>
-              </tr>
-            </thead>
-            <tbody>`;
-            
-      dataSiswaTerfilterGlobal.forEach((item, index) => {
-        htmlCetak += `
-          <tr>
-            <td class="center-text">${index + 1}</td>
-            <td>${item.nisn}</td>
-            <td><strong>${item.nama.toUpperCase()}</strong></td>
-            <td>${item.kelas}</td>
-            <td>${item.status}</td>
-            <td class="center-text">${item.jam_Masuk}</td>
-            <td class="center-text">${item.jam_Pulang}</td>
-          </tr>`;
-      });
-
-      htmlCetak += `
-            </tbody>
-          </table>
-          <div class="ttd-section">
-            Banda Aceh, ${new Date(tanggalSelected).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
-            Administrator System
-            <div class="ttd-space"></div>
-            <hr style="border: 0.5px solid #000; width: 100%;">
-            <strong>E-Absensi Admin</strong>
-          </div>
-        </body>
-        </html>`;
-
-      const win = window.open("", "_blank");
-      win.document.write(htmlCetak);
-      win.document.close();
-      setTimeout(() => { win.print(); }, 500);
-    }
-
-    // === CETAK PRINT LAPORAN GURU ===
-    function cetakPdfGuru() {
-      const mapelSelected = document.getElementById('filterMapelGuru').value;
-      const tanggalSelected = document.getElementById('filterTanggalGuru').value;
-      
-      let htmlCetak = `
-        <html>
-        <head>
-          <title>Cetak Laporan Guru</title>
-          <style>
-            body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; }
-            .header-print { text-align: center; margin-bottom: 25px; }
-            .header-print h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-            .header-print p { margin: 5px 0 0; font-size: 12px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-            th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
-            .center-text { text-align: center; }
-            .ttd-section { margin-top: 40px; float: right; text-align: center; font-size: 12px; width: 200px; }
-            .ttd-space { height: 60px; }
-          </style>
-        </head>
-        <body>
-          <div class="header-print">
-            <h2>LAPORAN REKAPITULASI ABSENSI GURU</h2>
-            <p>Mapel: ${mapelSelected} | Periode Tanggal: ${tanggalSelected}</p>
-          </div>
-          <hr style="border: 1px solid #000; margin-bottom: 20px;">
-          <table>
-            <thead>
-              <tr>
-                <th width="5%" class="center-text">NO</th>
-                <th width="15%">NIP</th>
-                <th width="35%">NAMA LENGKAP</th>
-                <th width="15%">MAPEL</th>
-                <th width="14%">STATUS</th>
-                <th width="8%" class="center-text">JAM MASUK</th>
-                <th width="8%" class="center-text">JAM PULANG</th>
-              </tr>
-            </thead>
-            <tbody>`;
-            
-      dataGuruTerfilterGlobal.forEach((item, index) => {
-        htmlCetak += `
-          <tr>
-            <td class="center-text">${index + 1}</td>
-            <td>${item.nip}</td>
-            <td><strong>${item.nama.toUpperCase()}</strong></td>
-            <td>${item.mapel}</td>
-            <td>${item.status}</td>
-            <td class="center-text">${item.jam_Masuk}</td>
-            <td class="center-text">${item.jam_Pulang}</td>
-          </tr>`;
-      });
-
-      htmlCetak += `
-            </tbody>
-          </table>
-          <div class="ttd-section">
-            Banda Aceh, ${new Date(tanggalSelected).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
-            Administrator System
-            <div class="ttd-space"></div>
-            <hr style="border: 0.5px solid #000; width: 100%;">
-            <strong>E-Absensi Admin</strong>
-          </div>
-        </body>
-        </html>`;
-
-      const win = window.open("", "_blank");
-      win.document.write(htmlCetak);
-      win.document.close();
-      setTimeout(() => { win.print(); }, 500);
-    }
-
-    // === CAMERA QR CODE QR SCANNER OPERATIONS ===
     function mulaiScanner() {
-      if (activeScanner) return;
       activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-      activeScanner.render((txt) => {
-        matikanScanner();
-        Swal.fire({ title: 'Memproses Absen...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        
-        fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "scanQR", nisn: txt })
-        })
-        .then(res => res.json())
-        .then(res => {
-          Swal.close();
-          if(res.success) {
-            Swal.fire('Berhasil!', res.message, 'success');
-          } else {
-            Swal.fire('Gagal', res.message, 'error');
-          }
-          muatSemuaData();
-          switchView('dashboard');
-        })
-        .catch(err => { Swal.close(); Swal.fire('Error', 'Terjadi masalah koneksi ke server.', 'error'); });
+      activeScanner.render((qrCodeMessage) => {
+        activeScanner.clear();
+        kirimAbsenScanQR(qrCodeMessage);
       }, (err) => {});
     }
 
     function matikanScanner() {
-      if (activeScanner) {
-        activeScanner.clear().then(() => { activeScanner = null; }).catch(e => console.error(e));
-      }
+      if (activeScanner) { activeScanner.clear().catch(e => console.log(e)); activeScanner = null; }
     }
 
-    // === CONFIG OPERASIONAL ABSENSI ===
-    function simpanConfigJam() {
-      const jM = document.getElementById('cfgJamMasuk').value;
-      const jP = document.getElementById('cfgJamPulang').value;
-      if(!jM || !jP) return Swal.fire('Gagal', 'Lengkapi seluruh formulir!', 'warning');
-      
-      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "saveSettings", jamMasuk: jM, jamPulang: jP })
-      })
-      .then(res => res.json())
-      .then(res => { Swal.close(); Swal.fire('Sukses', res.message, 'success'); muatSemuaData(); })
-      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pengaturan.', 'error'); });
-    }
-
-    function simpanManual(e) {
-      e.preventDefault();
-      const kat = document.getElementById('mKategori').value;
-      const idU = document.getElementById('mNisn').value;
-      const st = document.getElementById('mStatus').value;
-      const tp = document.getElementById('mTipe').value;
-
-      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "inputManualAbsen", kategori: kat, idUser: idU, status: st, tipe: tp })
-      })
+    function kirimAbsenScanQR(nisnValue) {
+      Swal.fire({ title: 'Memproses Absensi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'scanQR', nisn: nisnValue }) })
       .then(res => res.json())
       .then(res => {
-        Swal.close();
+        if (res.success) {
+          Swal.fire({ icon: 'success', title: 'Berhasil!', text: res.message, timer: 3000 });
+          muatSemuaData();
+          switchView('dashboard');
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: res.message });
+          mulaiScanner(); 
+        }
+      }).catch(() => { Swal.fire({ icon: 'error', title: 'Koneksi Bermasalah' }); mulaiScanner(); });
+    }
+
+    function simpanManual(event) {
+      event.preventDefault();
+      const payload = {
+        action: 'inputManualAbsen',
+        kategori: document.getElementById('mKategori').value,
+        idUser: document.getElementById('mNisn').value,
+        status: document.getElementById('mStatus').value,
+        tipe: document.getElementById('mTipe').value
+      };
+      Swal.fire({ title: 'Menyimpan Keterangan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+      .then(res => res.json())
+      .then(res => {
         if(res.success) {
-          Swal.fire('Sukses', res.message, 'success');
+          Swal.fire({ icon: 'success', title: 'Tersimpan!', text: res.message });
           document.getElementById('mNisn').value = '';
           muatSemuaData();
-        } else {
-          Swal.fire('Gagal', res.message, 'error');
-        }
-      })
-      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal mengirim permintaan.', 'error'); });
+        } else { Swal.fire({ icon: 'error', title: 'Gagal', text: res.message }); }
+      });
     }
 
-    // === UPLOAD DATA MASSAL (CSV) ===
-    function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
-
-    function prosesUploadMassal(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const text = evt.target.result;
-        const lines = text.split('\n');
-        const dataUpload = [];
-        
-        for(let i = 1; i < lines.length; i++) {
-          if(!lines[i].trim()) continue;
-          const cols = lines[i].split(',');
-          if(cols.length >= 4) {
-            dataUpload.push({
-              nisn: cols[0].trim(), nama: cols[1].trim(), kelas: cols[2].trim(), whatsapp: cols[3].trim()
-            });
-          }
-        }
-        
-        if (dataUpload.length === 0) return Swal.fire('Format Salah', 'Data CSV kosong atau tidak valid.', 'error');
-
-        Swal.fire({ title: 'Mengunggah massal...', didOpen: () => { Swal.showLoading(); } });
-        fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "uploadMassalSiswa", data: dataUpload })
-        })
-        .then(res => res.json())
-        .then(res => {
-          Swal.close();
-          Swal.fire('Sukses', res.message, 'success');
-          document.getElementById('csvFileInput').value = '';
-          muatSemuaData();
-        })
-        .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal mengupload data csv.', 'error'); });
+    function simpanConfigJam() {
+      const payload = {
+        action: 'saveSettings',
+        jamMasuk: document.getElementById('cfgJamMasuk').value,
+        jamPulang: document.getElementById('cfgJamPulang').value
       };
-      reader.readAsText(file);
+      Swal.fire({ title: 'Mengonfigurasi Jam...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+      .then(res => res.json())
+      .then(res => { if(res.success) Swal.fire({ icon: 'success', title: 'Berhasil!', text: res.message }); });
     }
 
-    // === MANAGEMENT MODAL FORM DINAMIS ===
     function openModal(type) {
       currentModalType = type;
-      const f = document.getElementById('dynamicForm');
+      const form = document.getElementById('dynamicForm');
       document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa Baru' : 'Tambah Data Guru Baru';
       
       if (type === 'siswa') {
-        f.innerHTML = `
-          <input type="number" id="f_nisn" placeholder="Nomor Induk / NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <input type="text" id="f_nama" placeholder="Nama Lengkap Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <input type="text" id="f_kelas" placeholder="Kelas (Contoh: XII TPMG)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <input type="text" id="f_wa" placeholder="WhatsApp Orang Tua (628xxx)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Siswa</button>`;
+        form.innerHTML = `
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">NISN</label><input type="number" id="f_nisn" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Nama Lengkap</label><input type="text" id="f_nama" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Kelas</label><input type="text" id="f_kelas" required placeholder="Contoh: XII-RPL-1" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">WhatsApp Orang Tua</label><input type="number" id="f_wa" required placeholder="628123456789" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <button type="submit" class="w-full py-2.5 bg-bActive font-bold text-xs rounded-xl mt-2 uppercase">Simpan Siswa</button>`;
       } else {
-        f.innerHTML = `
-          <input type="number" id="f_nip" placeholder="Nomor Induk / NIP" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <input type="text" id="f_nama" placeholder="Nama Lengkap Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <input type="text" id="f_mapel" placeholder="Mata Pelajaran Diampu" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
-          <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Guru</button>`;
+        form.innerHTML = `
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">NIP</label><input type="number" id="f_nip" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Nama Guru / Staff</label><input type="text" id="f_nama" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <div><label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Mata Pelajaran Utama</label><input type="text" id="f_mapel" required placeholder="Contoh: Matematika" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+          <button type="submit" class="w-full py-2.5 bg-cyan-600 font-bold text-xs rounded-xl mt-2 uppercase">Simpan Guru</button>`;
       }
       document.getElementById('inputModal').classList.remove('hidden');
     }
 
     function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
-    function handleFormSubmit(e) {
-      e.preventDefault();
+    function handleFormSubmit(event) {
+      event.preventDefault();
       let payload = {};
-      
-      if(currentModalType === 'siswa') {
+      if (currentModalType === 'siswa') {
         payload = {
-          action: "addSiswa",
-          nisn: document.getElementById('f_nisn').value,
-          nama: document.getElementById('f_nama').value,
-          kelas: document.getElementById('f_kelas').value,
-          whatsapp: document.getElementById('f_wa').value
+          action: 'addSiswa', nisn: document.getElementById('f_nisn').value, nama: document.getElementById('f_nama').value,
+          kelas: document.getElementById('f_kelas').value, whatsapp: document.getElementById('f_wa').value
         };
       } else {
         payload = {
-          action: "addGuru",
-          nip: document.getElementById('f_nip').value,
-          nama: document.getElementById('f_nama').value,
-          mapel: document.getElementById('f_mapel').value
+          action: 'addGuru', nip: document.getElementById('f_nip').value, nama: document.getElementById('f_nama').value, mapel: document.getElementById('f_mapel').value
         };
       }
-
-      Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
-      fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+      Swal.fire({ title: 'Menyimpan Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
       .then(res => res.json())
-      .then(res => {
-        Swal.close();
-        if(res.success) {
-          Swal.fire('Sukses', res.message, 'success');
-          closeModal();
-          muatSemuaData();
-        } else {
-          Swal.fire('Gagal', res.message, 'error');
+      .then(res => { if(res.success) { Swal.fire({ icon: 'success', title: 'Sukses!', text: res.message }); closeModal(); muatSemuaData(); } });
+    }
+
+    function cetakPdfSiswa() {
+      const tgl = document.getElementById('filterTanggal').value;
+      let barisHtml = dataSiswaTerfilterGlobal.map((s, idx) => `
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${idx+1}</td>
+          <td style="border:1px solid #000; padding:6px;">${s.nisn}</td>
+          <td style="border:1px solid #000; padding:6px;">${s.nama}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.kelas}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.jam_Masuk}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.jam_Pulang}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center; font-weight:bold;">${s.status}</td>
+        </tr>`).join('');
+
+      let win = window.open('', '_blank');
+      win.document.write(`
+        <html><head><title>Cetak Rekap Presensi Siswa</title></head>
+        <body style="font-family:Arial,sans-serif; padding:20px; color:#000; background:#FFF;" onload="window.print()">
+          <h2 style="text-align:center; margin-bottom:2px;">LAPORAN REKAP PRESENSI HARIAN SISWA</h2>
+          <p style="text-align:center; margin-top:0; font-size:12px;">Tanggal Laporan: ${tgl}</p>
+          <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:20px;">
+            <thead>
+              <tr style="background-color:#F2F2F2;">
+                <th style="border:1px solid #000; padding:8px;">No</th><th style="border:1px solid #000; padding:8px;">NISN</th>
+                <th style="border:1px solid #000; padding:8px;">Nama Siswa</th><th style="border:1px solid #000; padding:8px;">Kelas</th>
+                <th style="border:1px solid #000; padding:8px;">Jam Masuk</th><th style="border:1px solid #000; padding:8px;">Jam Pulang</th>
+                <th style="border:1px solid #000; padding:8px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>${barisHtml}</tbody>
+          </table>
+        </body></html>`);
+      win.document.close();
+    }
+
+    function cetakPdfGuru() {
+      const tgl = document.getElementById('filterTanggalGuru').value;
+      let barisHtml = dataGuruTerfilterGlobal.map((g, idx) => `
+        <tr>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${idx+1}</td>
+          <td style="border:1px solid #000; padding:6px;">${g.nip}</td>
+          <td style="border:1px solid #000; padding:6px;">${g.nama}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.mapel}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.jam_Masuk}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.jam_Pulang}</td>
+          <td style="border:1px solid #000; padding:6px; text-align:center; font-weight:bold;">${g.status}</td>
+        </tr>`).join('');
+
+      let win = window.open('', '_blank');
+      win.document.write(`
+        <html><head><title>Cetak Rekap Presensi Guru</title></head>
+        <body style="font-family:Arial,sans-serif; padding:20px; color:#000; background:#FFF;" onload="window.print()">
+          <h2 style="text-align:center; margin-bottom:2px;">LAPORAN REKAP PRESENSI HARIAN GURU / STAFF</h2>
+          <p style="text-align:center; margin-top:0; font-size:12px;">Tanggal Laporan: ${tgl}</p>
+          <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:20px;">
+            <thead>
+              <tr style="background-color:#F2F2F2;">
+                <th style="border:1px solid #000; padding:8px;">No</th><th style="border:1px solid #000; padding:8px;">NIP</th>
+                <th style="border:1px solid #000; padding:8px;">Nama Guru</th><th style="border:1px solid #000; padding:8px;">Mata Pelajaran</th>
+                <th style="border:1px solid #000; padding:8px;">Jam Masuk</th><th style="border:1px solid #000; padding:8px;">Jam Pulang</th>
+                <th style="border:1px solid #000; padding:8px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>${barisHtml}</tbody>
+          </table>
+        </body></html>`);
+      win.document.close();
+    }
+
+    function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
+
+    function prosesUploadMassal(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = text.split('\n');
+        let arraySiswa = [];
+
+        for(let i = 1; i < rows.length; i++) {
+          if(rows[i].trim() === '') continue;
+          let cols = rows[i].split(',');
+          if(cols.length >= 4) {
+            arraySiswa.push({
+              nisn: cols[0].trim(), nama: cols[1].trim(), kelas: cols[2].trim(), whatsapp: cols[3].trim()
+            });
+          }
         }
-      })
-      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pendaftaran.', 'error'); });
+
+        if(arraySiswa.length === 0) {
+          Swal.fire({ icon: 'warning', title: 'Kosong', text: 'Struktur data CSV tidak valid atau kosong.' });
+          return;
+        }
+
+        Swal.fire({ title: 'Mengimpor Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadMassalSiswa', data: arraySiswa }) })
+        .then(res => res.json())
+        .then(res => { if(res.success) { Swal.fire({ icon: 'success', title: 'Selesai!', text: res.message }); muatSemuaData(); } });
+      };
+      reader.readAsText(file);
     }
   </script>
 </body>
