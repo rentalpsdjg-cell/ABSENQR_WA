@@ -15,7 +15,7 @@
     // URL Utama: Kelola Absen, Scan QR, dan Manajemen Database
     const API_URL = "https://script.google.com/macros/s/AKfycbzu6VKReuUh2FOLO35gV3wjtCRflADg1POL3kxdqnOPYO8pbMzyGQZ-TZfE9GYdP0eK/exec"; 
     
-    // URL Khusus PDF: Jenerasi dan Download PDF Per Kelas (URL Baru)
+    // URL Khusus PDF: Jenerasi dan Download PDF Per Kelas
     const PDF_API_URL = "https://script.google.com/macros/s/AKfycbxyaT6dVPIa38pIInuaI59wBZISKHwUvzeqrwCYLjRixT7owLgr1tV2_eDVskCZhS4/exec";
     
     tailwind.config = {
@@ -287,7 +287,6 @@
       }
     }
 
-    // Eksekusi Download PDF Terintegrasi dengan URL Baru Anda
     function eksekusiCetakPDF() {
       let listKelasUnik = [...new Set(cacheSiswa.map(s => s.kelas))].filter(k => k);
       
@@ -325,7 +324,6 @@
             didOpen: () => { Swal.showLoading(); }
           });
 
-          // Menembak endpoint jenerasi file PDF (PDF_API_URL)
           fetch(`${PDF_API_URL}?action=downloadPDF&kelas=${encodeURIComponent(kelasTerpilih)}&tanggal=${tanggalQuery}`)
           .then(res => res.json())
           .then(res => {
@@ -484,10 +482,22 @@
     
     function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
+    // FUNGSI RENDER LAPORAN YANG SUDAH DIPERBAIKI (MENCEGAH FORMAT JAM 1899)
     function renderDataRekap() {
         let html = '';
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
+        
+        // Pembersih otomatis data Jam ISO Google Sheet
+        const bersihkanJam = (jamStr) => {
+            if (!jamStr || jamStr === '-') return '-';
+            if (typeof jamStr === 'string' && jamStr.includes('1899-12-30')) {
+                let bagianJam = jamStr.split('T')[1];
+                if (bagianJam) return bagianJam.substring(0, 5); 
+            }
+            return jamStr;
+        };
+
         cacheAbsensi.forEach(a => {
             let matches = false;
             let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
@@ -495,10 +505,15 @@
             if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
             if(!tglFilter && currentTab === 'harian') matches = true;
             if(!blnFilter && currentTab === 'bulanan') matches = true;
+            
             if(matches) {
                 let stStyle = "text-amber-400";
                 if(a.status_masuk === 'Hadir') stStyle = "text-emerald-400";
                 if(a.status_masuk === 'Alpa') stStyle = "text-red-500";
+                
+                let jamDatangBersih = bersihkanJam(a.jam_datang || a.datang);
+                let jamPulangBersih = bersihkanJam(a.jam_pulang || a.pulang);
+
                 html += `
                 <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
                     <div>
@@ -506,8 +521,8 @@
                         <p class="text-[10px] text-bMuted">Kelas: ${a.kelas} | ${tglRow}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-xs">
-                        <div><p class="text-bMuted text-[10px]">Datang</p><p class="text-emerald-400 font-semibold">${a.jam_datang || '-'}</p></div>
-                        <div><p class="text-bMuted text-[10px]">Pulang</p><p class="text-cyan-400 font-semibold">${a.jam_pulang || '-'}</p></div>
+                        <div><p class="text-bMuted text-[10px]">Datang</p><p class="text-emerald-400 font-semibold">${jamDatangBersih}</p></div>
+                        <div><p class="text-bMuted text-[10px]">Pulang</p><p class="text-cyan-400 font-semibold">${jamPulangBersih}</p></div>
                     </div>
                     <div class="text-[11px] bg-bDark/60 px-2 py-1 rounded text-right font-bold ${stStyle}">${a.status_masuk}</div>
                 </div>`;
