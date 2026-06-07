@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -22,6 +21,13 @@
             }
         }
     </script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #id-card-print-area, #id-card-print-area * { visibility: visible; }
+            #id-card-print-area { position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%) scale(1.3); }
+        }
+    </style>
 </head>
 <body class="bg-bDark text-slate-100 font-sans antialiased min-h-screen flex flex-col md:flex-row">
 
@@ -37,7 +43,6 @@
                 <button onclick="switchView('rekap')" id="nav-rekap" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-file-invoice w-5"></i> Laporan Rekap</button>
                 <button onclick="switchView('siswa')" id="nav-siswa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-user-graduate w-5"></i> Master Siswa</button>
                 <button onclick="switchView('manual')" id="nav-manual" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-edit w-5"></i> Absen Manual</button>
-                <button onclick="switchView('jam-config')" id="nav-jam-config" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-bMuted hover:text-white transition-all"><i class="fas fa-clock w-5"></i> Atur Jam Operasional</button>
             </nav>
         </div>
     </aside>
@@ -75,10 +80,7 @@
         <div id="view-siswa" class="view-section hidden space-y-4">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <span class="text-xs font-bold text-bMuted uppercase tracking-wider">Database Siswa (Cloud)</span>
-                <div class="flex items-center gap-2">
-                    <button onclick="openUploadModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-file-upload"></i> Upload Masal</button>
-                    <button onclick="openModal()" class="bg-bActive hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-plus"></i> Tambah Siswa</button>
-                </div>
+                <button onclick="openModal()" class="bg-bActive hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all"><i class="fas fa-plus"></i> Tambah Siswa</button>
             </div>
             <div class="bg-bCard rounded-2xl border border-white/5 overflow-x-auto"><table class="w-full text-left text-xs text-bMuted"><thead class="bg-bDark text-slate-300 uppercase font-bold text-[10px] border-b border-white/5"><tr><th class="p-4">NISN</th><th class="p-4">Nama Lengkap</th><th class="p-4">Kelas</th><th class="p-4">WhatsApp Ortu</th><th class="p-4 text-center">Aksi Kartu</th></tr></thead><tbody id="tableSiswaBody" class="divide-y divide-white/5 text-slate-200"></tbody></table></div>
         </div>
@@ -91,16 +93,6 @@
                     <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Pilih Status Keterangan</label><select id="mStatus" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-white bg-bCard"><option value="Hadir">Hadir</option><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
                 </div>
                 <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">Simpan Keterangan Absen</button>
-            </form>
-        </div>
-
-        <div id="view-jam-config" class="view-section hidden max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
-            <form id="formConfig" class="space-y-4" onsubmit="handleConfigJam(event)">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Batas Toleransi Masuk</label><input type="time" id="cMasuk" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-center text-white"></div>
-                    <div class="space-y-1.5"><label class="text-xs font-semibold text-bMuted">Jam Mulai Pulang</label><input type="time" id="cPulang" required class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-sm text-center text-white"></div>
-                </div>
-                <button type="submit" class="w-full py-3 bg-bActive hover:bg-blue-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">Perbarui Waktu Operasional</button>
             </form>
         </div>
     </main>
@@ -119,31 +111,18 @@
         </div>
     </div>
 
-    <div id="uploadModal" class="fixed inset-0 bg-bDark/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-bCard w-full max-w-md rounded-2xl border border-white/5 p-6 space-y-4 relative">
-            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider"><i class="fas fa-file-csv text-amber-500 mr-2"></i>Upload Data Masal (CSV)</h3>
-            <p class="text-xs text-bMuted leading-relaxed">Unggah file teks berekstensi <b>.csv</b>. Pastikan baris pertama berisi kolom header berurutan seperti ini:<br>
-            <code class="block bg-bDark p-2 rounded mt-1 font-mono text-[11px] text-slate-300">NISN,Nama,Kelas,WhatsApp</code></p>
-            <div class="space-y-3 pt-2">
-                <input type="file" id="csvFile" accept=".csv" class="w-full text-xs text-bMuted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-slate-200 hover:file:bg-white/20 cursor-pointer">
-                <button onclick="prosesUploadCsv()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 rounded-xl font-bold text-xs text-white uppercase transition-all">Mulai Import Data</button>
-            </div>
-        </div>
-    </div>
-
     <div id="cardModal" class="fixed inset-0 bg-bDark/90 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-bCard w-full max-w-sm rounded-2xl border border-white/10 p-6 space-y-5 relative flex flex-col items-center">
             <button onclick="closeCardModal()" class="absolute top-4 right-4 text-bMuted hover:text-white"><i class="fas fa-times text-lg"></i></button>
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider self-start"><i class="fas fa-id-card text-bActive mr-2"></i>Kartu Absensi QR Berhasil Dibuat</h3>
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider self-start"><i class="fas fa-id-card text-bActive mr-2"></i>Pratinjau Kartu Absensi</h3>
             
-            <div id="id-card-render" class="w-full bg-gradient-to-br from-blue-900 to-slate-900 p-5 rounded-2xl border border-white/20 text-center relative shadow-2xl overflow-hidden min-h-[320px] flex flex-col justify-between items-center">
+            <div id="id-card-print-area" class="w-full bg-gradient-to-br from-blue-900 to-slate-900 p-5 rounded-2xl border border-white/20 text-center relative shadow-2xl overflow-hidden min-h-[320px] flex flex-col justify-between items-center">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
                 <div class="w-full flex items-center justify-center gap-2 pb-3 border-b border-white/10">
                     <i class="fas fa-user-check text-bActive text-sm"></i>
                     <span class="text-xs font-bold tracking-widest text-slate-200">KARTU ABSENSI DIGITAL</span>
                 </div>
-                <div class="bg-white p-2 rounded-xl my-4 inline-block shadow-lg" id="qrcode-space"></div>
+                <div id="qrcode-space" class="my-4 p-2 bg-white rounded-xl shadow-lg"></div>
                 <div class="space-y-0.5">
                     <h4 id="card-nama" class="text-sm font-bold text-white tracking-wide uppercase">-</h4>
                     <p id="card-kelas" class="text-[11px] text-blue-400 font-medium tracking-wider">-</p>
@@ -151,23 +130,21 @@
                 </div>
             </div>
 
-            <button onclick="window.print()" class="w-full py-2.5 bg-bActive hover:bg-blue-700 text-white font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all"><i class="fas fa-print"></i> Cetak / Print Kartu</button>
+            <button onclick="window.print()" class="w-full py-2.5 bg-bActive hover:bg-blue-700 text-white font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all"><i class="fas fa-print"></i> Cetak Kartu</button>
         </div>
     </div>
 
     <script>
-        // URL WEB APP BARU YANG SUDAH TERINTEGRASI
+        // PASTIKAN MENYALIN URL WEB APP HASIL DEPLOY ULANG ANDA DI SINI
         const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec"; 
 
         let cloudSiswa = [];
         let cloudAbsen = [];
-        let configJam = { jamMasuk: "07:30", jamPulang: "14:00" };
         let html5QrcodeScanner = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const kini = new Date();
             const lokalTgl = kini.getFullYear() + '-' + String(kini.getMonth() + 1).padStart(2, '0') + '-' + String(kini.getDate()).padStart(2, '0');
-            
             document.getElementById('fRekapTgl').value = lokalTgl;
             
             document.getElementById('fRekapTgl').addEventListener('change', () => {
@@ -194,48 +171,26 @@
                 .then(data => {
                     cloudSiswa = data.siswa || [];
                     cloudAbsen = data.absensi || [];
-                    if (data.settings) {
-                        configJam = data.settings;
-                        document.getElementById('cMasuk').value = configJam.jamMasuk;
-                        document.getElementById('cPulang').value = configJam.jamPulang;
-                    }
-                    
                     renderTableSiswa();
                     renderTableAbsen();
                     updateDashboardStats();
                 })
-                .catch(err => console.error("Sinkronisasi Cloud Gagal:", err))
+                .catch(err => console.error("Gagal sinkronisasi data:", err))
                 .finally(() => showLoading(false));
         }
 
         function updateDashboardStats() {
             const tglHariIni = document.getElementById('fRekapTgl').value;
-
             const absenHariIni = cloudAbsen.filter(a => {
                 const tglRaw = a.tanggal || a.TANGGAL || '';
-                if (!tglRaw) return false;
-                const tglClean = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
-                return tglClean === tglHariIni;
+                return (tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10)) === tglHariIni;
             });
 
-            const totalSiswa = cloudSiswa.length;
-            
-            const hadir = absenHariIni.filter(a => {
-                const st = (a.status || a.STATUS || '').toLowerCase();
-                return st === 'hadir' || st === 'terlambat';
-            }).length;
+            const hadir = absenHariIni.filter(a => ['hadir', 'terlambat'].includes((a.status || '').toLowerCase())).length;
+            const nonHadir = absenHariIni.filter(a => ['sakit', 'izin', 'alpa'].includes((a.status || '').toLowerCase())).length;
+            const pulang = absenHariIni.filter(a => (a.pulang && a.pulang !== '-')).length;
 
-            const nonHadir = absenHariIni.filter(a => {
-                const st = (a.status || a.STATUS || '').toLowerCase();
-                return ['sakit', 'izin', 'alpa'].includes(st);
-            }).length;
-
-            const pulang = absenHariIni.filter(a => {
-                const plg = a.pulang || a.PULANG || '-';
-                return plg !== '-' && plg !== '';
-            }).length;
-
-            document.getElementById('statSiswa').innerText = totalSiswa;
+            document.getElementById('statSiswa').innerText = cloudSiswa.length;
             document.getElementById('statHadir').innerText = hadir;
             document.getElementById('statAbsen').innerText = nonHadir;
             document.getElementById('statPulang').innerText = pulang;
@@ -250,356 +205,180 @@
                 b.classList.add('text-bMuted');
             });
             document.getElementById('nav-' + viewId).classList.add('text-white', 'bg-bActive');
-            
-            const titles = { dashboard: 'Dashboard Absensi', scan: 'Pemindai Kamera QR', rekap: 'Laporan Rekapitulasi', siswa: 'Master Data Siswa', manual: 'Kelola Absen Manual', 'jam-config': 'Atur Waktu Absensi' };
-            document.getElementById('pageTitle').innerText = titles[viewId] || 'Sistem Absensi';
 
             if (viewId === 'scan') startQRScanner();
             else stopQRScanner();
         }
 
         function openModal() { document.getElementById('inputModal').classList.remove('hidden'); }
-        function closeModal() { 
-            document.getElementById('inputModal').classList.add('hidden'); 
-            document.getElementById('dynamicForm').reset();
-        }
-
-        function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
-        function closeUploadModal() { 
-            document.getElementById('uploadModal').classList.add('hidden'); 
-            document.getElementById('csvFile').value = '';
-        }
+        function closeModal() { document.getElementById('inputModal').classList.add('hidden'); document.getElementById('dynamicForm').reset(); }
+        function closeCardModal() { document.getElementById('cardModal').classList.add('hidden'); }
 
         function openCardModal(nisn, nama, kelas) {
-            document.getElementById('qrcode-space').innerHTML = '';
             document.getElementById('card-nama').innerText = nama;
             document.getElementById('card-kelas').innerText = "KELAS: " + kelas;
             document.getElementById('card-nisn').innerText = "NISN. " + nisn;
             
-            new QRCode(document.getElementById("qrcode-space"), {
-                text: nisn.toString(),
-                width: 120,
-                height: 120,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+            // Menggunakan Google Chart API QR Generator yang jauh lebih stabil untuk cetak / print
+            const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(nisn)}&choe=UTF-8`;
+            document.getElementById('qrcode-space').innerHTML = `<img src="${qrUrl}" alt="QR" class="w-32 h-32" />`;
             
             document.getElementById('cardModal').classList.remove('hidden');
         }
 
-        function closeCardModal() { document.getElementById('cardModal').classList.add('hidden'); }
-
         function handleTambahSiswa(e) {
             e.preventDefault();
             showLoading(true);
-
             const n = document.getElementById('fNisn').value.trim();
             const nm = document.getElementById('fNama').value.trim();
             const kl = document.getElementById('fKelas').value.trim();
             const wa = document.getElementById('fWa').value.trim();
 
-            const payload = { action: "tambahSiswa", nisn: n, nama: nm, kelas: kl, whatsapp: wa };
-
             fetch(API_URL, {
                 method: "POST",
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ action: "tambahSiswa", nisn: n, nama: nm, kelas: kl, whatsapp: wa })
             })
             .then(res => res.json())
             .then(res => {
                 alert(res.message);
-                if(res.success) {
-                    closeModal();
-                    syncDataFromCloud();
-                    setTimeout(() => { openCardModal(n, nm, kl); }, 800);
-                }
+                if(res.success) { closeModal(); syncDataFromCloud(); }
             })
-            .catch(err => alert("Gagal koneksi ke server script."))
+            .catch(() => alert("Gagal menyambung ke server."))
             .finally(() => showLoading(false));
         }
 
         function renderTableSiswa() {
             const tbody = document.getElementById('tableSiswaBody');
             tbody.innerHTML = '';
-            
             if(cloudSiswa.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-bMuted">Belum ada data siswa dari Google Sheets.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-bMuted">Belum ada data siswa.</td></tr>`;
                 return;
             }
-
             cloudSiswa.forEach(s => {
-                const cleanNisn = (s.nisn || s.NISN || s.nisn_siswa || '-').toString();
-                const cleanNama = (s.nama || s.NAMA || s.nama_lengkap || '-').replace(/'/g, "\\'");
-                const cleanKelas = (s.kelas || s.KELAS || '-').replace(/'/g, "\\'");
-                const cleanWa = s.whatsapp || s.WHATSAPP || s.whatsapp_ortu || '-';
-
+                const nisn = s.nisn || '-';
+                const nama = s.nama || '-';
+                const kelas = s.kelas || '-';
+                const wa = s.whatsapp || '-';
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
-                        <td class="p-4 font-mono font-bold text-white">${cleanNisn}</td>
-                        <td class="p-4">${cleanNama}</td>
-                        <td class="p-4"><span class="bg-white/10 px-2 py-1 rounded text-xs">${cleanKelas}</span></td>
-                        <td class="p-4 text-emerald-400"><i class="fab fa-whatsapp"></i> ${cleanWa}</td>
+                    <tr class="hover:bg-white/5 border-b border-white/5">
+                        <td class="p-4 font-mono font-bold text-white">${nisn}</td>
+                        <td class="p-4">${nama}</td>
+                        <td class="p-4"><span class="bg-white/10 px-2 py-1 rounded text-xs">${kelas}</span></td>
+                        <td class="p-4 text-emerald-400"><i class="fab fa-whatsapp"></i> ${wa}</td>
                         <td class="p-4 text-center">
-                            <button onclick="openCardModal('${cleanNisn}', '${cleanNama}', '${cleanKelas}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all">
+                            <button onclick="openCardModal('${nisn}', '${nama.replace(/'/g, "\\'")}', '${kelas.replace(/'/g, "\\'")}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
                                 <i class="fas fa-qrcode mr-1"></i> Lihat Kartu
                             </button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
         function handleManualAbsen(e) {
             e.preventDefault();
             showLoading(true);
-
-            const payload = {
-                action: "absenManual",
-                nisn: document.getElementById('mNisn').value.trim(),
-                tipe: document.getElementById('mTipe').value,
-                status: document.getElementById('mStatus').value
-            };
-
             fetch(API_URL, {
                 method: "POST",
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    action: "absenManual",
+                    nisn: document.getElementById('mNisn').value.trim(),
+                    tipe: document.getElementById('mTipe').value,
+                    status: document.getElementById('mStatus').value
+                })
             })
             .then(res => res.json())
             .then(res => {
                 alert(res.message);
-                if(res.success) {
-                    document.getElementById('formManual').reset();
-                    syncDataFromCloud();
-                }
+                if(res.success) { document.getElementById('formManual').reset(); syncDataFromCloud(); }
             })
-            .catch(err => alert("Gagal simpan absen manual."))
+            .catch(() => alert("Gagal memproses data."))
             .finally(() => showLoading(false));
         }
 
         function renderTableAbsen() {
             const tbody = document.getElementById('tableAbsenBody');
             tbody.innerHTML = '';
-
             const filterTgl = document.getElementById('fRekapTgl').value;
             const filterKelas = document.getElementById('fRekapKelas').value.toLowerCase();
 
             let dataFilter = cloudAbsen;
-            
             if (filterTgl) {
                 dataFilter = dataFilter.filter(a => {
-                    const tglRaw = a.tanggal || a.TANGGAL || '';
-                    const tglClean = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
-                    return tglClean === filterTgl;
+                    const tglRaw = a.tanggal || '';
+                    return (tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10)) === filterTgl;
                 });
             }
-            
             if (filterKelas) {
-                dataFilter = dataFilter.filter(a => {
-                    const kls = (a.kelas || a.KELAS || '').toLowerCase();
-                    return kls.includes(filterKelas);
-                });
+                dataFilter = dataFilter.filter(a => (a.kelas || '').toLowerCase().includes(filterKelas));
             }
 
             if(dataFilter.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi pada parameter ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-bMuted">Tidak ada riwayat absensi.</td></tr>`;
                 return;
             }
 
             dataFilter.forEach(a => {
-                const status = a.status || a.STATUS || '-';
-                let statusColor = 'text-amber-400';
-                if(status.toLowerCase() === 'hadir' || status.toLowerCase() === 'terlambat') statusColor = 'text-green-400';
-                if(status.toLowerCase() === 'alpa') statusColor = 'text-red-400';
-
-                const tglRaw = a.tanggal || a.TANGGAL || '-';
+                const status = a.status || '-';
+                const tglRaw = a.tanggal || '-';
                 const tglDisplay = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
-
+                const color = ['hadir','terlambat'].includes(status.toLowerCase()) ? 'text-green-400' : 'text-red-400';
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
+                    <tr class="hover:bg-white/5 border-b border-white/5">
                         <td class="p-4">${tglDisplay}</td>
-                        <td class="p-4 font-mono">${a.nisn || a.NISN || '-'}</td>
-                        <td class="p-4 font-semibold text-white">${a.nama || a.NAMA || a.nama_siswa || '-'}</td>
-                        <td class="p-4">${a.kelas || a.KELAS || '-'}</td>
-                        <td class="p-4">${a.masuk || a.MASUK || '-'}</td>
-                        <td class="p-4 ${statusColor} font-medium">${status}</td>
-                        <td class="p-4 text-blue-400">${a.pulang || a.PULANG || '-'}</td>
-                    </tr>
-                `;
+                        <td class="p-4 font-mono">${a.nisn || '-'}</td>
+                        <td class="p-4 font-semibold text-white">${a.nama || '-'}</td>
+                        <td class="p-4">${a.kelas || '-'}</td>
+                        <td class="p-4">${a.masuk || '-'}</td>
+                        <td class="p-4 ${color} font-medium">${status}</td>
+                        <td class="p-4 text-blue-400">${a.pulang || '-'}</td>
+                    </tr>`;
             });
-        }
-
-        function handleConfigJam(e) {
-            e.preventDefault();
-            showLoading(true);
-
-            const payload = {
-                action: "saveSettings",
-                jamMasuk: document.getElementById('cMasuk').value,
-                jamPulang: document.getElementById('cPulang').value
-            };
-
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(res => {
-                alert(res.message);
-                if(res.success) syncDataFromCloud();
-            })
-            .catch(err => alert("Gagal memperbarui jam operasional."))
-            .finally(() => showLoading(false));
-        }
-
-        function prosesUploadCsv() {
-            const fileInput = document.getElementById('csvFile');
-            if (fileInput.files.length === 0) { alert("Pilih file CSV terlebih dahulu!"); return; }
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            showLoading(true);
-
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const baris = text.split("\n");
-                
-                let suksesCount = 0;
-                let janjiProses = [];
-
-                for (let i = 1; i < baris.length; i++) {
-                    if (baris[i].trim() === "") continue;
-                    
-                    const kolom = baris[i].split(",");
-                    if (kolom.length < 4) continue;
-
-                    const payload = {
-                        action: "tambahSiswa",
-                        nisn: kolom[0].trim(),
-                        nama: kolom[1].trim(),
-                        kelas: kolom[2].trim(),
-                        whatsapp: kolom[3].trim()
-                    };
-
-                    let request = fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-                    .then(res => res.json())
-                    .then(res => { if(res.success) suksesCount++; });
-
-                    janjiProses.push(request);
-                }
-
-                Promise.all(janjiProses).then(() => {
-                    showLoading(false);
-                    alert(`Proses selesai! ${suksesCount} data siswa berhasil diimport secara massal ke Cloud.`);
-                    closeUploadModal();
-                    syncDataFromCloud();
-                }).catch(err => {
-                    showLoading(false);
-                    alert("Terjadi masalah parsial saat mengunggah database massal.");
-                });
-            };
-            reader.readAsText(file);
         }
 
         function startQRScanner() {
             const resultDiv = document.getElementById('scan-result');
             if (resultDiv) resultDiv.classList.add('hidden');
-
             if (html5QrcodeScanner === null) {
                 html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 15, qrbox: 250 });
             }
-            
             html5QrcodeScanner.render((decodedText) => {
                 showLoading(true);
                 stopQRScanner();
-
-                const payload = { action: "scanQR", nisn: decodedText.trim() };
-
-                fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+                fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "scanQR", nisn: decodedText.trim() }) })
                 .then(res => res.json())
                 .then(res => {
                     resultDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-400', 'bg-green-500/20', 'text-green-400');
-                    if(res.success) {
-                        resultDiv.classList.add('bg-green-500/20', 'text-green-400');
-                    } else {
-                        resultDiv.classList.add('bg-red-500/20', 'text-red-400');
-                    }
-                    
+                    resultDiv.classList.add(res.success ? 'bg-green-500/20' : 'bg-red-500/20', res.success ? 'text-green-400' : 'text-red-400');
                     resultDiv.innerText = res.message;
                     syncDataFromCloud();
                 })
-                .catch(err => {
-                    resultDiv.className = "text-sm font-semibold p-2 rounded bg-red-500/20 text-red-400";
-                    resultDiv.innerText = "Koneksi terputus saat memproses QR.";
-                })
-                .finally(() => {
-                    showLoading(false);
-                    setTimeout(startQRScanner, 3000);
-                });
-            }, (error) => {});
+                .catch(() => { resultDiv.innerText = "Koneksi terputus."; })
+                .finally(() => { showLoading(false); setTimeout(startQRScanner, 3000); });
+            }, () => {});
         }
 
         function stopQRScanner() {
             if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear().then(() => {
-                    html5QrcodeScanner = null;
-                }).catch(err => {
-                    console.log("Scanner clear log:", err);
-                    html5QrcodeScanner = null;
-                });
+                html5QrcodeScanner.clear().then(() => { html5QrcodeScanner = null; }).catch(() => { html5QrcodeScanner = null; });
             }
         }
 
         function downloadLaporanPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
             const filterTgl = document.getElementById('fRekapTgl').value || 'Semua';
-            const filterKelas = document.getElementById('fRekapKelas').value || 'Semua';
-
-            doc.setFont("Helvetica", "bold");
             doc.text("LAPORAN REKAPITULASI ABSENSI SISWA", 14, 15);
-            doc.setFontSize(10);
-            doc.setFont("Helvetica", "normal");
-            doc.text(`Tanggal Laporan: ${filterTgl} | Filter Kelas: ${filterKelas}`, 14, 22);
-
-            let dataFilter = cloudAbsen;
-            if (filterTgl !== 'Semua') {
-                dataFilter = dataFilter.filter(a => {
-                    const tglRaw = a.tanggal || a.TANGGAL || '';
-                    const tglClean = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
-                    return tglClean === filterTgl;
-                });
-            }
-            if (filterKelas !== 'Semua') {
-                dataFilter = dataFilter.filter(a => {
-                    const kls = (a.kelas || a.KELAS || '').toLowerCase();
-                    return kls.includes(filterKelas.toLowerCase());
-                });
-            }
-
-            const tableRows = [];
-            dataFilter.forEach(a => {
-                const tglRaw = a.tanggal || a.TANGGAL || '-';
-                const tglClean = tglRaw.includes('T') ? tglRaw.split('T')[0] : tglRaw.substring(0, 10);
-                tableRows.push([
-                    tglClean, 
-                    a.nisn || a.NISN || '-', 
-                    a.nama || a.NAMA || a.nama_siswa || '-', 
-                    a.kelas || a.KELAS || '-', 
-                    a.masuk || a.MASUK || '-', 
-                    a.status || a.STATUS || '-', 
-                    a.pulang || a.PULANG || '-'
-                ]);
+            
+            const rows = [];
+            cloudAbsen.forEach(a => {
+                rows.push([a.tanggal||'-', a.nisn||'-', a.nama||'-', a.kelas||'-', a.masuk||'-', a.status||'-', a.pulang||'-']);
             });
 
             doc.autoTable({
-                head: [['Tanggal', 'NISN', 'Nama Lengkap', 'Kelas', 'Jam Masuk', 'Status', 'Jam Pulang']],
-                body: tableRows,
-                startY: 28,
-                styles: { fontSize: 9 },
-                headStyles: { fillColor: [37, 99, 235] }
+                head: [['Tanggal', 'NISN', 'Nama', 'Kelas', 'Masuk', 'Status', 'Pulang']],
+                body: rows,
+                startY: 25
             });
-
             doc.save(`Laporan_Absen_${filterTgl}.pdf`);
         }
     </script>
