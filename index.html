@@ -31,12 +31,12 @@
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #131535; border-radius: 10px; }
     
-    /* MODIFIKASI STYLE CETAK AGAR BISA CETAK KARTU & LAPORAN TABLE */
+    /* STYLE CETAK UNTUK KARTU & LAPORAN TABLE */
     @media print {
       body { background: white !important; color: black !important; }
       body * { visibility: hidden; }
       
-      /* Kondisi 1: Jika sedang cetak kartu QR */
+      /* Kondisi 1: Cetak Kartu QR */
       #printCardArea, #printCardArea * { visibility: visible; }
       #printCardArea { 
         position: absolute; 
@@ -48,7 +48,7 @@
         border: 1px solid #333 !important;
       }
 
-      /* Kondisi 2: Jika sedang cetak laporan PDF */
+      /* Kondisi 2: Cetak Laporan PDF */
       #printReportArea, #printReportArea * { visibility: visible; }
       #printReportArea {
         position: absolute;
@@ -244,7 +244,7 @@
                       <option value="Siswa">Siswa (Gunakan NISN)</option>
                       <option value="Guru">Guru (Gunakan NIP)</option>
                   </select>
-                  <input type="number" id="mNisn" placeholder="Nomor Induk / NISN / NIP" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm">
+                  <input type="number" id="mNisn" placeholder="Nomor Induk / NISN / NIP" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                   <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
                       <option value="Sakit">Sakit</option>
                       <option value="Izin">Izin</option>
@@ -453,7 +453,7 @@
         document.getElementById('btnTabBulananGuru').className = type === 'bulanan' ? "px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white" : "px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted";
         if(type === 'harian') { areaTgl.classList.remove('hidden'); areaBln.classList.add('hidden'); } 
         else { areaBln.classList.remove('hidden'); areaTgl.classList.add('hidden'); }
-        renderDataRekapGuru();
+        renderDataGuruLaporan();
     }
     
     function refreshDatabase() {
@@ -461,243 +461,149 @@
             cacheAbsensi = db.absensi || [];
             cacheSiswa = db.siswa || [];
             cacheGuru = db.guru || [];
-
-            let listKelas = new Set();
-            let sHtml = '';
-            cacheSiswa.forEach(s => {
-                if(s.kelas) listKelas.add(s.kelas.trim());
-                sHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-bActive">${s.nisn}</p>
-                        <h4 class="text-sm font-bold truncate">${s.nama}</h4>
-                        <p class="text-xs text-bMuted">Kelas: ${s.kelas}</p>
-                    </div>
-                    <div class="mt-4 flex gap-2">
-                        <button onclick="generateQrCard('${s.nisn}', '${s.nama}', '${s.kelas}')" class="flex-1 py-2 bg-bActive/20 text-bActive hover:bg-bActive hover:text-white rounded-xl text-xs font-bold transition-all"><i class="fas fa-qrcode mr-1"></i> Kartu QR</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted p-2">Tidak ada data siswa.</p>';
-
-            let optKelas = '<option value="SEMUA">-- Semua Kelas --</option>';
-            Array.from(listKelas).sort().forEach(k => { optKelas += `<option value="${k}">${k}</option>`; });
-            document.getElementById('filterKelasSiswa').innerHTML = optKelas;
-
-            let listMapel = new Set();
-            let gHtml = '';
-            cacheGuru.forEach(g => {
-                if(g.mapel) listMapel.add(g.mapel.trim());
-                gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-cyan-400">${g.nip}</p>
-                        <h4 class="text-sm font-bold truncate">${g.nama}</h4>
-                        <p class="text-xs text-bMuted">Mapel: ${g.mapel}</p>
-                    </div>
-                    <div class="mt-4 flex gap-2">
-                        <button onclick="generateQrCard('${g.nip}', '${g.nama}', '${g.mapel}')" class="flex-1 py-2 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-xl text-xs font-bold transition-all"><i class="fas fa-qrcode mr-1"></i> Kartu QR</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('listGuru').innerHTML = gHtml || '<p class="text-xs text-bMuted p-2">Tidak ada data guru.</p>';
-
-            let optMapel = '<option value="SEMUA">-- Semua Mapel --</option>';
-            Array.from(listMapel).sort().forEach(m => { optMapel += `<option value="${m}">${m}</option>`; });
-            document.getElementById('filterMapelGuru').innerHTML = optMapel;
-
+            renderDataSiswaList();
+            renderDataGuruList();
             renderDataRekap();
             renderDataRekapGuru();
         }).catch(() => {});
     }
 
-    // =======================================================
-    // FIX RENDER DATA REKAP SISWA (MENYELESAIKAN UNDEFINED)
-    // =======================================================
+    function renderDataSiswaList() {
+        let listKelas = new Set();
+        let sHtml = '';
+        cacheSiswa.forEach(s => {
+            if(s.kelas) listKelas.add(s.kelas.trim());
+            sHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-bold text-bActive">${s.nisn}</p>
+                    <h4 class="text-sm font-bold truncate">${s.nama}</h4>
+                    <p class="text-xs text-bMuted">Kelas: ${s.kelas || '-'}</p>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="generateQR('${s.nisn}', '${s.nama}', '${s.kelas || '-'}')" class="flex-1 py-1.5 bg-bDark hover:bg-white/5 border border-white/10 text-bMuted hover:text-white text-[11px] font-medium rounded-lg transition-all"><i class="fas fa-qrcode mr-1 text-emerald-400"></i> QR</button>
+                    <button onclick="hapusData('siswa', '${s.nisn}')" class="px-3 py-1.5 bg-red-950/40 hover:bg-red-900 border border-red-900/30 text-red-400 hover:text-white text-[11px] font-medium rounded-lg transition-all"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted col-span-full text-center py-4">Belum ada data siswa.</p>';
+        
+        let selectKelas = document.getElementById('filterKelasSiswa');
+        if(selectKelas) {
+            selectKelas.innerHTML = '<option value="SEMUA">-- Semua Kelas --</option>';
+            listKelas.forEach(k => { selectKelas.innerHTML += `<option value="${k}">${k}</option>`; });
+        }
+    }
+
+    function renderDataGuruList() {
+        let listMapel = new Set();
+        let gHtml = '';
+        cacheGuru.forEach(g => {
+            if(g.mapel) listMapel.add(g.mapel.trim());
+            gHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-bold text-cyan-400">${g.nip || g.nisn}</p>
+                    <h4 class="text-sm font-bold truncate">${g.nama}</h4>
+                    <p class="text-xs text-bMuted">Mapel: ${g.mapel || '-'}</p>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="generateQR('${g.nip || g.nisn}', '${g.nama}', '${g.mapel || '-'}')" class="flex-1 py-1.5 bg-bDark hover:bg-white/5 border border-white/10 text-bMuted hover:text-white text-[11px] font-medium rounded-lg transition-all"><i class="fas fa-qrcode mr-1 text-emerald-400"></i> QR</button>
+                    <button onclick="hapusData('guru', '${g.nip || g.nisn}')" class="px-3 py-1.5 bg-red-950/40 hover:bg-red-900 border border-red-900/30 text-red-400 hover:text-white text-[11px] font-medium rounded-lg transition-all"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('listGuru').innerHTML = gHtml || '<p class="text-xs text-bMuted col-span-full text-center py-4">Belum ada data guru.</p>';
+        
+        let selectMapel = document.getElementById('filterMapelGuru');
+        if(selectMapel) {
+            selectMapel.innerHTML = '<option value="SEMUA">-- Semua Mapel --</option>';
+            listMapel.forEach(m => { selectMapel.innerHTML += `<option value="${m}">${m}</option>`; });
+        }
+    }
+
     function renderDataRekap() {
-        const tglFilter = document.getElementById('filterTanggal').value;
-        const blnFilter = document.getElementById('filterBulan').value;
-        const search = document.getElementById('searchRekapSiswa').value.toLowerCase();
-        const fStatus = document.getElementById('filterStatusSiswa').value;
-        const fKelas = document.getElementById('filterKelasSiswa').value;
-        
-        let html = '';
-        
-        // Filter data absensi khusus kategori Role: Siswa
+        let tgl = document.getElementById('filterTanggal').value;
+        let bln = document.getElementById('filterBulan').value;
+        let search = document.getElementById('searchRekapSiswa').value.toLowerCase();
+        let status = document.getElementById('filterStatusSiswa').value;
+        let kelas = document.getElementById('filterKelasSiswa').value;
+
         let filtered = cacheAbsensi.filter(item => item.role !== "Guru");
 
         if (currentTab === 'harian') {
-            filtered = filtered.filter(item => item.tanggal === tglFilter);
+            filtered = filtered.filter(i => i.tanggal === tgl);
         } else {
-            filtered = filtered.filter(item => item.tanggal.substring(0, 7) === blnFilter);
+            filtered = filtered.filter(i => i.tanggal && i.tanggal.substring(0,7) === bln);
         }
 
+        if(status !== 'SEMUA') filtered = filtered.filter(i => (i.status || 'Alpa') === status);
+        if(kelas !== 'SEMUA') filtered = filtered.filter(i => i.kelas === kelas);
+        if(search) filtered = filtered.filter(i => i.nama.toLowerCase().includes(search) || i.nisn.toString().includes(search));
+
+        let html = '';
         filtered.forEach(item => {
-            const nama = item.nama ? item.nama.toLowerCase() : '';
-            const nisn = item.nisn ? item.nisn.toString().toLowerCase() : '';
-            const kelas = item.kelas ? item.kelas : '';
-            const status = item.status ? item.status : 'Alpa';
-            const jamDisplay = item.jam ? item.jam : '- / -';
-            
-            // Filter Pencarian kata kunci & Dropdown
-            if (search && !nama.includes(search) && !nisn.includes(search)) return;
-            if (fStatus !== 'SEMUA' && status !== fStatus) return;
-            if (fKelas !== 'SEMUA' && kelas !== fKelas) return;
-
-            let colorStatus = 'bg-emerald-500/20 text-emerald-400';
-            if(status === 'Sakit' || status === 'Izin') colorStatus = 'bg-amber-500/20 text-amber-400';
-            if(status === 'Alpa') colorStatus = 'bg-red-500/20 text-red-400';
-
+            let waktuStr = item.jam || '- / -';
             html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
                 <div class="flex justify-between items-start">
                     <div>
-                        <span class="text-[10px] text-bMuted">${item.tanggal}</span>
-                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama || 'Tanpa Nama'}</h4>
-                        <p class="text-xs text-bMuted">${item.nisn} | Kelas ${kelas}</p>
+                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama}</h4>
+                        <p class="text-[11px] text-bMuted">${item.nisn} | ${item.kelas || '-'}</p>
                     </div>
-                    <span class="text-[10px] font-bold px-2 py-1 rounded ${colorStatus}">${status}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.status === 'Hadir' ? 'bg-emerald-500/10 text-emerald-400' : item.status === 'Sakit' || item.status === 'Izin' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'}">${item.status || 'Alpa'}</span>
                 </div>
                 <div class="pt-2 border-t border-white/5 flex justify-between text-[11px] text-bMuted">
-                    <span><i class="far fa-clock mr-1"></i>Jam: <b>${jamDisplay}</b></span>
+                    <span><i class="fas fa-sign-in-alt mr-1 text-emerald-400"></i> Jam Scan: <b>${waktuStr}</b></span>
+                    <span>${item.tanggal}</span>
                 </div>
             </div>`;
         });
-
-        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-3 p-4 text-center">Data presensi tidak ditemukan.</p>';
+        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-full text-center py-4">Tidak ada data presensi siswa.</p>';
     }
 
-    // =======================================================
-    // FIX RENDER DATA REKAP GURU (MENYELESAIKAN UNDEFINED)
-    // =======================================================
     function renderDataRekapGuru() {
-        const tglFilter = document.getElementById('filterTanggalGuru').value;
-        const blnFilter = document.getElementById('filterBulanGuru').value;
-        const search = document.getElementById('searchRekapGuru').value.toLowerCase();
-        const fStatus = document.getElementById('filterStatusGuru').value;
-        const fMapel = document.getElementById('filterMapelGuru').value;
-        
-        let html = '';
+        let tgl = document.getElementById('filterTanggalGuru').value;
+        let bln = document.getElementById('filterBulanGuru').value;
+        let search = document.getElementById('searchRekapGuru').value.toLowerCase();
+        let status = document.getElementById('filterStatusGuru').value;
+        let mapel = document.getElementById('filterMapelGuru').value;
+
         let filtered = cacheAbsensi.filter(item => item.role === "Guru");
 
         if (currentTabGuru === 'harian') {
-            filtered = filtered.filter(item => item.tanggal === tglFilter);
+            filtered = filtered.filter(i => i.tanggal === tgl);
         } else {
-            filtered = filtered.filter(item => item.tanggal.substring(0, 7) === blnFilter);
+            filtered = filtered.filter(i => i.tanggal && i.tanggal.substring(0,7) === bln);
         }
 
+        if(status !== 'SEMUA') filtered = filtered.filter(i => (i.status || 'Alpa') === status);
+        if(mapel !== 'SEMUA') filtered = filtered.filter(i => i.mapel === mapel);
+        if(search) filtered = filtered.filter(i => i.nama.toLowerCase().includes(search) || i.nisn.toString().includes(search));
+
+        let html = '';
         filtered.forEach(item => {
-            const nama = item.nama ? item.nama.toLowerCase() : '';
-            const nip = item.nisn ? item.nisn.toString().toLowerCase() : '';
-            const mapel = item.mapel ? item.mapel : '';
-            const status = item.status ? item.status : 'Alpa';
-            const jamDisplay = item.jam ? item.jam : '- / -';
-
-            if (search && !nama.includes(search) && !nip.includes(search)) return;
-            if (fStatus !== 'SEMUA' && status !== fStatus) return;
-            if (fMapel !== 'SEMUA' && mapel !== fMapel) return;
-
-            let colorStatus = 'bg-emerald-500/20 text-emerald-400';
-            if(status === 'Sakit' || status === 'Izin') colorStatus = 'bg-amber-500/20 text-amber-400';
-            if(status === 'Alpa') colorStatus = 'bg-red-500/20 text-red-400';
-
+            let waktuStr = item.jam || '- / -';
             html += `<div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
                 <div class="flex justify-between items-start">
                     <div>
-                        <span class="text-[10px] text-bMuted">${item.tanggal}</span>
-                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama || 'Tanpa Nama'}</h4>
-                        <p class="text-xs text-cyan-400">${item.nisn} <span class="text-bMuted">| ${mapel}</span></p>
+                        <h4 class="text-sm font-bold truncate max-w-[180px]">${item.nama}</h4>
+                        <p class="text-[11px] text-bMuted">${item.nisn} | ${item.mapel || '-'}</p>
                     </div>
-                    <span class="text-[10px] font-bold px-2 py-1 rounded ${colorStatus}">${status}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.status === 'Hadir' ? 'bg-emerald-500/10 text-emerald-400' : item.status === 'Sakit' || item.status === 'Izin' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'}">${item.status || 'Alpa'}</span>
                 </div>
                 <div class="pt-2 border-t border-white/5 flex justify-between text-[11px] text-bMuted">
-                    <span><i class="far fa-clock mr-1"></i>Jam: <b>${jamDisplay}</b></span>
+                    <span><i class="fas fa-sign-in-alt mr-1 text-cyan-400"></i> Jam Scan: <b>${waktuStr}</b></span>
+                    <span>${item.tanggal}</span>
                 </div>
             </div>`;
         });
-
-        document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-3 p-4 text-center">Data presensi guru tidak ditemukan.</p>';
+        document.getElementById('rekapGuruListContainer').innerHTML = html || '<p class="text-xs text-bMuted col-span-full text-center py-4">Tidak ada data presensi guru.</p>';
     }
 
-    // =======================================================
-    // FIX GENERATOR STRUKTUR TABEL PRATINJAU CETAK LAPORAN PDF
-    // =======================================================
-    function cetakLaporanPDF(kategori) {
-        let titleReport = kategori === 'siswa' ? 'LAPORAN PRESENSI ABSENSI SISWA' : 'LAPORAN PRESENSI ABSENSI GURU';
-        let subTitle = currentTab === 'harian' ? `Periode Tanggal: ${document.getElementById('filterTanggal').value}` : `Periode Bulan: ${document.getElementById('filterBulan').value}`;
-        
-        if(kategori === 'guru') {
-            subTitle = currentTabGuru === 'harian' ? `Periode Tanggal: ${document.getElementById('filterTanggalGuru').value}` : `Periode Bulan: ${document.getElementById('filterBulanGuru').value}`;
-        }
-
-        let filtered = cacheAbsensi.filter(item => kategori === 'siswa' ? item.role !== "Guru" : item.role === "Guru");
-        
-        if (kategori === 'siswa') {
-            const tgl = document.getElementById('filterTanggal').value;
-            const bln = document.getElementById('filterBulan').value;
-            filtered = currentTab === 'harian' ? filtered.filter(i => i.tanggal === tgl) : filtered.filter(i => i.tanggal.substring(0,7) === bln);
-        } else {
-            const tgl = document.getElementById('filterTanggalGuru').value;
-            const bln = document.getElementById('filterBulanGuru').value;
-            filtered = currentTabGuru === 'harian' ? filtered.filter(i => i.tanggal === tgl) : filtered.filter(i => i.tanggal.substring(0,7) === bln);
-        }
-
-        let tableRows = '';
-        let no = 1;
-        
-        filtered.forEach(item => {
-            let subInfoText = kategori === 'siswa' ? (item.kelas || '-') : (item.mapel || '-');
-            tableRows += `<tr>
-                <td>${no++}</td>
-                <td>${item.tanggal}</td>
-                <td>${item.nisn}</td>
-                <td>${item.nama}</td>
-                <td>${subInfoText}</td>
-                <td>${item.status || 'Alpa'}</td>
-                <td>${item.jam_datang || '-'}</td>
-                <td>${item.jam_pulang || '-'}</td>
-            </tr>`;
-        });
-
-        if(filtered.length === 0) {
-            tableRows = `<tr><td colspan="8" style="text-align:center;">Tidak ada data laporan untuk dicetak.</td></tr>`;
-        }
-
-        let printTemplate = `
-            <div style="padding:30px; font-family:'Helvetica Neue', Arial, sans-serif; color: black !important;">
-                <div style="text-align:center; border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px;">
-                    <h2 style="margin:0; font-size:18px; letter-spacing:1px;">${titleReport}</h2>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#555;">${subTitle}</p>
-                </div>
-                <table>
-                    <thead>
-                        <tr style="background-color: #f2f2f2;">
-                            <th>No</th>
-                            <th>Tanggal</th>
-                            <th>NISN/NIP</th>
-                            <th>Nama Lengkap</th>
-                            <th>${kategori === 'siswa' ? 'Kelas' : 'Mata Pelajaran'}</th>
-                            <th>Status</th>
-                            <th>Jam Masuk</th>
-                            <th>Jam Pulang</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-        const printArea = document.getElementById('printReportArea');
-        printArea.innerHTML = printTemplate;
-        
-        // Triger jalankan perintah cetak printer browser
-        window.print();
-    }
-
-    function generateQrCard(id, nama, sub) {
+    function generateQR(id, nama, sub) {
+        const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
+        document.getElementById('modalQrImg').src = qrImgUrl;
         document.getElementById('modalQrNama').innerText = nama;
         document.getElementById('modalQrNisn').innerText = id;
         document.getElementById('modalQrKelas').innerText = sub;
-        document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
         document.getElementById('qrModal').classList.remove('hidden');
     }
 
@@ -706,22 +612,22 @@
     function openModal(type) {
         currentModalType = type;
         const form = document.getElementById('dynamicForm');
-        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa Baru' : 'Tambah Data Guru Baru';
+        document.getElementById('modalHeaderTitle').innerText = type === 'siswa' ? 'Tambah Data Siswa' : 'Tambah Data Guru';
         
         if (type === 'siswa') {
             form.innerHTML = `
-                <input type="number" id="fNisn" placeholder="Nomor NISN Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="text" id="fNama" placeholder="Nama Lengkap Siswa" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="text" id="fKelas" placeholder="Kelas (Contoh: XII ATU)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="number" id="fWa" placeholder="WhatsApp Wali Murid (628...)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <button type="submit" class="w-full py-3 bg-bActive rounded-xl font-bold text-xs uppercase">Simpan Data Siswa</button>
+                <input type="number" id="fNisn" placeholder="NISN" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fNama" placeholder="Nama Lengkap" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fKelas" placeholder="Kelas (Contoh: X-RPL)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="number" id="fWA" placeholder="WhatsApp Orang Tua (628...)" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-bActive text-white font-bold text-xs uppercase rounded-xl">Simpan Siswa</button>
             `;
         } else {
             form.innerHTML = `
-                <input type="number" id="fNip" placeholder="Nomor NIP/ID Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="text" id="fNama" placeholder="Nama Lengkap Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <input type="text" id="fMapel" placeholder="Mata Pelajaran Diampu" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
-                <button type="submit" class="w-full py-3 bg-cyan-600 rounded-xl font-bold text-xs uppercase">Simpan Data Guru</button>
+                <input type="number" id="fNip" placeholder="NIP / ID Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fNama" placeholder="Nama Guru" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <input type="text" id="fMapel" placeholder="Mata Pelajaran" required class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white">
+                <button type="submit" class="w-full py-3 bg-cyan-600 text-white font-bold text-xs uppercase rounded-xl">Simpan Guru</button>
             `;
         }
         document.getElementById('inputModal').classList.remove('hidden');
@@ -731,7 +637,7 @@
 
     function handleFormSubmit(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Menyimpan Data...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
         let payload = {};
         
         if (currentModalType === 'siswa') {
@@ -740,27 +646,31 @@
                 nisn: document.getElementById('fNisn').value,
                 nama: document.getElementById('fNama').value,
                 kelas: document.getElementById('fKelas').value,
-                whatsapp: document.getElementById('fWa').value
+                whatsapp: document.getElementById('fWA').value
             };
         } else {
             payload = {
                 action: 'tambahGuru',
-                nip: document.getElementById('fNip').value,
+                nisn: document.getElementById('fNip').value,
                 nama: document.getElementById('fNama').value,
                 mapel: document.getElementById('fMapel').value
             };
         }
 
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json()).then(res => {
-            closeModal();
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) {
+                Swal.fire('Berhasil!', res.message, 'success');
+                closeModal();
+                refreshDatabase();
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
         });
     }
 
     function simpanManual(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Memproses data...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Memproses Absen...', didOpen: () => Swal.showLoading() });
         const payload = {
             action: 'inputManual',
             kategori: document.getElementById('mKategori').value,
@@ -768,14 +678,132 @@
             status: document.getElementById('mStatus').value,
             tipe: document.getElementById('mTipe').value
         };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json()).then(res => {
-            if(res.success) {
-                Swal.fire('Tercatat!', res.message, 'success');
-                document.getElementById('mNisn').value = '';
-                refreshDatabase();
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
+            else { Swal.fire('Gagal', res.message, 'error'); }
+        });
+    }
+
+    function hapusData(type, id) {
+        Swal.fire({
+            title: 'Apakah anda yakin?',
+            text: `Data ${type} dengan ID ${id} akan dihapus permanen!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Menghapus...', didOpen: () => Swal.showLoading() });
+                fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusData', tipe: type, id: id }) })
+                .then(res => res.json()).then(res => {
+                    if(res.success) { Swal.fire('Terhapus!', res.message, 'success'); refreshDatabase(); }
+                    else { Swal.fire('Gagal', res.message, 'error'); }
+                });
             }
         });
+    }
+
+    function cetakLaporanPDF(kategori) {
+        let titleReport = kategori === 'siswa' ? 'LAPORAN PRESENSI ABSENSI SISWA' : 'LAPORAN PRESENSI ABSENSI GURU';
+        
+        let tglSiswa = document.getElementById('filterTanggal').value;
+        let blnSiswa = document.getElementById('filterBulan').value;
+        let tglGuru = document.getElementById('filterTanggalGuru').value;
+        let blnGuru = document.getElementById('filterBulanGuru').value;
+
+        let subTitle = '';
+        if (kategori === 'siswa') {
+            subTitle = currentTab === 'harian' ? `Periode Tanggal: ${tglSiswa}` : `Periode Bulan: ${blnSiswa}`;
+        } else {
+            subTitle = currentTabGuru === 'harian' ? `Periode Tanggal: ${tglGuru}` : `Periode Bulan: ${blnGuru}`;
+        }
+        
+        let filtered = cacheAbsensi.filter(item => kategori === 'siswa' ? item.role !== "Guru" : item.role === "Guru");
+        
+        if (kategori === 'siswa') {
+            if (currentTab === 'harian') {
+                filtered = filtered.filter(i => i.tanggal === tglSiswa);
+            } else {
+                filtered = filtered.filter(i => i.tanggal && i.tanggal.substring(0,7) === blnSiswa);
+            }
+        } else {
+            if (currentTabGuru === 'harian') {
+                filtered = filtered.filter(i => i.tanggal === tglGuru);
+            } else {
+                filtered = filtered.filter(i => i.tanggal && i.tanggal.substring(0,7) === blnGuru);
+            }
+        }
+
+        let tableRows = '';
+        let no = 1;
+        
+        filtered.forEach(item => {
+            let subInfoText = kategori === 'siswa' ? (item.kelas || '-') : (item.mapel || '-');
+            
+            // FALLBACK & PARSING DATA JAM AGAR AMAN DI CETAK PDF
+            let waktuMasuk = '-';
+            let waktuPulang = '-';
+            
+            if (item.jam_datang) {
+                waktuMasuk = item.jam_datang;
+            }
+            if (item.jam_pulang) {
+                waktuPulang = item.jam_pulang;
+            }
+            
+            if ((waktuMasuk === '-' || waktuPulang === '-') && item.jam && item.jam !== '- / -') {
+                let parts = item.jam.split('/');
+                if (parts[0] && parts[0].trim() !== '-') waktuMasuk = parts[0].trim();
+                if (parts[1] && parts[1].trim() !== '-') waktuPulang = parts[1].trim();
+            }
+            
+            tableRows += `<tr>
+                <td>${no++}</td>
+                <td>${item.tanggal}</td>
+                <td>${item.nisn}</td>
+                <td>${item.nama}</td>
+                <td>${subInfoText}</td>
+                <td>${item.status || 'Alpa'}</td>
+                <td>${waktuMasuk}</td>
+                <td>${waktuPulang}</td>
+            </tr>`;
+        });
+
+        if(filtered.length === 0) {
+            tableRows = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: black;">Tidak ada data laporan presensi pada tanggal/bulan terpilih (${kategori === 'siswa' ? tglSiswa : tglGuru}).</td></tr>`;
+        }
+
+        let printTemplate = `
+            <div style="padding:30px; font-family:'Helvetica Neue', Arial, sans-serif; color: black !important; background: white !important;">
+                <div style="text-align:center; border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px;">
+                    <h2 style="margin:0; font-size:18px; letter-spacing:1px; color: black !important;">${titleReport}</h2>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#555;">${subTitle}</p>
+                </div>
+                <table style="width:100%; border-collapse:collapse; margin-top:10px; color: black !important;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2; color: black !important;">
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">No</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">Tanggal</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">NISN/NIP</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">Nama Lengkap</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">${kategori === 'siswa' ? 'Kelas' : 'Mata Pelajaran'}</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">Status</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">Jam Masuk</th>
+                            <th style="border: 1px solid black; padding: 8px; text-align: left;">Jam Pulang</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: black !important;">
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        const printArea = document.getElementById('printReportArea');
+        printArea.innerHTML = printTemplate;
+        window.print();
     }
   </script>
 </body>
