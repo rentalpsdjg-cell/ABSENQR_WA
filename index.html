@@ -132,8 +132,8 @@
     </div>
 
     <script>
-        // GANTI URL INI dengan URL Web App Google Apps Script Anda setelah di-deploy ulang
-        const API_URL = "https://script.google.com/macros/s/1WMYIE4pgtCajtlfITHxM3iworYvErPrpBVtpCCqfM7E/exec"; 
+        // Tautan API Google Apps Script Anda yang aktif
+        const API_URL = "https://script.google.com/macros/s/AKfycbwSecDGlRvoUIIFto3fVziMH9gaQFu3VnPaNSYtGXkz9DfMBcmx3S_idYgNMaL8NF8U/exec"; 
 
         let cloudSiswa = [];
         let cloudAbsen = [];
@@ -163,7 +163,6 @@
             fetch(`${API_URL}?action=getAllData`)
                 .then(res => res.json())
                 .then(data => {
-                    // Header data dipetakan ke penulisan lowercase + underscore dari skrip GAS Anda
                     cloudSiswa = data.siswa || [];
                     cloudAbsen = data.absensi || [];
                     if (data.settings) {
@@ -181,7 +180,6 @@
         }
 
         function updateDashboardStats(h, s, p) {
-            // Hitung statistik dashboard dari database cloud real-time
             const tglHariIni = document.getElementById('fRekapTgl').value;
             const absenHariIni = cloudAbsen.filter(a => a.tanggal === tglHariIni);
 
@@ -226,7 +224,6 @@
             document.getElementById('csvFile').value = '';
         }
 
-        // Kirim Data Tambah Siswa Individual ke Google Sheets (POST)
         function handleTambahSiswa(e) {
             e.preventDefault();
             showLoading(true);
@@ -255,7 +252,6 @@
             .finally(() => showLoading(false));
         }
 
-        // Tampilkan Master Siswa dari Data Google Sheets
         function renderTableSiswa() {
             const tbody = document.getElementById('tableSiswaBody');
             tbody.innerHTML = '';
@@ -277,7 +273,6 @@
             });
         }
 
-        // Kirim Absen Manual ke Google Sheets (POST)
         function handleManualAbsen(e) {
             e.preventDefault();
             showLoading(true);
@@ -305,7 +300,6 @@
             .finally(() => showLoading(false));
         }
 
-        // Tampilkan Log Rekapitulasi Absensi dari Google Sheets
         function renderTableAbsen() {
             const tbody = document.getElementById('tableAbsenBody');
             tbody.innerHTML = '';
@@ -341,7 +335,6 @@
             });
         }
 
-        // Simpan Jam Pengaturan Operasional ke Google Sheets (POST)
         function handleConfigJam(e) {
             e.preventDefault();
             showLoading(true);
@@ -365,7 +358,6 @@
             .finally(() => showLoading(false));
         }
 
-        // Fungsi Membaca File CSV Lokal & Mengunggahnya Secara Masal ke Cloud
         function prosesUploadCsv() {
             const fileInput = document.getElementById('csvFile');
             if (fileInput.files.length === 0) {
@@ -384,7 +376,6 @@
                 let suksesCount = 0;
                 let janjiProses = [];
 
-                // Mulai membaca dari baris indeks ke-1 (melewati baris header)
                 for (let i = 1; i < baris.length; i++) {
                     if (baris[i].trim() === "") continue;
                     
@@ -399,7 +390,6 @@
                         whatsapp: kolom[3].trim()
                     };
 
-                    // Kirim antrean request POST secara simultan ke Google Apps Script
                     let request = fetch(API_URL, {
                         method: "POST",
                         body: JSON.stringify(payload)
@@ -424,7 +414,6 @@
             reader.readAsText(file);
         }
 
-        // ================= LOGIKA QR SCANNER REAL-TIME =================
         function startQRScanner() {
             const resultDiv = document.getElementById('scan-result');
             resultDiv.classList.add('hidden');
@@ -458,7 +447,7 @@
                 .finally(() => {
                     showLoading(false);
                     html5QrcodeScanner.clear();
-                    setTimeout(startQRScanner, 3000); // Istirahat 3 detik sebelum siap scan siswa berikutnya
+                    setTimeout(startQRScanner, 3000);
                 });
 
             }, (error) => {});
@@ -471,7 +460,6 @@
             }
         }
 
-        // ================= CETAK EXPORT PDF LAPORAN =================
         function downloadLaporanPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
