@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
-    // URL Web App Google Apps Script terbaru Anda sudah terpasang di sini
+    // URL Web App Google Apps Script Anda
     const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec"; 
     
     tailwind.config = {
@@ -154,6 +154,7 @@
                       <select id="filterStatusSiswa" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
                           <option value="SEMUA">-- Semua Status --</option>
                           <option value="Hadir">Hadir</option>
+                          <option value="Terlambat">Terlambat</option>
                           <option value="Sakit">Sakit</option>
                           <option value="Izin">Izin</option>
                           <option value="Alpa">Alpa</option>
@@ -187,6 +188,7 @@
                       <select id="filterStatusGuru" onchange="renderDataRekapGuru()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
                           <option value="SEMUA">-- Semua Status --</option>
                           <option value="Hadir">Hadir</option>
+                          <option value="Terlambat">Terlambat</option>
                           <option value="Sakit">Sakit</option>
                           <option value="Izin">Izin</option>
                           <option value="Alpa">Alpa</option>
@@ -236,6 +238,7 @@
                       <option value="Izin">Izin</option>
                       <option value="Alpa">Alpa</option>
                       <option value="Hadir">Hadir (Manual)</option>
+                      <option value="Terlambat">Terlambat (Manual)</option>
                   </select>
                   <select id="mTipe" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-sm text-white"><option value="Masuk">Absen Pagi (Masuk)</option><option value="Pulang">Absen Siang (Pulang)</option></select>
                   <button type="submit" class="w-full py-3 bg-bActive rounded-xl text-xs font-bold uppercase">Simpan Absen</button>
@@ -505,24 +508,22 @@
         const tglVal = document.getElementById('filterTanggal').value;
         const blnVal = document.getElementById('filterBulan').value;
 
-        let targetTglStr = "";
-        if (tglVal) {
-            const d = new Date(tglVal);
-            if (!isNaN(d.getTime())) {
-                targetTglStr = d.toISOString().split('T')[0];
-            }
-        }
+        let targetTglStr = tglVal ? tglVal : new Date().toISOString().split('T')[0];
 
         dataSiswaTerfilterGlobal = cacheSiswa.map(s => {
-            let log = cacheAbsensi.filter(a => a.id_User == s.nisn);
+            let log = cacheAbsensi.filter(a => String(a.id_User).trim() === String(s.nisn).trim());
             let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
 
             if (currentTab === 'harian') {
                 let hariIniLog = log.find(a => {
                     if (!a.tanggal) return false;
-                    const logDate = new Date(a.tanggal);
-                    if (isNaN(logDate.getTime())) return false;
-                    return logDate.toISOString().split('T')[0] === targetTglStr;
+                    let logDateStr = "";
+                    if (a.tanggal instanceof Date) {
+                        logDateStr = a.tanggal.toISOString().split('T')[0];
+                    } else if (typeof a.tanggal === 'string') {
+                        logDateStr = a.tanggal.split('T')[0].trim();
+                    }
+                    return logDateStr === targetTglStr;
                 });
 
                 if (hariIniLog) {
@@ -533,10 +534,15 @@
             } else {
                 let bulanLog = log.filter(a => {
                     if (!a.tanggal) return false;
-                    const logDate = new Date(a.tanggal);
-                    return logDate.toISOString().substring(0,7) === blnVal;
+                    let logBlnStr = "";
+                    if (a.tanggal instanceof Date) {
+                        logBlnStr = a.tanggal.toISOString().split('T')[0].substring(0,7);
+                    } else if (typeof a.tanggal === 'string') {
+                        logBlnStr = a.tanggal.split('T')[0].substring(0,7);
+                    }
+                    return logBlnStr === blnVal;
                 });
-                let hadirCount = bulanLog.filter(a => a.status === 'Hadir').length;
+                let hadirCount = bulanLog.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
                 let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
                 let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
                 let alpaCount = bulanLog.filter(a => a.status === 'Alpa').length;
@@ -546,14 +552,18 @@
             return { ...s, statusFinal, jamMasuk, jamPulang };
         }).filter(s => {
             return (s.nama.toLowerCase().includes(search) || s.nisn.includes(search)) &&
-                   (status === 'SEMUA' || s.statusFinal.includes(status)) &&
+                   (status === 'SEMUA' || s.statusFinal.includes(status) || (status === 'Hadir' && s.statusFinal === 'Terlambat')) &&
                    (kelas === 'SEMUA' || s.kelas === kelas);
         });
 
         let html = '';
         dataSiswaTerfilterGlobal.forEach(s => {
-            let color = s.statusFinal.includes('Hadir') || s.statusFinal.includes('H:') ? 'text-emerald-400' : 'text-amber-400';
-            if (s.statusFinal === 'Alpa') color = 'text-rose-400';
+            let color = 'text-emerald-400'; 
+            if (s.statusFinal === 'Alpa') {
+                color = 'text-rose-400';
+            } else if (s.statusFinal === 'Sakit' || s.statusFinal === 'Izin') {
+                color = 'text-amber-400';
+            }
 
             html += `<div class="bg-bCard p-4 rounded-xl border border-white/5">
                 <div class="flex justify-between items-start">
@@ -581,24 +591,22 @@
         const tglVal = document.getElementById('filterTanggalGuru').value;
         const blnVal = document.getElementById('filterBulanGuru').value;
 
-        let targetTglStr = "";
-        if (tglVal) {
-            const d = new Date(tglVal);
-            if (!isNaN(d.getTime())) {
-                targetTglStr = d.toISOString().split('T')[0];
-            }
-        }
+        let targetTglStr = tglVal ? tglVal : new Date().toISOString().split('T')[0];
 
         dataGuruTerfilterGlobal = cacheGuru.map(g => {
-            let log = cacheAbsensi.filter(a => a.id_User == g.nip);
+            let log = cacheAbsensi.filter(a => String(a.id_User).trim() === String(g.nip).trim());
             let statusFinal = "Alpa", jamMasuk = "-", jamPulang = "-";
 
             if (currentTabGuru === 'harian') {
                 let hariIniLog = log.find(a => {
                     if (!a.tanggal) return false;
-                    const logDate = new Date(a.tanggal);
-                    if (isNaN(logDate.getTime())) return false;
-                    return logDate.toISOString().split('T')[0] === targetTglStr;
+                    let logDateStr = "";
+                    if (a.tanggal instanceof Date) {
+                        logDateStr = a.tanggal.toISOString().split('T')[0];
+                    } else if (typeof a.tanggal === 'string') {
+                        logDateStr = a.tanggal.split('T')[0].trim();
+                    }
+                    return logDateStr === targetTglStr;
                 });
 
                 if (hariIniLog) {
@@ -609,10 +617,15 @@
             } else {
                 let bulanLog = log.filter(a => {
                     if (!a.tanggal) return false;
-                    const logDate = new Date(a.tanggal);
-                    return logDate.toISOString().substring(0,7) === blnVal;
+                    let logBlnStr = "";
+                    if (a.tanggal instanceof Date) {
+                        logBlnStr = a.tanggal.toISOString().split('T')[0].substring(0,7);
+                    } else if (typeof a.tanggal === 'string') {
+                        logBlnStr = a.tanggal.split('T')[0].substring(0,7);
+                    }
+                    return logBlnStr === blnVal;
                 });
-                let hadirCount = bulanLog.filter(a => a.status === 'Hadir').length;
+                let hadirCount = bulanLog.filter(a => a.status === 'Hadir' || a.status === 'Terlambat').length;
                 let sakitCount = bulanLog.filter(a => a.status === 'Sakit').length;
                 let izinCount = bulanLog.filter(a => a.status === 'Izin').length;
                 let alpaCount = bulanLog.filter(a => a.status === 'Alpa').length;
@@ -622,14 +635,18 @@
             return { ...g, statusFinal, jamMasuk, jamPulang };
         }).filter(g => {
             return (g.nama.toLowerCase().includes(search) || g.nip.includes(search)) &&
-                   (status === 'SEMUA' || g.statusFinal.includes(status)) &&
+                   (status === 'SEMUA' || g.statusFinal.includes(status) || (status === 'Hadir' && g.statusFinal === 'Terlambat')) &&
                    (mapel === 'SEMUA' || g.mapel === mapel);
         });
 
         let html = '';
         dataGuruTerfilterGlobal.forEach(g => {
-            let color = g.statusFinal.includes('Hadir') || g.statusFinal.includes('H:') ? 'text-emerald-400' : 'text-amber-400';
-            if (g.statusFinal === 'Alpa') color = 'text-rose-400';
+            let color = 'text-emerald-400';
+            if (g.statusFinal === 'Alpa') {
+                color = 'text-rose-400';
+            } else if (g.statusFinal === 'Sakit' || g.statusFinal === 'Izin') {
+                color = 'text-amber-400';
+            }
 
             html += `<div class="bg-bCard p-4 rounded-xl border border-white/5">
                 <div class="flex justify-between items-start">
@@ -835,7 +852,7 @@
             tipe: document.getElementById('mTipe').value
         };
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); document.getElementById('mNisn').value = ''; }
+            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); document.getElementById('mNisn').value = ''; refreshDatabase(); }
             else { Swal.fire('Gagal', res.message, 'error'); }
         });
     }
