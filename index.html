@@ -1,9 +1,377 @@
-<script>
-    let activeScanner = null, mainChart = null, currentTab = 'harian', currentTabGuru = 'harian', cacheAbsensi = [], cacheSiswa = [], cacheGuru = [], currentModalType = '';
-    let dataSiswaTerfilterGlobal = [], dataGuruTerfilterGlobal = []; 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Absensi Realtime & QR Scanner</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
+  <style>
+    /* Custom Styling & Theme Variables */
+    :root {
+      --bg-dark: #0F172A;
+      --bg-card: #1E293B;
+      --bg-muted: #94A3B8;
+      --bg-active: #4F46E5;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-bDark { background-color: var(--bg-dark); }
+    .bg-bCard { background-color: var(--bg-card); }
+    .text-bMuted { color: var(--bg-muted); }
+    .bg-bActive { background-color: var(--bg-active); }
+    
+    /* View Visibility Management */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+    .nav-active {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid var(--bg-active);
+      color: #FFF;
+    }
+  </style>
+</head>
+<body class="antialiased min-h-screen flex">
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz...UBAH_DENGAN_URL_GAS_ANDA.../exec";
+  </script>
+
+  <aside id="sidebarMenu" class="fixed inset-y-0 left-0 w-64 bg-bCard border-r border-white/5 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+    <div class="p-5 border-b border-white/5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-bActive rounded-xl"><i class="fas fa-qrcode text-lg text-white"></i></div>
+        <div>
+          <h1 class="font-bold text-sm leading-tight">E-ABSENSI</h1>
+          <p class="text-[10px] text-bMuted">Sistem QR & Realtime</p>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" class="lg:hidden text-bMuted hover:text-white"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto text-xs font-medium text-bMuted">
+      <button id="nav-dashboard" onclick="switchView('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left nav-active">
+        <i class="fas fa-th-large w-5 text-center"></i><span>Dashboard Stats</span>
+      </button>
+      <button id="nav-scan" onclick="switchView('scan')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-camera w-5 text-center text-emerald-400"></i><span class="text-emerald-400 font-semibold">Scan QR Absensi</span>
+      </button>
+      
+      <div class="pt-4 pb-2 px-4 uppercase text-[9px] tracking-wider font-bold">Laporan Presensi</div>
+      <button id="nav-rekap" onclick="switchView('rekap')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-user-graduate w-5 text-center"></i><span>Presensi Siswa</span>
+      </button>
+      <button id="nav-rekap-guru" onclick="switchView('rekap-guru')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-chalkboard-teacher w-5 text-center"></i><span>Presensi Guru</span>
+      </button>
+      
+      <div class="pt-4 pb-2 px-4 uppercase text-[9px] tracking-wider font-bold">Data Master</div>
+      <button id="nav-siswa" onclick="switchView('siswa')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-users w-5 text-center"></i><span>Database Siswa</span>
+      </button>
+      <button id="nav-guru" onclick="switchView('guru')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-user-shield w-5 text-center"></i><span>Database Guru</span>
+      </button>
+
+      <div class="pt-4 pb-2 px-4 uppercase text-[9px] tracking-wider font-bold">Aksi & Pengaturan</div>
+      <button id="nav-manual" onclick="switchView('manual')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-pen-to-square w-5 text-center"></i><span>Input Manual (S/I/A)</span>
+      </button>
+      <button id="nav-jam-config" onclick="switchView('jam-config')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-left">
+        <i class="fas fa-clock w-5 text-center"></i><span>Set Jam Operasional</span>
+      </button>
+    </nav>
+  </aside>
+
+  <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+  <main class="flex-1 lg:ml-64 flex flex-col min-w-0">
+    <header class="bg-bCard border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 bg-bDark rounded-xl text-bMuted hover:text-white"><i class="fas fa-bars"></i></button>
+        <h2 id="viewTitle" class="font-bold text-base text-white tracking-wide">Dashboard Absensi</h2>
+      </div>
+      <div id="clockDisplay" class="text-xs bg-bDark px-4 py-2 rounded-xl font-semibold border border-white/5 shadow-inner text-indigo-300">
+        Memuat Waktu Sistem...
+      </div>
+    </header>
+
+    <div class="p-6 flex-1 space-y-6">
+
+      <section id="view-dashboard" class="view-section active space-y-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-bCard p-4 rounded-2xl border border-white/5 flex items-center space-x-4">
+            <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl"><i class="fas fa-graduation-cap text-lg"></i></div>
+            <div><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Total Siswa</p><h3 id="dashSiswa" class="text-xl font-black mt-0.5">0</h3></div>
+          </div>
+          <div class="bg-bCard p-4 rounded-2xl border border-white/5 flex items-center space-x-4">
+            <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i class="fas fa-user-check text-lg"></i></div>
+            <div><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Hadir Hari Ini</p><h3 id="dashHadir" class="text-xl font-black mt-0.5 text-emerald-400">0</h3></div>
+          </div>
+          <div class="bg-bCard p-4 rounded-2xl border border-white/5 flex items-center space-x-4">
+            <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl"><i class="fas fa-door-open text-lg"></i></div>
+            <div><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Sudah Pulang</p><h3 id="dashPulang" class="text-xl font-black mt-0.5 text-cyan-400">0</h3></div>
+          </div>
+          <div class="bg-bCard p-4 rounded-2xl border border-white/5 flex items-center space-x-4">
+            <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl"><i class="fas fa-user-slash text-lg"></i></div>
+            <div><p class="text-[10px] font-bold text-bMuted uppercase tracking-wider">Sakit / Izin / Alpa</p><h3 id="dashSakitIzin" class="text-xl font-black mt-0.5 text-amber-400">0</h3></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-bCard p-5 rounded-2xl border border-white/5 flex flex-col items-center justify-center relative">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-bMuted mb-4 self-start">Visualisasi Kehadiran</h4>
+            <div class="w-44 h-44 relative">
+              <canvas id="chartPresensi"></canvas>
+            </div>
+            <p class="text-[11px] text-bMuted mt-4 text-center">Data grafik mewakili rasio rekap presensi harian siswa sesuai dengan tanggal filter utama.</p>
+          </div>
+          <div class="bg-bCard p-5 rounded-2xl border border-white/5 md:col-span-2 flex flex-col justify-between">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-bMuted mb-2">Petunjuk Operasional</h4>
+              <ul class="text-xs text-bMuted space-y-2 list-disc list-inside pt-2">
+                <li>Pastikan kamera terhubung dan diizinkan browser saat membuka menu <span class="text-white font-semibold">Scan QR Absensi</span>.</li>
+                <li>Laporan rekap otomatis mengonversi siswa ke status <span class="text-red-400 font-bold">Alpa</span> jika tidak melakukan *tap* barcode hingga jam operasional selesai.</li>
+                <li>Gunakan fitur <span class="text-white font-semibold">Cetak PDF</span> pada panel rekap untuk mengunduh berkas laporan fisik siap cetak.</li>
+              </ul>
+            </div>
+            <div class="pt-4 border-t border-white/5 flex justify-end">
+              <button onclick="muatSemuaData()" class="px-4 py-2 bg-bActive text-white rounded-xl font-bold text-xs"><i class="fas fa-sync-alt mr-2 animate-spin-hover"></i>Refresh Data Server</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-scan" class="view-section space-y-4">
+        <div class="max-w-md mx-auto bg-bCard p-6 rounded-2xl border border-white/5 text-center space-y-4">
+          <p class="text-xs text-bMuted">Arahkan QR Code Kartu Digital Siswa/Guru tepat ke depan area kotak kamera di bawah ini:</p>
+          <div id="reader" class="overflow-hidden rounded-xl border border-white/10 bg-bDark"></div>
+          <button onclick="matikanScanner(); switchView('dashboard')" class="w-full py-2.5 bg-white/5 hover:bg-red-600/20 text-xs font-bold rounded-xl transition-all">Batalkan Scanner</button>
+        </div>
+      </section>
+
+      <section id="view-rekap" class="view-section space-y-4">
+        <div class="bg-bCard p-4 rounded-2xl border border-white/5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex bg-bDark p-1 rounded-xl w-full sm:w-auto">
+              <button id="btnTabHarian" onclick="setRekapTab('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
+              <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
+            </div>
+            <button onclick="cetakPdfSiswa()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 font-bold text-xs rounded-xl flex items-center justify-center space-x-2"><i class="fas fa-print"></i><span>Cetak PDF Laporan</span></button>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-white/5">
+            <div id="filterTanggalArea">
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Tanggal Absen</label>
+              <input type="date" id="filterTanggal" onchange="renderDataRekap(); updateDashboardStats();" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+            <div id="filterBulanArea" style="display:none;">
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Bulan Absen</label>
+              <input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Filter Kelas</label>
+              <select id="filterKelasSiswa" onchange="renderDataRekap()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Filter Status</label>
+              <select id="filterStatusSiswa" onchange="renderDataRekap()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+                <option value="SEMUA">-- Semua Status --</option>
+                <option value="Hadir">Hadir</option>
+                <option value="Terlambat">Terlambat</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Izin">Izin</option>
+                <option value="Alpa">Alpa</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Cari Nama / NISN</label>
+              <input type="text" id="searchRekapSiswa" onkeyup="renderDataRekap()" placeholder="Ketik keyword pencarian..." class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+          </div>
+        </div>
+        <div id="rekapListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <section id="view-rekap-guru" class="view-section space-y-4">
+        <div class="bg-bCard p-4 rounded-2xl border border-white/5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex bg-bDark p-1 rounded-xl w-full sm:w-auto">
+              <button id="btnTabHarianGuru" onclick="setRekapTabGuru('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
+              <button id="btnTabBulananGuru" onclick="setRekapTabGuru('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
+            </div>
+            <button onclick="cetakPdfGuru()" class="w-full sm:w-auto px-4 py-2 bg-cyan-600 hover:bg-cyan-700 font-bold text-xs rounded-xl flex items-center justify-center space-x-2"><i class="fas fa-print"></i><span>Cetak PDF Laporan</span></button>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-white/5">
+            <div id="filterTanggalAreaGuru">
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Tanggal Absen</label>
+              <input type="date" id="filterTanggalGuru" onchange="renderDataRekapGuru()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+            <div id="filterBulanAreaGuru" style="display:none;">
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Bulan Absen</label>
+              <input type="month" id="filterBulanGuru" onchange="renderDataRekapGuru()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Filter Mapel</label>
+              <select id="filterMapelGuru" onchange="renderDataRekapGuru()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Filter Status</label>
+              <select id="filterStatusGuru" onchange="renderDataRekapGuru()" class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+                <option value="SEMUA">-- Semua Status --</option>
+                <option value="Hadir">Hadir</option>
+                <option value="Terlambat">Terlambat</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Izin">Izin</option>
+                <option value="Alpa">Alpa</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-bMuted uppercase font-bold mb-1">Cari Nama / NIP</label>
+              <input type="text" id="searchRekapGuru" onkeyup="renderDataRekapGuru()" placeholder="Ketik keyword pencarian..." class="w-full p-2.5 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+            </div>
+          </div>
+        </div>
+        <div id="rekapGuruListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <section id="view-siswa" class="view-section space-y-4">
+        <div class="flex items-center justify-between bg-bCard p-4 rounded-2xl border border-white/5">
+          <div class="text-xs text-bMuted">Manajemen master data siswa terdaftar sistem.</div>
+          <div class="flex items-center space-x-2">
+            <input type="file" id="csvFileInput" accept=".csv" onchange="prosesUploadMassal(e)" class="hidden">
+            <button onclick="triggerUploadClick()" class="px-3 py-2 bg-white/5 hover:bg-white/10 text-xs font-bold rounded-xl"><i class="fas fa-file-csv mr-1.5"></i>Upload Massal (CSV)</button>
+            <button onclick="openModal('siswa')" class="px-3 py-2 bg-bActive text-white text-xs font-bold rounded-xl"><i class="fas fa-plus mr-1.5"></i>Tambah Siswa</button>
+          </div>
+        </div>
+        <div id="listSiswa" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </section>
+
+      <section id="view-guru" class="view-section space-y-4">
+        <div class="flex items-center justify-between bg-bCard p-4 rounded-2xl border border-white/5">
+          <div class="text-xs text-bMuted">Manajemen master data guru pengampu mata pelajaran.</div>
+          <button onclick="openModal('guru')" class="px-3 py-2 bg-cyan-600 text-white text-xs font-bold rounded-xl"><i class="fas fa-plus mr-1.5"></i>Tambah Guru Baru</button>
+        </div>
+        <div id="listGuru" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </section>
+
+      <section id="view-manual" class="view-section max-w-md mx-auto">
+        <div class="bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
+          <div class="border-b border-white/5 pb-2">
+            <h3 class="font-bold text-sm text-white">Form Input Izin/Sakit Manual</h3>
+            <p class="text-[11px] text-bMuted">Gunakan form ini untuk menandai siswa/guru berhalangan hadir secara resmi.</p>
+          </div>
+          <form onsubmit="simpanManual(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Kategori Pengguna</label>
+              <select id="mKategori" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+                <option value="Siswa">Siswa</option>
+                <option value="Guru">Guru / Staff</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Nomor Induk Identitas (NISN / NIP)</label>
+              <input type="number" id="mNisn" required placeholder="Contoh: 0048123xxx" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Status Keterangan Baru</label>
+              <select id="mStatus" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+                <option value="Sakit">Sakit</option>
+                <option value="Izin">Izin Resmi</option>
+                <option value="Alpa">Alpa (Tanpa Keterangan)</option>
+                <option value="Hadir">Hadir</option>
+              </select>
+            </div>
+            <div class="hidden">
+              <input type="text" id="mTipe" value="Manual">
+            </div>
+            <button type="submit" class="w-full py-3 bg-bActive font-bold rounded-xl text-xs uppercase shadow-lg text-white">Simpan Keterangan Absen</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="view-jam-config" class="view-section max-w-md mx-auto">
+        <div class="bg-bCard p-6 rounded-2xl border border-white/5 space-y-4">
+          <div class="border-b border-white/5 pb-2">
+            <h3 class="font-bold text-sm text-white">Set Jam Operasional Presensi</h3>
+            <p class="text-[11px] text-bMuted">Mengatur ambang batas jam masuk kerja dan pulang kerja sistem.</p>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Jam Batas Masuk (Format HH:MM)</label>
+              <input type="time" id="cfgJamMasuk" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-bMuted uppercase mb-1">Jam Mulai Pulang (Format HH:MM)</label>
+              <input type="time" id="cfgJamPulang" class="w-full p-3 bg-bDark border border-white/10 rounded-xl text-white">
+            </div>
+            <button onclick="simpanConfigJam()" class="w-full py-3 bg-indigo-600 font-bold rounded-xl text-xs uppercase text-white">Update Jam Operasional</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="inputModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-bCard w-full max-w-md rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+      <div class="p-4 bg-bDark/50 border-b border-white/5 flex items-center justify-between">
+        <h3 id="modalHeaderTitle" class="font-bold text-sm text-white">Tambah Data</h3>
+        <button onclick="closeModal()" class="text-bMuted hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="dynamicForm" onsubmit="handleFormSubmit(event)" class="p-5 space-y-3 text-white">
+        </form>
+    </div>
+  </div>
+
+  <script>
+    function bukaKartuDigital(id, nama, sub, tipe) {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${id}`;
+      Swal.fire({
+        title: `<span class="text-sm font-bold uppercase tracking-wider">${tipe} Digital Card</span>`,
+        html: `
+          <div class="bg-slate-900 p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center space-y-4">
+            <div class="bg-white p-3 rounded-xl shadow-lg"><img src="${qrUrl}" alt="QR" class="w-40 h-40"></div>
+            <div class="text-center">
+              <h4 class="font-bold text-base text-white">${nama.toUpperCase()}</h4>
+              <p class="text-xs text-slate-400 mt-1">${tipe === 'Siswa' ? 'NISN: ' : 'NIP: '}${id}</p>
+              <p class="inline-block mt-2 text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-3 py-1 rounded-full uppercase">${sub}</p>
+            </div>
+          </div>`,
+        showConfirmButton: true,
+        confirmButtonText: 'Tutup Kartu',
+        confirmButtonColor: '#4F46E5',
+        background: '#1E293B',
+        color: '#FFF'
+      });
+    }
+  </script>
+
+  <script>
+    // === DEKLARASI VARIABEL GLOBAL ===
+    let activeScanner = null, 
+        mainChart = null, 
+        currentTab = 'harian', 
+        currentTabGuru = 'harian', 
+        cacheAbsensi = [], 
+        cacheSiswa = [], 
+        cacheGuru = [], 
+        currentModalType = '';
+
+    let dataSiswaTerfilterGlobal = [], 
+        dataGuruTerfilterGlobal = []; 
+
+    // === STARTUP HANDLER ===
     window.addEventListener('DOMContentLoaded', () => {
-      // Set default tanggal hari ini ke input filter
       const hariIni = new Date().toISOString().split('T')[0];
       document.getElementById('filterTanggal').value = hariIni;
       document.getElementById('filterTanggalGuru').value = hariIni;
@@ -50,9 +418,14 @@
       } else {
         matikanScanner();
       }
-      toggleSidebar();
+      
+      // Jika di mobile, tutup sidebar sehabis klik menu navigasi
+      if(!document.getElementById('sidebarMenu').classList.contains('-translate-x-full')) {
+        toggleSidebar();
+      }
     }
 
+    // === FETCHER DATA UTAMA DARI SERVER ===
     function muatSemuaData() {
       fetch(`${API_URL}?action=getAllData`)
         .then(res => res.json())
@@ -122,7 +495,7 @@
       });
     }
 
-    // === LOGIKA UTAMA: SINKRONISASI ALPA OTOMATIS ===
+    // === LOGIKA UTAMA: REKAP ABSENSI SISWA & ALPA OTOMATIS ===
     function setRekapTab(type) {
       currentTab = type;
       document.getElementById('btnTabHarian').className = type === 'harian' ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white' : 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted';
@@ -146,50 +519,32 @@
       let hasilData = [];
 
       if (currentTab === 'harian') {
-        // Gabungkan seluruh master siswa untuk pengecekan Alpa otomatis
         cacheSiswa.forEach(siswa => {
-          // Cari record di data absensi berdasarkan NISN dan Tanggal terpilih
-          let match = cacheAbsensi.find(a => a.id_User === siswa.nisn && a.tanggal === tglFilt);
-          
+          let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(siswa.nisn).trim() && a.tanggal === tglFilt);
           if (match) {
             hasilData.push({
-              nisn: siswa.nisn,
-              nama: siswa.nama,
-              kelas: siswa.kelas,
-              jam_Masuk: match.jam_Masuk,
-              jam_Pulang: match.jam_Pulang,
-              status: match.status
+              nisn: siswa.nisn, nama: siswa.nama, kelas: siswa.kelas,
+              jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status
             });
           } else {
-            // Jika tidak melakukan tap, status otomatis dikonversi sebagai Alpa
             hasilData.push({
-              nisn: siswa.nisn,
-              nama: siswa.nama,
-              kelas: siswa.kelas,
-              jam_Masuk: '-',
-              jam_Pulang: '-',
-              status: 'Alpa'
+              nisn: siswa.nisn, nama: siswa.nama, kelas: siswa.kelas,
+              jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa'
             });
           }
         });
       } else {
-        // Tab Bulanan
         cacheAbsensi.forEach(a => {
           if (a.tipe_User === 'Siswa' && a.tanggal.substring(0, 7) === blnFilt) {
-            let sObj = cacheSiswa.find(s => s.nisn === a.id_User);
+            let sObj = cacheSiswa.find(s => String(s.nisn).trim() === String(a.id_User).trim());
             hasilData.push({
-              nisn: a.id_User,
-              nama: a.nama,
-              kelas: sObj ? sObj.kelas : '-',
-              jam_Masuk: a.jam_Masuk,
-              jam_Pulang: a.jam_Pulang,
-              status: a.status
+              nisn: a.id_User, nama: a.nama, kelas: sObj ? sObj.kelas : '-',
+              jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status
             });
           }
         });
       }
 
-      // Filter Berdasarkan Input Form Filter
       dataSiswaTerfilterGlobal = hasilData.filter(item => {
         const cocokKeyword = item.nama.toLowerCase().includes(keyword) || item.nisn.includes(keyword);
         const cocokStatus = statusFilt === 'SEMUA' || item.status === statusFilt;
@@ -250,7 +605,7 @@
 
       if (currentTabGuru === 'harian') {
         cacheGuru.forEach(guru => {
-          let match = cacheAbsensi.find(a => a.id_User === guru.nip && a.tanggal === tglFilt);
+          let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(guru.nip).trim() && a.tanggal === tglFilt);
           if (match) {
             hasilData.push({ nip: guru.nip, nama: guru.nama, mapel: guru.mapel, jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status });
           } else {
@@ -260,7 +615,7 @@
       } else {
         cacheAbsensi.forEach(a => {
           if (a.tipe_User === 'Guru' && a.tanggal.substring(0, 7) === blnFilt) {
-            let gObj = cacheGuru.find(g => g.nip === a.id_User);
+            let gObj = cacheGuru.find(g => String(g.nip).trim() === String(a.id_User).trim());
             hasilData.push({ nip: a.id_User, nama: a.nama, mapel: gObj ? gObj.mapel : '-', jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status });
           }
         });
@@ -308,7 +663,7 @@
       let hadir = 0, pulang = 0, sakitIzin = 0, alpa = 0;
 
       cacheSiswa.forEach(siswa => {
-        let match = cacheAbsensi.find(a => a.id_User === siswa.nisn && a.tanggal === tglFilt);
+        let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(siswa.nisn).trim() && a.tanggal === tglFilt);
         if (match) {
           if (match.status === "Hadir" || match.status === "Terlambat") hadir++;
           if (match.jam_Pulang !== "-" && match.jam_Pulang !== "") pulang++;
@@ -343,7 +698,7 @@
       });
     }
 
-    // === CETAK PRINT LAPORAN SEPERTI GAMBAR ===
+    // === CETAK PRINT LAPORAN SISWA ===
     function cetakPdfSiswa() {
       const kelasSelected = document.getElementById('filterKelasSiswa').value;
       const tanggalSelected = document.getElementById('filterTanggal').value;
@@ -417,6 +772,7 @@
       setTimeout(() => { win.print(); }, 500);
     }
 
+    // === CETAK PRINT LAPORAN GURU ===
     function cetakPdfGuru() {
       const mapelSelected = document.getElementById('filterMapelGuru').value;
       const tanggalSelected = document.getElementById('filterTanggalGuru').value;
@@ -490,7 +846,7 @@
       setTimeout(() => { win.print(); }, 500);
     }
 
-    // === UTILITAS KODE SCANNER, MANAJEMEN OPERASIONAL LAIN ===
+    // === CAMERA QR CODE QR SCANNER OPERATIONS ===
     function mulaiScanner() {
       if (activeScanner) return;
       activeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
@@ -523,6 +879,7 @@
       }
     }
 
+    // === CONFIG OPERASIONAL ABSENSI ===
     function simpanConfigJam() {
       const jM = document.getElementById('cfgJamMasuk').value;
       const jP = document.getElementById('cfgJamPulang').value;
@@ -564,6 +921,7 @@
       .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal mengirim permintaan.', 'error'); });
     }
 
+    // === UPLOAD DATA MASSAL (CSV) ===
     function triggerUploadClick() { document.getElementById('csvFileInput').click(); }
 
     function prosesUploadMassal(e) {
@@ -581,10 +939,7 @@
           const cols = lines[i].split(',');
           if(cols.length >= 4) {
             dataUpload.push({
-              nisn: cols[0].trim(),
-              nama: cols[1].trim(),
-              kelas: cols[2].trim(),
-              whatsapp: cols[3].trim()
+              nisn: cols[0].trim(), nama: cols[1].trim(), kelas: cols[2].trim(), whatsapp: cols[3].trim()
             });
           }
         }
@@ -608,6 +963,7 @@
       reader.readAsText(file);
     }
 
+    // === MANAGEMENT MODAL FORM DINAMIS ===
     function openModal(type) {
       currentModalType = type;
       const f = document.getElementById('dynamicForm');
@@ -656,18 +1012,18 @@
       Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
       fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
       .then(res => res.json())
-      .then(res => { Swal.close(); closeModal(); Swal.fire('Sukses', res.message, 'success'); muatSemuaData(); })
-      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pengiriman data.', 'error'); });
+      .then(res => {
+        Swal.close();
+        if(res.success) {
+          Swal.fire('Sukses', res.message, 'success');
+          closeModal();
+          muatSemuaData();
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
+      })
+      .catch(() => { Swal.close(); Swal.fire('Error', 'Gagal memproses pendaftaran.', 'error'); });
     }
-
-    function bukaKartuDigital(id, nama, sub, tipe) {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
-      document.getElementById('modalQrImg').src = qrUrl;
-      document.getElementById('modalQrNama').innerText = nama;
-      document.getElementById('modalQrNisn').innerText = id;
-      document.getElementById('modalQrKelas').innerText = sub;
-      document.getElementById('qrModal').classList.remove('hidden');
-    }
-
-    function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
   </script>
+</body>
+</html>
