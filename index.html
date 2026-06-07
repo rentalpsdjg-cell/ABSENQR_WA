@@ -130,20 +130,37 @@
           </div>
 
           <div id="view-rekap" class="view-section space-y-4">
-              <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row gap-3 items-center justify-between">
-                  <div class="flex gap-2 w-full sm:w-auto justify-center">
-                      <button id="btnTabHarian" onclick="setRekapTab('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
-                      <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
+              <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col gap-4">
+                  <div class="flex flex-col sm:flex-row gap-3 items-center justify-between border-b border-white/5 pb-3">
+                      <div class="flex gap-2 w-full sm:w-auto justify-center">
+                          <button id="btnTabHarian" onclick="setRekapTab('harian')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bActive text-white">Harian</button>
+                          <button id="btnTabBulanan" onclick="setRekapTab('bulanan')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-bDark text-bMuted">Bulanan</button>
+                      </div>
+                      <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                          <div id="filterTanggalArea" class="flex-1 sm:flex-none"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                          <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
+                          
+                          <button onclick="Swal.fire('Fitur Cetak', 'Laporan otomatis terekam di Google Sheet Anda.', 'info')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
+                              <i class="fas fa-file-pdf"></i> PDF Per Kelas
+                          </button>
+                      </div>
                   </div>
-                  <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                      <div id="filterTanggalArea" class="flex-1 sm:flex-none"><input type="date" id="filterTanggal" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                      <div id="filterBulanArea" class="hidden flex-1 sm:flex-none"><input type="month" id="filterBulan" onchange="renderDataRekap()" class="w-full p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white"></div>
-                      
-                      <button onclick="Swal.fire('Fitur Cetak', 'Laporan otomatis terekam di Google Sheet Anda.', 'info')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0">
-                          <i class="fas fa-file-pdf"></i> PDF Per Kelas
-                      </button>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input type="text" id="searchRekapSiswa" onkeyup="renderDataRekap()" placeholder="Cari nama siswa / NISN..." class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white placeholder-bMuted">
+                      <select id="filterStatusSiswa" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+                          <option value="SEMUA">-- Semua Status Absensi --</option>
+                          <option value="Hadir">Hadir</option>
+                          <option value="Sakit">Sakit</option>
+                          <option value="Izin">Izin</option>
+                          <option value="Alpa">Alpa</option>
+                      </select>
+                      <select id="filterKelasSiswa" onchange="renderDataRekap()" class="p-2 bg-bDark border border-white/10 rounded-xl text-xs text-white">
+                          <option value="SEMUA">-- Semua Kelas --</option>
+                      </select>
                   </div>
               </div>
+              
               <div id="rekapListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           </div>
 
@@ -372,9 +389,13 @@
     function refreshDatabase() {
         fetch(`${API_URL}?action=getAllData`).then(res => res.json()).then(db => {
             cacheAbsensi = db.absensi || [];
+            
+            // Perbarui Filter Dropdown Kelas Otomatis
+            let listKelas = new Set();
             let sHtml = '';
             if(db.siswa) {
                 db.siswa.forEach(s => {
+                    if(s.kelas) listKelas.add(s.kelas.trim());
                     sHtml += `<div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between">
                         <div>
                             <p class="text-xs font-bold text-bActive">${s.nisn}</p>
@@ -391,6 +412,13 @@
             }
             document.getElementById('listSiswa').innerHTML = sHtml || '<p class="text-xs text-bMuted">Belum ada data siswa.</p>';
             
+            // Menyusun menu filter kelas unik
+            let selectKelas = document.getElementById('filterKelasSiswa');
+            selectKelas.innerHTML = '<option value="SEMUA">-- Semua Kelas --</option>';
+            Array.from(listKelas).sort().forEach(kls => {
+                selectKelas.innerHTML += `<option value="${kls}">${kls}</option>`;
+            });
+
             let gHtml = '';
             if(db.guru) {
                 db.guru.forEach(g => {
@@ -417,36 +445,64 @@
     
     function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
+    // DIOPTIMALKAN: Membaca status Hadir, Sakit, Izin, Alpa super cepat dengan multi-filter
     function renderDataRekap() {
         let html = '';
         const tglFilter = document.getElementById('filterTanggal').value;
         const blnFilter = document.getElementById('filterBulan').value;
+        const searchKey = document.getElementById('searchRekapSiswa').value.toLowerCase().trim();
+        const statusFilter = document.getElementById('filterStatusSiswa').value;
+        const kelasFilter = document.getElementById('filterKelasSiswa').value;
+
         cacheAbsensi.forEach(a => {
-            let matches = false;
+            let matchesTime = false;
             let tglRow = a.tanggal ? a.tanggal.substring(0, 10) : "";
-            if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matches = true;
-            if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matches = true;
-            if(!tglFilter && currentTab === 'harian') matches = true;
-            if(!blnFilter && currentTab === 'bulanan') matches = true;
-            if(matches) {
-                let stStyle = "text-amber-400";
-                if(a.status_masuk === 'Hadir') stStyle = "text-emerald-400";
-                if(a.status_masuk === 'Alpa') stStyle = "text-red-500";
+            
+            // 1. Filter Waktu (Hari/Bulan)
+            if(currentTab === 'harian' && tglFilter && tglRow === tglFilter) matchesTime = true;
+            if(currentTab === 'bulanan' && blnFilter && tglRow.substring(0, 7) === blnFilter) matchesTime = true;
+            if(!tglFilter && currentTab === 'harian') matchesTime = true;
+            if(!blnFilter && currentTab === 'bulanan') matchesTime = true;
+            
+            if(matchesTime) {
+                let namaSiswa = (a.nama_siswa || a.nama || "").toLowerCase();
+                let nisnSiswa = (a.nisn || "").toString();
+                let statusSiswa = a.status_masuk || "Alpa";
+                let kelasSiswa = a.kelas || "";
+
+                // 2. Filter Teks Pencarian Nama/NISN
+                if(searchKey !== "" && !namaSiswa.includes(searchKey) && !nisnSiswa.includes(searchKey)) return;
+
+                // 3. Filter Status (Hadir, Sakit, Izin, Alpa)
+                if(statusFilter !== "SEMUA" && statusSiswa !== statusFilter) return;
+
+                // 4. Filter Kelas
+                if(kelasFilter !== "SEMUA" && kelasSiswa.trim() !== kelasFilter.trim()) return;
+
+                // Set warna indikator status secara ekspres
+                let stStyle = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+                if(statusSiswa === 'Hadir') stStyle = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                if(statusSiswa === 'Alpa') stStyle = "text-red-500 bg-red-500/10 border-red-500/20";
+                if(statusSiswa === 'Izin') stStyle = "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
+                if(statusSiswa === 'Sakit') stStyle = "text-orange-400 bg-orange-500/10 border-orange-500/20";
+
                 html += `
-                <div class="bg-bCard p-4 rounded-xl border border-white/5 space-y-2">
-                    <div>
-                        <h4 class="text-sm font-bold text-white">${a.nama_siswa || a.nama}</h4>
-                        <p class="text-[10px] text-bMuted">Kelas: ${a.kelas} | ${tglRow}</p>
+                <div class="bg-bCard p-4 rounded-xl border border-white/5 flex flex-col justify-between gap-3 shadow-md hover:border-white/10 transition-all">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate">${a.nama_siswa || a.nama}</h4>
+                            <p class="text-[10px] text-bMuted truncate">Kelas: ${kelasSiswa} | ${tglRow}</p>
+                        </div>
+                        <span class="text-[10px] px-2.5 py-0.5 rounded font-bold border shrink-0 ${stStyle}">${statusSiswa}</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 text-xs">
-                        <div><p class="text-bMuted text-[10px]">Datang</p><p class="text-emerald-400 font-semibold">${a.jam_datang || '-'}</p></div>
-                        <div><p class="text-bMuted text-[10px]">Pulang</p><p class="text-cyan-400 font-semibold">${a.jam_pulang || '-'}</p></div>
+                    <div class="grid grid-cols-2 gap-2 pt-2.5 border-t border-white/5 text-xs">
+                        <div class="bg-bDark/40 p-1.5 rounded-lg border border-white/5"><p class="text-bMuted text-[9px] font-semibold uppercase">Masuk</p><p class="text-emerald-400 font-bold mt-0.5">${a.jam_datang || '--:--'}</p></div>
+                        <div class="bg-bDark/40 p-1.5 rounded-lg border border-white/5"><p class="text-bMuted text-[9px] font-semibold uppercase">Pulang</p><p class="text-cyan-400 font-bold mt-0.5">${a.jam_pulang || '--:--'}</p></div>
                     </div>
-                    <div class="text-[11px] bg-bDark/60 px-2 py-1 rounded text-right font-bold ${stStyle}">${a.status_masuk}</div>
                 </div>`;
             }
         });
-        document.getElementById('rekapListContainer').innerHTML = html || '<p class="text-xs text-bMuted p-2">Tidak ada data absensi untuk filter ini.</p>';
+        document.getElementById('rekapListContainer').innerHTML = html || '<div class="col-span-full p-4 bg-bCard rounded-xl border border-white/5 text-center text-xs text-bMuted">Data tidak ditemukan dengan filter tersebut.</div>';
     }
 
     function openModal(type) {
@@ -475,6 +531,7 @@
 
     function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
 
+    // FIX AMAN: Melengkapi baris form submit yang sebelumnya terpotong
     function handleFormSubmit(e) {
         e.preventDefault();
         Swal.fire({ title: 'Menyimpan data...', didOpen: () => Swal.showLoading() });
@@ -491,27 +548,39 @@
             payload.mapel = document.getElementById('fMapel').value;
         }
 
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => {
             if(res.success) {
                 Swal.fire('Berhasil!', res.message, 'success');
                 closeModal();
                 refreshDatabase();
-            } else { Swal.fire('Gagal', res.message, 'error'); }
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        }).catch(err => {
+            Swal.fire('Error', 'Terjadi kesalahan sistem: ' + err, 'error');
         });
     }
 
     function simpanManual(e) {
         e.preventDefault();
-        Swal.fire({ title: 'Memproses data...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Menyimpan Absensi...', didOpen: () => Swal.showLoading() });
         const payload = {
-            action: 'absenManual',
+            action: 'inputManual',
             nisn: document.getElementById('mNisn').value,
             status: document.getElementById('mStatus').value,
             tipe: document.getElementById('mTipe').value
         };
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('Berhasil!', res.message, 'success'); refreshDatabase(); }
-            else { Swal.fire('Gagal', res.message, 'error'); }
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                Swal.fire('Berhasil!', res.message, 'success');
+                document.getElementById('mNisn').value = '';
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        }).catch(err => {
+            Swal.fire('Error', 'Gagal memproses data.', 'error');
         });
     }
   </script>
