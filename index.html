@@ -40,8 +40,8 @@
 <body class="antialiased min-h-screen flex">
 
   <script>
-    // URL API Google Apps Script Anda yang sudah ditanam permanen
-    const API_URL = "https://script.google.com/macros/s/AKfycby3UEozJmP_3mbSTHWu4szUJx1lwp7Gv5yKPP-s4lupyNY2ZBKsWKmjO51kKAFjOWEF/exec";
+    // URL Web App Google Apps Script Anda
+    const API_URL = "https://script.google.com/macros/s/AKfycbwML5RcT3QSlkwnarMaz6CkCOSCYd5MPeZscrua2JOrcWpggJkbuAxiKC5d9J94geHT/exec";
   </script>
 
   <aside id="sidebarMenu" class="fixed inset-y-0 left-0 w-64 bg-bCard border-r border-white/5 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
@@ -496,12 +496,12 @@
           let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(siswa.nisn).trim() && a.tanggal === tglFilt);
           if (match) {
             hasilData.push({
-              nisn: siswa.nisn, nama: siswa.nama, kelas: siswa.kelas,
-              jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status
+              nisn: siswa.nisn.trim(), nama: siswa.nama.trim(), kelas: siswa.kelas.trim(),
+              jam_Masuk: match.jam_Masuk.trim(), jam_Pulang: match.jam_Pulang.trim(), status: match.status.trim()
             });
           } else {
             hasilData.push({
-              nisn: siswa.nisn, nama: siswa.nama, kelas: siswa.kelas,
+              nisn: siswa.nisn.trim(), nama: siswa.nama.trim(), kelas: siswa.kelas.trim(),
               jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa'
             });
           }
@@ -511,8 +511,8 @@
           if (a.tipe_User === 'Siswa' && a.tanggal.substring(0, 7) === blnFilt) {
             let sObj = cacheSiswa.find(s => String(s.nisn).trim() === String(a.id_User).trim());
             hasilData.push({
-              nisn: a.id_User, nama: a.nama, kelas: sObj ? sObj.kelas : '-',
-              jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status
+              nisn: a.id_User.trim(), nama: a.nama.trim(), kelas: sObj ? sObj.kelas.trim() : '-',
+              jam_Masuk: a.jam_Masuk.trim(), jam_Pulang: a.jam_Pulang.trim(), status: a.status.trim()
             });
           }
         });
@@ -585,12 +585,12 @@
           let match = cacheAbsensi.find(a => String(a.id_User).trim() === String(guru.nip).trim() && a.tanggal === tglFilt);
           if (match) {
             hasilData.push({
-              nip: guru.nip, nama: guru.nama, mapel: guru.mapel,
-              jam_Masuk: match.jam_Masuk, jam_Pulang: match.jam_Pulang, status: match.status
+              nip: guru.nip.trim(), nama: guru.nama.trim(), mapel: guru.mapel.trim(),
+              jam_Masuk: match.jam_Masuk.trim(), jam_Pulang: match.jam_Pulang.trim(), status: match.status.trim()
             });
           } else {
             hasilData.push({
-              nip: guru.nip, nama: guru.nama, mapel: guru.mapel,
+              nip: guru.nip.trim(), nama: guru.nama.trim(), mapel: guru.mapel.trim(),
               jam_Masuk: '-', jam_Pulang: '-', status: 'Alpa'
             });
           }
@@ -600,8 +600,8 @@
           if (a.tipe_User === 'Guru' && a.tanggal.substring(0, 7) === blnFilt) {
             let gObj = cacheGuru.find(g => String(g.nip).trim() === String(a.id_User).trim());
             hasilData.push({
-              nip: a.id_User, nama: a.nama, mapel: gObj ? gObj.mapel : '-',
-              jam_Masuk: a.jam_Masuk, jam_Pulang: a.jam_Pulang, status: a.status
+              nip: a.id_User.trim(), nama: a.nama.trim(), mapel: gObj ? gObj.mapel.trim() : '-',
+              jam_Masuk: a.jam_Masuk.trim(), jam_Pulang: a.jam_Pulang.trim(), status: a.status.trim()
             });
           }
         });
@@ -693,12 +693,10 @@
       if (activeScanner) { activeScanner.clear().catch(e => console.log(e)); activeScanner = null; }
     }
 
-    // === PERBAIKAN PROTOKOL KIRIM DATA ANTI-CORS ===
     function kirimAbsenScanQR(nisnValue) {
       Swal.fire({ title: 'Memproses Absensi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
       
-      // Mengubah tembakan POST ke GET terenkripsi parameter url agar lolos kebijakan CORS
-      fetch(`${API_URL}?action=scanQR&nisn=${encodeURIComponent(nisnValue)}`)
+      fetch(`${API_URL}?action=scanQR&nisn=${encodeURIComponent(nisnValue.trim())}`)
       .then(res => res.json())
       .then(res => {
         if (res.success) {
@@ -716,11 +714,10 @@
       });
     }
 
-    // === PERBAIKAN PROTOKOL ABSEN MANUAL ANTI-CORS ===
     function simpanManual(event) {
       event.preventDefault();
       const kat = document.getElementById('mKategori').value;
-      const idUser = document.getElementById('mNisn').value;
+      const idUser = document.getElementById('mNisn').value.trim();
       const stat = document.getElementById('mStatus').value;
       
       Swal.fire({ title: 'Menyimpan Keterangan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -779,12 +776,12 @@
       let payload = {};
       if (currentModalType === 'siswa') {
         payload = {
-          action: 'addSiswa', nisn: document.getElementById('f_nisn').value, nama: document.getElementById('f_nama').value,
-          kelas: document.getElementById('f_kelas').value, whatsapp: document.getElementById('f_wa').value
+          action: 'addSiswa', nisn: document.getElementById('f_nisn').value.trim(), nama: document.getElementById('f_nama').value.trim(),
+          kelas: document.getElementById('f_kelas').value.trim(), whatsapp: document.getElementById('f_wa').value.trim()
         };
       } else {
         payload = {
-          action: 'addGuru', nip: document.getElementById('f_nip').value, nama: document.getElementById('f_nama').value, mapel: document.getElementById('f_mapel').value
+          action: 'addGuru', nip: document.getElementById('f_nip').value.trim(), nama: document.getElementById('f_nama').value.trim(), mapel: document.getElementById('f_mapel').value.trim()
         };
       }
       Swal.fire({ title: 'Menyimpan Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -793,18 +790,23 @@
       .then(res => { if(res.success) { Swal.fire({ icon: 'success', title: 'Sukses!', text: res.message }); closeModal(); muatSemuaData(); } });
     }
 
+    // === REVOLUSI ANTIPENUMPUKAN BARIS TABLE PDF (BUG FIX NO 67, 68, 69) ===
     function cetakPdfSiswa() {
       const tgl = document.getElementById('filterTanggal').value;
-      let barisHtml = dataSiswaTerfilterGlobal.map((s, idx) => `
-        <tr>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${idx+1}</td>
-          <td style="border:1px solid #000; padding:6px;">${s.nisn}</td>
-          <td style="border:1px solid #000; padding:6px;">${s.nama}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.kelas}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.jam_Masuk}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${s.jam_Pulang}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center; font-weight:bold;">${s.status}</td>
-        </tr>`).join('');
+      
+      // Bersihkan whitespace liar menggunakan template string terisolasi total per elemen item
+      let barisHtml = "";
+      dataSiswaTerfilterGlobal.forEach((s, idx) => {
+        barisHtml += "<tr>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + (idx + 1) + "</td>" +
+          "<td style='border:1px solid #000; padding:6px;'>" + String(s.nisn).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px;'>" + String(s.nama).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(s.kelas).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(s.jam_Masuk).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(s.jam_Pulang).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center; font-weight:bold;'>" + String(s.status).trim() + "</td>" +
+        "</tr>";
+      });
 
       let win = window.open('', '_blank');
       win.document.write(`
@@ -815,10 +817,13 @@
           <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:20px;">
             <thead>
               <tr style="background-color:#F2F2F2;">
-                <th style="border:1px solid #000; padding:8px;">No</th><th style="border:1px solid #000; padding:8px;">NISN</th>
-                <th style="border:1px solid #000; padding:8px;">Nama Siswa</th><th style="border:1px solid #000; padding:8px;">Kelas</th>
-                <th style="border:1px solid #000; padding:8px;">Jam Masuk</th><th style="border:1px solid #000; padding:8px;">Jam Pulang</th>
-                <th style="border:1px solid #000; padding:8px;">Status</th>
+                <th style="border:1px solid #000; padding:8px; width:5%;">No</th>
+                <th style="border:1px solid #000; padding:8px; width:15%;">NISN</th>
+                <th style="border:1px solid #000; padding:8px; width:35%;">Nama Siswa</th>
+                <th style="border:1px solid #000; padding:8px; width:10%;">Kelas</th>
+                <th style="border:1px solid #000; padding:8px; width:11%;">Jam Masuk</th>
+                <th style="border:1px solid #000; padding:8px; width:11%;">Jam Pulang</th>
+                <th style="border:1px solid #000; padding:8px; width:13%;">Status</th>
               </tr>
             </thead>
             <tbody>${barisHtml}</tbody>
@@ -829,16 +834,19 @@
 
     function cetakPdfGuru() {
       const tgl = document.getElementById('filterTanggalGuru').value;
-      let barisHtml = dataGuruTerfilterGlobal.map((g, idx) => `
-        <tr>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${idx+1}</td>
-          <td style="border:1px solid #000; padding:6px;">${g.nip}</td>
-          <td style="border:1px solid #000; padding:6px;">${g.nama}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.mapel}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.jam_Masuk}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center;">${g.jam_Pulang}</td>
-          <td style="border:1px solid #000; padding:6px; text-align:center; font-weight:bold;">${g.status}</td>
-        </tr>`).join('');
+      
+      let barisHtml = "";
+      dataGuruTerfilterGlobal.forEach((g, idx) => {
+        barisHtml += "<tr>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + (idx + 1) + "</td>" +
+          "<td style='border:1px solid #000; padding:6px;'>" + String(g.nip).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px;'>" + String(g.nama).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(g.mapel).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(g.jam_Masuk).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center;'>" + String(g.jam_Pulang).trim() + "</td>" +
+          "<td style='border:1px solid #000; padding:6px; text-align:center; font-weight:bold;'>" + String(g.status).trim() + "</td>" +
+        "</tr>";
+      });
 
       let win = window.open('', '_blank');
       win.document.write(`
@@ -849,10 +857,13 @@
           <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:20px;">
             <thead>
               <tr style="background-color:#F2F2F2;">
-                <th style="border:1px solid #000; padding:8px;">No</th><th style="border:1px solid #000; padding:8px;">NIP</th>
-                <th style="border:1px solid #000; padding:8px;">Nama Guru</th><th style="border:1px solid #000; padding:8px;">Mata Pelajaran</th>
-                <th style="border:1px solid #000; padding:8px;">Jam Masuk</th><th style="border:1px solid #000; padding:8px;">Jam Pulang</th>
-                <th style="border:1px solid #000; padding:8px;">Status</th>
+                <th style="border:1px solid #000; padding:8px; width:5%;">No</th>
+                <th style="border:1px solid #000; padding:8px; width:15%;">NIP</th>
+                <th style="border:1px solid #000; padding:8px; width:35%;">Nama Guru</th>
+                <th style="border:1px solid #000; padding:8px; width:15%;">Mata Pelajaran</th>
+                <th style="border:1px solid #000; padding:8px; width:11%;">Jam Masuk</th>
+                <th style="border:1px solid #000; padding:8px; width:11%;">Jam Pulang</th>
+                <th style="border:1px solid #000; padding:8px; width:13%;">Status</th>
               </tr>
             </thead>
             <tbody>${barisHtml}</tbody>
