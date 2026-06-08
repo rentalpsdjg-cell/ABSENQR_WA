@@ -59,6 +59,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
 <div class="bg-blogger-override flex flex-col md:flex-row">
@@ -583,7 +585,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
         function onQrCodeScanSuccess(decodedText, decodedResult) {
             const now = Date.now();
             if (decodedText === lastScannedText && (now - lastScannedTime) < 5000) {
-                return; 
+                return; // Mengelakkan imbasan berturut-turut dalam masa 5 saat
             }
 
             lastScannedText = decodedText;
@@ -724,6 +726,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 iconHtml = `<i class="fa-solid fa-circle-xmark text-brand-pink"></i>`;
             }
 
+            // ID Unik untuk baris log yang berjaya dikesan
             const logIdAttr = isRealLog ? `id="log-item-${lastScannedText}"` : "";
             const waPillHtml = isRealLog ? `<span class="wa-status-pill px-2 py-0.5 rounded bg-gray-100 text-gray-400 text-[10px]"><i class="fa-solid fa-spinner animate-spin"></i> Memproses WA...</span>` : "";
 
@@ -756,15 +759,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 gain.connect(ctx.destination);
 
                 if (type === 'success') {
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); 
-                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); 
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
                     gain.gain.setValueAtTime(0.1, ctx.currentTime);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.25);
                 } else if (type === 'warning') {
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(330, ctx.currentTime); 
-                    osc.frequency.setValueAtTime(220, ctx.currentTime + 0.12); 
+                    osc.frequency.setValueAtTime(330, ctx.currentTime); // E4
+                    osc.frequency.setValueAtTime(220, ctx.currentTime + 0.12); // A3
                     gain.gain.setValueAtTime(0.15, ctx.currentTime);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.3);
@@ -786,6 +789,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             const body = document.getElementById('table-peserta-body');
             const searchVal = document.getElementById('search-peserta').value.trim().toLowerCase();
 
+            // Tapis data mengikut bar carian
             const filtered = masterPeserta.filter(x => 
                 x.nama.toLowerCase().includes(searchVal) || 
                 x.id.toLowerCase().includes(searchVal) ||
@@ -925,6 +929,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             }
 
             const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Urutkan senarai mengikut abjad nama peserta
             const sortedData = [...filtered].sort((a,b) => a.nama.localeCompare(b.nama));
 
             let tbodyHtml = sortedData.map((row, idx) => `
@@ -939,6 +945,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             `).join('');
 
             const printWindow = window.open('', '_blank');
+            
+            // Trik mengelakkan parser kompilasi Blogger untuk kod script tag tertentu
             const openScript = "<" + "script" + ">";
             const closeScript = "</" + "script" + ">";
 
@@ -950,12 +958,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                     <style>
                         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #333; line-height: 1.4; }
                         .header-doc { text-align: center; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 10px; }
-                        .header-doc h2 { margin: 0; font-size: 20px; }
+                        .header-doc h2 { margin: 0; uppercase tracking-wide; font-size: 20px; }
                         .header-doc p { margin: 4px 0 0 0; font-size: 12px; color: #666; font-weight: 500; }
                         .meta-info { margin-bottom: 15px; font-size: 12px; }
                         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
                         th, td { border: 1px solid #222; padding: 8px 10px; text-align: left; }
-                        th { background-color: #f2f2f2; font-weight: bold; font-size: 11px; }
+                        th { background-color: #f2f2f2; font-weight: bold; uppercase; font-size: 11px; }
                         .footer { margin-top: 40px; font-size: 13px; display: flex; justify-content: flex-end; }
                         .sign-box { text-align: center; width: 280px; }
                         .sign-space { height: 75px; }
@@ -1001,7 +1009,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             printWindow.document.close();
         });
 
-        // Fail Fungsi Perbaikan Eksport Data Rekod Ke CSV / Excel Format (Fixed Native Download Link)
+        // Fail Fungsi Eksport Data Rekod Ke CSV / Excel Format (Export Engine)
         document.getElementById('btn-download-excel').addEventListener('click', () => {
             const filterKls = document.getElementById('filter-kelas-rekap').value;
             const filtered = logAbsensi.filter(x => filterKls === 'ALL' || x.kategori === filterKls);
@@ -1020,18 +1028,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 csvContent += `${index + 1},"${row.id}","${cleanName}","${row.kategori}","${row.waktu}","HADIR","${row.waStatus}"\r\n`;
             });
 
-            // Menggunakan metode pengunduhan asli (Native URL Object Blob) agar tidak bergantung pada library FileSaver.js yang rusak/terpotong
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const fileDate = new Date().toISOString().slice(0,10);
-            const link = document.createElement("a");
+            saveAs(blob, `Rekap_Kehadiran_${filterKls}_${fileDate}.csv`);
             
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Rekap_Kehadiran_${filterKls}_${fileDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            Swal.fire({ icon: 'success', title: 'Eksport Berjaya', text: 'Fail Excel (CSV) telah berjaya dimuat turun.', confirmButtonColor: '#4DBBFF' });
+            Swal.fire({ icon: 'success', title: 'Eksport Berjaya', text: 'Fail CSV/Excel telah berjaya dimuat turun.', confirmButtonColor: '#4DBBFF' });
         });
     </script>
 </body>
