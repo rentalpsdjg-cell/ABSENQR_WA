@@ -91,12 +91,12 @@
   </div>
 
   <script>
-    // URL API Google Apps Script yang sudah digabungkan secara otomatis
+    // URL API Google Apps Script milik Anda yang sudah digabungkan secara otomatis
     const API_URL = "https://script.google.com/macros/s/AKfycbxnHz6upXGNTRNBomPKBhY7TZPRBwrbQWT1LO_CGpoGOrM-waLJLlD8bMXIeCB641vVgQ/exec";
     
     let semuaPeserta = [];
 
-    // Trigger otomatis saat web dimuat di GitHub Pages
+    // Mengambil data otomatis saat halaman GitHub Pages dibuka
     window.onload = function() {
       muatDataPeserta();
     };
@@ -115,7 +115,7 @@
           }
         })
         .catch(err => {
-          tbody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-red-500">Gagal terhubung ke API. Pastikan skrip Apps Script sudah di-deploy sebagai 'Anyone'.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-red-500">Gagal terhubung ke API. Pastikan skrip Apps Script di-deploy ulang sebagai 'New Version'.</td></tr>`;
         });
     }
 
@@ -141,7 +141,7 @@
       `).join('');
     }
 
-    // Fungsi Pengiriman Tambah Peserta Baru
+    // Fungsi Tambah Peserta Baru
     function simpanData(event) {
       event.preventDefault();
       
@@ -163,11 +163,11 @@
       .then(res => res.json())
       .then(res => {
         alert(res.message);
-        muatDataPeserta(); // Reload database instan
+        muatDataPeserta(); // Memuat ulang tabel secara instan
         document.getElementById('formPeserta').reset();
       })
       .catch(err => {
-        alert('Gagal mengirim perintah! Periksa konfigurasi Deployment Apps Script.');
+        alert('Gagal mengirim perintah! Pastikan deployment Apps Script Anda sudah benar.');
         muatDataPeserta();
       });
     }
@@ -189,7 +189,7 @@
       }
     }
 
-    // Pencarian Sisi Klien (Super Cepat & Hemat Kuota API)
+    // Fitur pencarian instan di sisi klien
     function cariData() {
       const keyword = document.getElementById('inputCari').value.toLowerCase();
       const hasilFilter = semuaPeserta.filter(p => 
