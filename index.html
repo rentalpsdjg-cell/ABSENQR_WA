@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ASM Absensi Super Engine v7 - Final Perfect</title>
+  <title>ASM Absensi Super Engine v7 - Final Fixed</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -11,7 +11,6 @@
 </head>
 <body class="bg-slate-50 font-['Plus_Jakarta_Sans'] text-slate-800 antialiased min-h-screen pb-24 md:pb-0">
 
-  <!-- LOGIN PANEL -->
   <div id="auth-layer" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
     <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl border border-slate-100">
       <div class="text-center mb-6">
@@ -33,10 +32,8 @@
     </div>
   </div>
 
-  <!-- AREA APLIKASI UTAMA -->
   <div id="app-layer" class="hidden min-h-screen md:flex">
     
-    <!-- SIDEBAR UTAMA (DEKSTOP) -->
     <aside class="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col fixed inset-y-0 left-0 z-40 shadow-xl hide-on-print">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
         <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">A7</div>
@@ -52,7 +49,6 @@
       <div class="p-4 border-t border-slate-800"><button onclick="handleLogout()" class="w-full bg-red-950/30 hover:bg-red-900/40 text-red-400 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer">🚪 Keluar Admin</button></div>
     </aside>
 
-    <!-- BOTTOM NAVBAR (MOBILE) -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl flex justify-around items-center py-2 z-40 hide-on-print">
       <button onclick="switchTab('dashboard')" id="mb-dashboard" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3 rounded-xl"><span class="text-lg">📊</span>Dasbor</button>
       <button onclick="switchTab('scan')" id="mb-scan" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3 rounded-xl"><span class="text-lg">📷</span>Scan</button>
@@ -61,11 +57,9 @@
       <button onclick="switchTab('pengaturan')" id="mb-pengaturan" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3 rounded-xl"><span class="text-lg">⚙️</span>Setelan</button>
     </nav>
 
-    <!-- CONTAINER PANEL UTAMA -->
     <main class="flex-1 md:pl-64 flex flex-col min-w-0">
       <div class="p-4 md:p-8 flex-1">
         
-        <!-- DASHBOARD MONITOR -->
         <section id="tab-dashboard" class="space-y-6">
           <div class="flex justify-between items-center">
             <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Status Kehadiran Hari Ini</h1>
@@ -85,6 +79,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <select id="fast-student-id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></select>
               <select id="fast-student-status" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                <option value="HADIR">✅ HADIR</option>
                 <option value="IZIN">✉️ IZIN</option>
                 <option value="SAKIT">🤒 SAKIT</option>
                 <option value="ALPA">❌ ALPA</option>
@@ -104,7 +99,6 @@
           </div>
         </section>
 
-        <!-- SCANNER QR CODE -->
         <section id="tab-scan" class="hidden space-y-6">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Kamera Pemindai Barcode / QR</h1>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -125,7 +119,6 @@
           </div>
         </section>
 
-        <!-- DATABASE SISWA -->
         <section id="tab-peserta" class="hidden space-y-6">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Database Siswa / Jurusan</h1>
@@ -147,7 +140,6 @@
           </div>
         </section>
 
-        <!-- LAPORAN REKAPITULASI -->
         <section id="tab-rekap" class="hidden space-y-6">
           <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 hide-on-print">
             <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Laporan Rekapitulasi</h1>
@@ -167,22 +159,32 @@
               <hr class="my-4 border-slate-200">
             </div>
             <table class="w-full text-left text-sm min-w-[700px]">
-              <thead><tr class="border-b border-slate-200 text-slate-400 text-[11px] font-bold uppercase bg-slate-50"><th class="py-3 px-4">Tanggal</th><th class="py-3 px-4">ID</th><th class="py-3 px-4">Nama Peserta</th><th class="py-3 px-4">Jurusan</th><th class="py-3 px-4 text-emerald-600">Jam Datang</th><th class="py-3 px-4 text-blue-600">Jam Pulang</th><th class="py-3 px-4 text-center">Status Absen</th></tr></thead>
+              <thead><tr class="border-b border-slate-200 text-slate-400 text-[11px] font-bold uppercase bg-slate-50"><th class="py-3 px-4">Tanggal</th><th class="py-3 px-4">ID</th><th class="py-3 px-4">Nama Peserta</th><th class="py-3 px-4">Jurusan/Kelas</th><th class="py-3 px-4 text-emerald-600">Jam Datang</th><th class="py-3 px-4 text-blue-600">Jam Pulang</th><th class="py-3 px-4 text-center">Status Absen</th></tr></thead>
               <tbody id="tabelRekapBody" class="divide-y divide-slate-100 text-slate-600 font-medium"></tbody>
             </table>
           </div>
         </section>
 
-        <!-- PENGATURAN -->
         <section id="tab-pengaturan" class="hidden space-y-6">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Konfigurasi Aturan Jam & Token</h1>
           <form id="formSettings" onsubmit="simpanSettings(event)" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Instansi / Sekolah</label><input type="text" id="set-instansiNama" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
-              <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Maksimal Jam Masuk (HH:MM)</label><input type="time" id="set-jamMasuk" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Instansi / Sekolah</label>
+                <input type="text" id="set-instansiNama" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Maksimal Jam Masuk (HH:MM)</label>
+                <input type="time" id="set-jamMasuk" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+              </div>
             </div>
-            <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fonnte Token Auth WhatsApp</label><input type="text" id="set-waToken" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
-            <div class="flex justify-end"><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm cursor-pointer transition-all shadow-md shadow-blue-500/10">💾 Simpan Setelan</button></div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fonnte Token Auth WhatsApp</label>
+              <input type="text" id="set-waToken" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm cursor-pointer transition-all shadow-md shadow-blue-500/10">💾 Simpan Setelan</button>
+            </div>
           </form>
         </section>
 
@@ -190,7 +192,6 @@
     </main>
   </div>
 
-  <!-- AREA MODAL KARTU QR INDEPENDEN (FIXED PRINT INTERFERENCE) -->
   <div id="modalQR" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 border border-slate-100 shadow-2xl text-center space-y-4 printable-card-container">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3 hide-on-print">
@@ -209,7 +210,6 @@
     </div>
   </div>
 
-  <!-- MODAL TAMBAH ANGGOTA -->
   <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 border shadow-xl">
       <div class="flex justify-between items-center mb-4"><h3 class="text-md font-bold text-slate-800">Tambah Anggota Baru</h3><button onclick="tutupModal()" class="text-xl font-bold text-slate-400 cursor-pointer">&times;</button></div>
@@ -223,41 +223,29 @@
     </div>
   </div>
 
-  <!-- MEDIA CSS - MEMISAHKAN LAYOUT CETAK KARTU VS REKAP LAPORAN -->
   <style>
     .animate-fade-in { animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
     .show-on-print { display: none !important; }
 
     @media print {
-      /* Sembunyikan navigasi & tombol sistem */
-      .hide-on-print, aside, button, select, label, input, form, #auth-layer, nav { 
-        display: none !important; 
-      }
+      .hide-on-print, aside, button, select, label, input, form, #auth-layer, nav { display: none !important; }
       body, main { background: white !important; padding: 0 !important; margin: 0 !important; }
       #app-layer { display: block !important; }
 
-      /* JIKA PROSES CETAK LAPORAN BULANAN */
       body:not(.cetak-mode-kartu) #tab-rekap { display: block !important; }
-      body:not(.cetak-mode-kartu) #area-rekap-cetak {
-        position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important;
-      }
+      body:not(.cetak-mode-kartu) #area-rekap-cetak { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; }
       body:not(.cetak-mode-kartu) #modalQR { display: none !important; }
 
-      /* JIKA PROSES CETAK KARTU QR SISWA */
       body.cetak-mode-kartu #tab-rekap { display: none !important; }
-      body.cetak-mode-kartu #modalQR { 
-        display: flex !important; background: white !important; position: fixed; inset: 0; box-shadow: none !important; z-index: 9999; 
-      }
+      body.cetak-mode-kartu #modalQR { display: flex !important; background: white !important; position: fixed; inset: 0; box-shadow: none !important; z-index: 9999; }
       body.cetak-mode-kartu .printable-card-container { border: none !important; box-shadow: none !important; margin: auto !important; padding: 20px !important; }
       .show-on-print { display: block !important; }
     }
   </style>
 
-  <!-- CONTROL ENGINE DRIVER JAVASCRIPT -->
   <script>
-    // MASUKKAN URL GOOGLE WEB APP SCRIPT ANDA DI SINI
-    const CLOUD_API = "https://script.google.com/macros/s/AKfycbwP-bqrc9r4DcZmic1Wpl8iq_XdRTxTt2s-3pOGuNdG4Cj8FCFivw3wbOWDwLGsJf6hAQ/exec";
+    const CLOUD_API = "https://script.google.com/macros/s/AKfycbwa7HAilmlyQKbxPlZavEQ9zxpSYz9KGnpXsDfVn5uxmbAYyWBnwY_6NhHl--s6VlBvfA/exec";
     
     let masterPeserta = [];
     let masterRekap = [];
@@ -345,7 +333,14 @@
           document.getElementById('c-alpa').innerText = res.data.counter.alpa || 0;
           
           document.getElementById('liveFeedBody').innerHTML = res.data.terbaru.map(t => `
-            <tr class="hover:bg-slate-50 transition-all"><td class="py-3 px-5">${t.tanggal}</td><td class="py-3 px-5 text-slate-900 font-semibold">${t.nama}</td><td class="py-3 px-5 text-xs text-indigo-600 font-bold">${t.jurusan}</td><td class="py-3 px-5 font-mono text-emerald-600 font-bold">${t.datang}</td><td class="py-3 px-5 font-mono text-blue-600 font-bold">${t.pulang}</td><td class="py-3 px-5 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(t.statusKehadiran)}">${t.statusKehadiran}</span></td></tr>
+            <tr class="hover:bg-slate-50 transition-all">
+              <td class="py-3 px-5">${t.tanggal}</td>
+              <td class="py-3 px-5 text-slate-900 font-semibold">${t.nama}</td>
+              <td class="py-3 px-5 text-xs text-indigo-600 font-bold">${t['Kelas/Jurusan'] || t.jurusan || '-'}</td>
+              <td class="py-3 px-5 font-mono text-emerald-600 font-bold">${t['Jam Masuk'] || t.datang || '-'}</td>
+              <td class="py-3 px-5 font-mono text-blue-600 font-bold">${t['Jam Pulang'] || t.pulang || '-'}</td>
+              <td class="py-3 px-5 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(t.statusKehadiran)}">${t.statusKehadiran}</span></td>
+            </tr>
           `).join('') || '<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada antrean tap masuk hari ini.</td></tr>';
         }
       });
@@ -363,19 +358,25 @@
       fetch(`${CLOUD_API}?action=getPeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
         if(res.status==='success') {
           masterPeserta = res.data;
-          document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} — [${p.jurusan}]</option>`).join('');
+          document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} — [${p['Kelas/Jurusan'] || p.jurusan || ''}]</option>`).join('');
           
-          document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => `
-            <tr class="hover:bg-slate-50 transition-all">
-              <td class="py-3 px-5 font-mono font-bold text-slate-700">${p.id}</td><td class="py-3 px-5 text-slate-900 font-bold">${p.nama}</td><td class="py-3 px-5 text-xs font-bold text-indigo-600">${p.jurusan}</td><td class="py-3 px-5 font-mono text-slate-500">${p.wa}</td>
-              <td class="py-3 px-5 text-center flex justify-center gap-1.5">
-                <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${p.jurusan}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🪪 QR</button>
-                <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-2 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🗑️</button>
-              </td>
-            </tr>
-          `).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Database kosong.</td></tr>';
+          document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => {
+            let jur = p['Kelas/Jurusan'] || p.jurusan || '-';
+            return `
+              <tr class="hover:bg-slate-50 transition-all">
+                <td class="py-3 px-5 font-mono font-bold text-slate-700">${p.id}</td>
+                <td class="py-3 px-5 text-slate-900 font-bold">${p.nama}</td>
+                <td class="py-3 px-5 text-xs font-bold text-indigo-600">${jur}</td>
+                <td class="py-3 px-5 font-mono text-slate-500">${p.wa || p.WhatsApp || '-'}</td>
+                <td class="py-3 px-5 text-center flex justify-center gap-1.5">
+                  <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${jur}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🪪 QR</button>
+                  <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-2 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🗑️</button>
+                </td>
+              </tr>
+            `;
+          }).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Database kosong.</td></tr>';
           
-          let listJurusan = [...new Set(masterPeserta.map(p => p.jurusan))];
+          let listJurusan = [...new Set(masterPeserta.map(p => p['Kelas/Jurusan'] || p.jurusan).filter(Boolean))];
           document.getElementById('filter-jurusan').innerHTML = '<option value="ALL">Semua Jurusan</option>' + listJurusan.map(j => `<option value="${j}">${j}</option>`).join('');
         }
       });
@@ -385,10 +386,8 @@
       document.getElementById('qr-card-nama').innerText = nama;
       document.getElementById('qr-card-id').innerText = id;
       document.getElementById('qr-card-jurusan').innerText = jurusan;
-      
       const containerQR = document.getElementById('canvas-qrcode');
       containerQR.innerHTML = "";
-      
       qrcodeGeneratorInstance = new QRCode(containerQR, {
         text: id, width: 170, height: 170, colorDark : "#0f172a", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
       });
@@ -450,13 +449,22 @@
       const filterJurusan = document.getElementById('filter-jurusan').value;
       const filterBulan = document.getElementById('filter-bulan').value;
       let filteredData = masterRekap;
-      if(filterJurusan !== 'ALL') filteredData = filteredData.filter(r => r.jurusan === filterJurusan);
-      if(filterBulan) filteredData = filteredData.filter(r => r.waktu.substring(0, 7) === filterBulan);
+      
+      if(filterJurusan !== 'ALL') {
+        filteredData = filteredData.filter(r => (r['Kelas/Jurusan'] || r.jurusan) === filterJurusan);
+      }
+      if(filterBulan) {
+        filteredData = filteredData.filter(r => r.waktu && r.waktu.substring(0, 7) === filterBulan);
+      }
 
       document.getElementById('tabelRekapBody').innerHTML = filteredData.map(r => `
         <tr class="hover:bg-slate-50 transition-all">
-          <td class="py-3 px-4 font-semibold">${r.waktu}</td><td class="py-3 px-4 font-mono">${r.id}</td><td class="py-3 px-4 text-slate-900 font-bold">${r.nama}</td><td class="py-3 px-4 text-xs font-bold text-slate-500">${r.jurusan}</td>
-          <td class="py-3 px-4 text-emerald-600 font-mono font-bold">${r.datang}</td><td class="py-3 px-4 text-blue-600 font-mono font-bold">${r.pulang}</td>
+          <td class="py-3 px-4 font-semibold">${r.waktu || r.Tanggal || '-'}</td>
+          <td class="py-3 px-4 font-mono">${r.id || '-'}</td>
+          <td class="py-3 px-4 text-slate-900 font-bold">${r.nama || '-'}</td>
+          <td class="py-3 px-4 text-xs font-bold text-slate-500">${r['Kelas/Jurusan'] || r.jurusan || '-'}</td>
+          <td class="py-3 px-4 text-emerald-600 font-mono font-bold">${r['Jam Masuk'] || r.datang || '-'}</td>
+          <td class="py-3 px-4 text-blue-600 font-mono font-bold">${r['Jam Pulang'] || r.pulang || '-'}</td>
           <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(r.statusKehadiran)}">${r.statusKehadiran}</span></td>
         </tr>
       `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada log rekapitulasi.</td></tr>';
