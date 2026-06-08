@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HomeEd Absensi Super Engine v5</title>
+  <title>HomeEd Absensi Super Engine v6</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -27,8 +27,8 @@
   <div id="app-layer" class="hidden w-full flex min-h-screen">
     <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 left-0 z-40 class-hide-print shadow-xl">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">H5</div>
-        <div><h2 class="font-bold text-white text-sm">HomeEd Control</h2><p class="text-[10px] text-slate-500">Engine v5.0 Fixed</p></div>
+        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">H6</div>
+        <div><h2 class="font-bold text-white text-sm">HomeEd Control</h2><p class="text-[10px] text-slate-500">Engine v6.0 Production</p></div>
       </div>
       <nav class="flex-1 p-4 space-y-1">
         <button onclick="switchTab('dashboard')" id="m-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">📊 Dashboard Monitor</button>
@@ -109,7 +109,7 @@
           </div>
           <div class="bg-white rounded-2xl border p-6 shadow-xs">
             <table class="w-full text-left text-sm">
-              <thead><tr class="border-b text-slate-400 text-xs font-semibold uppercase"><th class="py-3 px-4">ID Peserta</th><th class="py-3 px-4">Nama Lengkap</th><th class="py-3 px-4">Jurusan</th><th class="py-3 px-4">WhatsApp Wali</th><th class="py-3 px-4 text-center">Aksi</th></tr></thead>
+              <thead><tr class="border-b text-slate-400 text-xs font-semibold uppercase"><th class="py-3 px-4">ID Peserta</th><th class="py-3 px-4">Nama Lengkap</th><th class="py-3 px-4">Jurusan</th><th class="py-3 px-4">WhatsApp Wali</th><th class="py-3 px-4 text-center">Aksi Pembuatan Kartu</th></tr></thead>
               <tbody id="tabelPesertaBody" class="divide-y divide-slate-100 text-slate-600"></tbody>
             </table>
           </div>
@@ -159,7 +159,7 @@
 
   <div id="modalQR" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 border shadow-2xl text-center space-y-4">
-      <div class="flex justify-between items-center border-b pb-2"><h3 class="font-bold text-slate-800">Kartu QR Digital</h3><button onclick="tutupModalQR()" class="text-xl text-slate-400 font-bold">&times;</button></div>
+      <div class="flex justify-between items-center border-b pb-2"><h3 class="font-bold text-slate-800">Kartu QR Absensi</h3><button onclick="tutupModalQR()" class="text-xl text-slate-400 font-bold cursor-pointer">&times;</button></div>
       <div class="p-4 bg-slate-100 rounded-xl inline-block mx-auto">
         <img id="qr-card-image" src="" alt="QR Code" class="w-48 h-48 border-2 border-white shadow-xs">
       </div>
@@ -168,19 +168,19 @@
         <p id="qr-card-id" class="text-sm font-mono text-blue-600 font-semibold">-</p>
         <p id="qr-card-jurusan" class="text-xs font-bold text-slate-400 uppercase">-</p>
       </div>
-      <button onclick="window.print()" class="w-full bg-slate-900 text-white font-bold py-2 rounded-xl text-sm cursor-pointer">🖨️ Cetak Kartu</button>
+      <button onclick="window.print()" class="w-full bg-slate-900 text-white font-bold py-2 rounded-xl text-sm cursor-pointer">🖨️ Cetak Kartu QR</button>
     </div>
   </div>
 
   <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 border shadow-xl">
-      <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">Tambah Anggota</h3><button onclick="tutupModal()" class="text-xl font-bold text-slate-400">&times;</button></div>
+      <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">Tambah Anggota Baru</h3><button onclick="tutupModal()" class="text-xl font-bold text-slate-400 cursor-pointer">&times;</button></div>
       <form id="formPeserta" onsubmit="simpanPeserta(event)" class="space-y-4">
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID Anggota / Nomor Induk</label><input type="text" id="form-id" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label><input type="text" id="form-nama" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Jurusan / Program Studi</label><input type="text" id="form-jurusan" placeholder="Contoh: ATU XII" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">No WhatsApp Wali (Awali 62)</label><input type="number" id="form-wa" placeholder="628xxxxxxxx" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
-        <div class="flex justify-end gap-3 pt-2"><button type="button" onclick="tutupModal()" class="px-4 py-2 text-slate-500 text-sm">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold">Simpan</button></div>
+        <div class="flex justify-end gap-3 pt-2"><button type="button" onclick="tutupModal()" class="px-4 py-2 text-slate-500 text-sm cursor-pointer">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold cursor-pointer">Simpan Data</button></div>
       </form>
     </div>
   </div>
@@ -239,13 +239,14 @@
       cameraQRScanner = new Html5Qrcode("reader");
       cameraQRScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (decodedText) => {
         let waktuSekarang = Date.now();
+        // Proteksi Anti-Double Scan: Abaikan jika ID sama ter-scan ulang dalam kurun 10 detik
         if (decodedText === idScanTerakhir && (waktuSekarang - waktuScanTerakhir) < 10000) return;
 
         idScanTerakhir = decodedText;
         waktuScanTerakhir = waktuSekarang;
 
         document.getElementById('scan-id').innerText = decodedText;
-        document.getElementById('scan-nama').innerText = "Memverifikasi antrean...";
+        document.getElementById('scan-nama').innerText = "Memverifikasi...";
         
         fetch(`${CLOUD_API}?action=scanAbsen`, {
           method: "POST",
@@ -294,13 +295,13 @@
           masterPeserta = res.data;
           document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} (${p.jurusan})</option>`).join('');
           
-          // DITAMBAHKAN TOMBOL GENERATE KARTU QR PER SISWA SEPERTI PERMINTAAN KEDUA
+          // GENERATOR TOMBOL QR KARTU DI SINI
           document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => `
             <tr class="hover:bg-slate-50">
               <td class="py-3 px-4 font-mono font-bold">${p.id}</td><td class="py-3 px-4 font-medium text-slate-800">${p.nama}</td><td class="py-3 px-4 text-xs font-bold text-indigo-600">${p.jurusan}</td><td class="py-3 px-4 text-slate-500">${p.wa}</td>
-              <td class="py-3 px-4 text-center flex justify-center gap-1">
-                <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${p.jurusan}')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold cursor-pointer">🪪 Lihat QR</button>
-                <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-lg font-bold cursor-pointer">🗑️ Hapus</button>
+              <td class="py-3 px-4 text-center flex justify-center gap-2">
+                <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${p.jurusan}')" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-xl font-bold cursor-pointer hover:bg-blue-200">🪪 Cetak Kartu QR</button>
+                <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 text-red-600 px-2 py-1.5 rounded-xl font-bold cursor-pointer hover:bg-red-100">🗑️</button>
               </td>
             </tr>
           `).join('') || '<tr><td colspan="5" class="text-center py-4">Database kosong.</td></tr>';
@@ -315,6 +316,7 @@
       document.getElementById('qr-card-nama').innerText = nama;
       document.getElementById('qr-card-id').innerText = id;
       document.getElementById('qr-card-jurusan').innerText = "JURUSAN " + jurusan;
+      // Pembuatan QR Code otomatis menggunakan secure API pihak ketiga
       document.getElementById('qr-card-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${id}`;
       document.getElementById('modalQR').classList.remove('hidden');
     }
@@ -385,7 +387,7 @@
           const s = res.data;
           document.getElementById('set-instansiNama').value = s.instansiNama || "";
           document.getElementById('set-jamMasuk').value = s.jamMasuk || "07:15";
-          document.getElementById('set-jamPulang').value = s.jamPulang || "16:00"; // Default jam pulang
+          document.getElementById('set-jamPulang').value = s.jamPulang || "16:00"; 
           document.getElementById('set-waToken').value = s.waToken || "";
           document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN REKAPITULASI — " + (s.instansiNama || "HomeEd Center").toUpperCase();
         }
@@ -397,7 +399,7 @@
       const p = { 
         instansiNama: document.getElementById('set-instansiNama').value, 
         jamMasuk: document.getElementById('set-jamMasuk').value, 
-        jamPulang: document.getElementById('set-jamPulang').value, // Ditambahkan ke data simpan
+        jamPulang: document.getElementById('set-jamPulang').value, 
         waToken: document.getElementById('set-waToken').value 
       };
       fetch(`${CLOUD_API}?action=saveSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => { alert('Konfigurasi berhasil disimpan!'); setTimeout(syncSettings, 300); });
