@@ -9,11 +9,9 @@
         <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=800&auto=format&fit=crop" alt="Thumbnail Aplikasi Absensi">
     </div>
 
-    <!-- Tailwind & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Konfigurasi Tema Figma-like Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -59,7 +57,6 @@
         #reader__dashboard_section_csr button { display: none !important; }
     </style>
 
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
@@ -67,16 +64,13 @@
 <div class="bg-blogger-override flex flex-col md:flex-row">
 
 <script>
-// UBAH IS_PREVIEW KE false JIKA AKAN DI-DEPLOY KE BLOGGER / LIVE PRODUCTION
+// UBAH IS_PREVIEW KE false JIKA AKAN DI-DEPLOY KE BLOGGER
 const IS_PREVIEW = false;
-// DATABASE UPDATE: Menggunakan URL baru sesuai dengan gambar image_11dbcc.png
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaDDPgpixfO0CEcN6OfOlVyTuLnfkPqbuw1QCh1aI2ietvMUQ/exec";
 </script>
 
-    <!-- Sidebar / Panel Kawalan Kiri -->
     <div class="w-full md:w-80 bg-white p-6 flex flex-col justify-between border-r border-gray-100 md:h-screen sticky top-0">
         <div>
-            <!-- Profil App / Header -->
             <div class="flex items-center space-x-4 mb-8">
                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-blue to-brand-purple flex items-center justify-center text-white text-xl font-bold shadow-md">
                     <i class="fa-solid fa-qrcode"></i>
@@ -87,7 +81,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 </div>
             </div>
 
-            <!-- Menu Navigasi (Figma-Style Pills) -->
             <nav class="space-y-2">
                 <button id="btn-nav-scan" class="w-full flex items-center space-x-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all bg-gradient-to-r from-brand-blue to-blue-400 text-white shadow-lg shadow-blue-100">
                     <i class="fa-solid fa-camera text-base w-5 text-center"></i>
@@ -108,7 +101,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             </nav>
         </div>
 
-        <!-- Status Sambungan Sistem -->
         <div class="mt-8 pt-4 border-t border-gray-50">
             <div class="p-4 rounded-2xl bg-brand-bg flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -122,12 +114,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
         </div>
     </div>
 
-    <!-- Ruang Kandungan Utama (Skrin Kanan) -->
     <main class="flex-1 p-4 md:p-8 overflow-x-hidden">
         
-        <!-- SECTION 1: SCANNER INTERFACE -->
         <section id="sec-scan" class="max-w-4xl mx-auto space-y-6">
-            <!-- Statistik Ringkas Atas (Kad Mini Figma) -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="card-figma p-5 flex items-center space-x-4">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-brand-blue"><i class="fa-solid fa-users font-bold"></i></div>
@@ -147,13 +136,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 </div>
             </div>
 
-            <!-- Susunan Kamera & Log Suapan Sebelah-menyebelah -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <!-- Kotak Kamera Scanner (Kiri) -->
                 <div class="md:col-span-7 card-figma p-6 flex flex-col items-center justify-center relative min-h-[360px]">
                     <div id="reader" class="w-full max-w-sm"></div>
                     
-                    <!-- Tindanan UI Custom Jika Kamera Belum Aktif -->
                     <div id="scanner-placeholder" class="absolute inset-0 bg-white rounded-[2rem] flex flex-col items-center justify-center p-6 text-center z-10">
                         <div class="w-20 h-20 rounded-3xl bg-blue-50 flex items-center justify-center text-brand-blue text-3xl mb-4 animate-bounce">
                             <i class="fa-solid fa-qrcode"></i>
@@ -165,22 +151,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                         </button>
                     </div>
 
-                    <!-- Butang Matikan Kamera Manual -->
                     <button id="btn-stop-camera" class="hide mt-4 px-4 py-2 bg-rose-50 text-brand-pink hover:bg-rose-100 rounded-full text-xs font-bold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-video-slash"></i> <span>Matikan Kamera</span>
                     </button>
                 </div>
 
-                <!-- Log Log Masa Nyata Peserta (Kanan) -->
                 <div class="md:col-span-5 card-figma p-6 flex flex-col h-[420px]">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-black text-brand-textMain">Suapan Log Masuk Nyata</h3>
                         <span class="px-2.5 py-1 bg-purple-50 text-brand-purple text-[10px] font-black uppercase rounded-lg">Live</span>
                     </div>
                     
-                    <!-- Senarai Log -->
                     <div id="log-container" class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs text-brand-textMuted">
-                        <!-- Jika kosong -->
                         <div id="log-empty" class="h-full flex flex-col items-center justify-center text-center p-4">
                             <i class="fa-solid fa-satellite-dish text-2xl text-gray-200 mb-2 animate-pulse"></i>
                             <p>Menunggu imbasan kod QR pertama...</p>
@@ -190,7 +172,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             </div>
         </section>
 
-        <!-- SECTION 2: DATA PESERTA -->
         <section id="sec-data" class="max-w-5xl mx-auto card-figma p-6 hide">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-gray-100 gap-4">
                 <div>
@@ -208,7 +189,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 </div>
             </div>
 
-            <!-- Jadual Data Peserta (Figma Style Table) -->
             <div class="overflow-x-auto mt-4 max-h-[450px] overflow-y-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -229,7 +209,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             </div>
         </section>
 
-        <!-- SECTION 3: REKOD & LAPORAN -->
         <section id="sec-rekap" class="max-w-5xl mx-auto card-figma p-6 hide">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-gray-100 gap-4">
                 <div>
@@ -252,7 +231,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 </div>
             </div>
 
-            <!-- Jadual Log Rekod Kehadiran -->
             <div class="overflow-x-auto mt-4 max-h-[450px] overflow-y-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -274,7 +252,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             </div>
         </section>
 
-        <!-- SECTION 4: TETAPAN APLIKASI -->
         <section id="sec-settings" class="max-w-3xl mx-auto card-figma p-6 hide space-y-6">
             <div class="pb-4 border-b border-gray-100">
                 <h2 class="text-base font-black text-brand-textMain">Tetapan Sistem & Gateway</h2>
@@ -282,7 +259,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <!-- Lajur Kiri: Tetapan Cetakan Fail PDF/Laporan -->
                 <div class="space-y-4">
                     <h3 class="text-xs font-black text-brand-purple uppercase tracking-wider"><i class="fa-solid fa-file-pdf mr-1"></i> Parameter Cetakan Laporan</h3>
                     
@@ -306,7 +282,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                     </div>
                 </div>
 
-                <!-- Lajur Kanan: Suasul Struktur Teks Mesej WhatsApp -->
                 <div class="space-y-4">
                     <h3 class="text-xs font-black text-brand-orange uppercase tracking-wider"><i class="fa-solid fa-comment-sms mr-1"></i> Templat Notifikasi WhatsApp</h3>
                     
@@ -324,7 +299,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 </div>
             </div>
 
-            <!-- Butang Tindakan Bawah Fail Tetapan -->
             <div class="pt-4 border-t border-gray-50 flex justify-end space-x-2">
                 <button id="btn-reset-settings" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-brand-textMain rounded-full text-xs font-bold transition-all">Format Lalai</button>
                 <button id="btn-save-settings" class="px-6 py-2.5 bg-brand-blue hover:bg-blue-400 text-white rounded-full text-xs font-bold shadow-md shadow-blue-100 transition-all"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Tetapan</button>
@@ -334,7 +308,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
     </main>
 </div>
 
-    <!-- Logik Pengaturcara Enjin Utama Javascript -->
     <script>
         // State Memori Tempatan Aplikasi (Lokal)
         let masterPeserta = [];
@@ -479,7 +452,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             masterPeserta = [
                 { id: "PST-001", nama: "Ahmad Jaelani", kategori: "Kelas 10-A", whatsapp: "6281234567890" },
                 { id: "PST-002", nama: "Siti Rahmawati", kategori: "Kelas 10-A", whatsapp: "6289876543210" },
-                { id: "PST-003", nama: "Budi Santoso", kategori: "Kelas 10-B", whatsapp: "628555444333" }
+                { id: "PST-003", nama: "Budi Santoso", kategori: "Kelas 10-B", whatsapp: "628555444333" },
+                { id: "PST-004", nama: "Diana Lestari", kategori: "Kelas 11-A", whatsapp: "6281122334455" },
+                { id: "PST-005", nama: "Eko Prasetyo", kategori: "Kelas 12-C", whatsapp: "6287766554433" }
             ];
             localStorage.setItem('hqr_master_peserta', JSON.stringify(masterPeserta));
         }
@@ -502,18 +477,16 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             Swal.fire({ title: 'Memuat Turun Data...', text: 'Sila tunggu sebentar...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                // Skrip disesuaikan agar bisa menarik tab khusus bernama "Peserta"
                 const response = await fetch(`${GAS_URL}?action=getPeserta`, { method: 'GET', mode: 'cors' });
                 const result = await response.json();
                 
                 Swal.close();
                 if (result && result.status === 'success' && Array.isArray(result.data)) {
-                    // Normalisasi pemetaan properti (menyesuaikan case-insensitive sesuai database)
                     masterPeserta = result.data.map(item => ({
-                        id: String(item.id || item.ID || item.id_peserta || '').trim(),
-                        nama: String(item.nama || item.Nama || item.Nama_Lengkap || item.nama_lengkap || '').trim(),
+                        id: String(item.id || item.ID || '').trim(),
+                        nama: String(item.nama || item.Nama || '').trim(),
                         kategori: String(item.kategori || item.Kategori || item.kelas || item.Kelas || 'Umum').trim(),
-                        whatsapp: formatPhoneNumber(String(item.whatsapp || item.Whatsapp || item.wa || item.WA || item.No_WA || ''))
+                        whatsapp: formatPhoneNumber(String(item.whatsapp || item.Whatsapp || item.wa || item.WA || ''))
                     })).filter(x => x.id !== "");
 
                     localStorage.setItem('hqr_master_peserta', JSON.stringify(masterPeserta));
@@ -521,12 +494,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                     renderDashboardStats();
                     Swal.fire({ icon: 'success', title: 'Selesai', text: `Berjaya memuat turun ${masterPeserta.length} data peserta dari Sheets.`, confirmButtonColor: '#4DBBFF' });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Data Ralat', text: 'Format data dari Apps Script tidak dikenali atau kosong.', confirmButtonColor: '#FF7F93' });
+                    Swal.fire({ icon: 'error', title: 'Data Ralat', text: 'Format data daripada skrip tidak sepadan.', confirmButtonColor: '#FF7F93' });
                 }
             } catch (error) {
                 console.error(error);
                 Swal.close();
-                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Sambungan ke pelayan terputus. Pastikan Apps Script anda sudah di-deploy sebagai "Anyone".', confirmButtonColor: '#FF7F93' });
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Sambungan ke pelayan terputus atau ralat CORS dikesan.', confirmButtonColor: '#FF7F93' });
             }
         });
 
@@ -624,6 +597,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
         }
 
         function processScannedAttendance(idPeserta) {
+            // Cari data padanan peserta
             const peserta = masterPeserta.find(x => x.id === idPeserta);
             const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -633,13 +607,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 return;
             }
 
+            // Semak jika sudah mendaftar kehadiran sebelum ini
             const isExist = logAbsensi.some(x => x.id === idPeserta);
             if (isExist) {
-                appendLogFeed("DUPLICATE", `${peserta.nama} sudah mendaftar kehadiran.`, timeStr);
+                appendLogFeed("DUPLICATE", `${peserta.nama} sudah mendaftar kehadiran sebelum ini.`, timeStr);
                 playAudioNotification('warning');
                 return;
             }
 
+            // Bina log kehadiran baru
             const newLog = {
                 id: peserta.id,
                 nama: peserta.nama,
@@ -656,24 +632,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             playAudioNotification('success');
             renderDashboardStats();
 
-            // Jalankan fungsi kirim ke sheet & kirim WA Gateway
+            // Jalankan fungsi penghantaran mesej WhatsApp Gateway
             triggerWhatsAppNotification(newLog);
-            saveAttendanceToSheets(newLog);
-        }
-
-        // Menyimpan Rekod Kehadiran Secara Terus Ke Google Sheets Database
-        async function saveAttendanceToSheets(logItem) {
-            if (IS_PREVIEW || !GAS_URL) return;
-            try {
-                const targetUrl = `${GAS_URL}?action=saveAbsen&id=${encodeURIComponent(logItem.id)}&nama=${encodeURIComponent(logItem.nama)}&kategori=${encodeURIComponent(logItem.kategori)}&waktu=${encodeURIComponent(logItem.waktu)}`;
-                fetch(targetUrl, { method: 'GET', mode: 'cors' });
-            } catch (e) {
-                console.error("Gagal menghantar log ke Sheets online:", e);
-            }
         }
 
         // Penghantaran Notifikasi WhatsApp Gateway (WA Dispatcher Engine)
         async function triggerWhatsAppNotification(logItem) {
+            // Bina mesej berdasarkan templat tetapan
             let textMsg = globalSettings.waTemplate || DEFAULT_SETTINGS.waTemplate;
             textMsg = textMsg.replace(/{nama}/g, logItem.nama)
                              .replace(/{id}/g, logItem.id)
@@ -812,7 +777,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                     osc.stop(ctx.currentTime + 0.25);
                 }
             } catch (e) {
-                console.warn("Audio API tidak disokong pelayar.");
+                console.warn("Audio API tidak disokong oleh pelayar:", e);
             }
         }
 
@@ -884,7 +849,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
 
         document.getElementById('filter-kelas-rekap').addEventListener('change', renderRekapAbsensiTable);
 
-        // Pengurusan Pengosongan Pengkalan Data
+        // Pengurusan Pengosongan Pengkalan Data (Database Reset Actions)
         document.getElementById('btn-clear-absensi').addEventListener('click', () => {
             Swal.fire({
                 title: 'Adakah anda pasti?',
@@ -912,7 +877,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             });
         });
 
-        // Fail Simpan Profil Tetapan Konfigurasi
+        // Fail Simpan Profil Tetapan Konfigurasi (Save Settings Business Logic)
         document.getElementById('btn-save-settings').addEventListener('click', () => {
             globalSettings.kepalaNama = document.getElementById('set-kepala-nama').value.trim();
             globalSettings.kepalaJenisId = document.getElementById('set-kepala-jenis-id').value.trim();
@@ -949,7 +914,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
             });
         });
 
-        // Fail Fungsi Cetakan PDF / Render Cetakan Laporan
+        // Fail Fungsi Cetakan PDF / Render Cetakan Laporan (Print PDF Engine)
         document.getElementById('btn-print-pdf').addEventListener('click', () => {
             const filterKls = document.getElementById('filter-kelas-rekap').value;
             const filtered = logAbsensi.filter(x => filterKls === 'ALL' || x.kategori === filterKls);
@@ -999,7 +964,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 <body>
                     <div class="header-doc">
                         <h2>LAPORAN REKOD KEHADIRAN AKTIVITI</h2>
-                        <p>Sistem Pengurusan Pengesahan Automatik Kehadiran</p>
+                        <p>Sistem Pengurusan Pengesahan Automatik Kehadiran Kod QR & WA Gateway</p>
                     </div>
 
                     <div class="meta-info">
@@ -1046,7 +1011,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 return;
             }
 
-            let csvContent = "\uFEFF"; 
+            // Membina format baris struktur teks CSV
+            let csvContent = "\uFEFF"; // BOM untuk memaparkan aksen teks UTF-8 dengan betul di Excel
             csvContent += "No,ID Peserta,Nama Peserta,Kategori Kelas,Masa Imbas,Status Kehadiran,Status Kirim WhatsApp\r\n";
 
             filtered.forEach((row, index) => {
@@ -1054,12 +1020,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxpi6_jeuzXB3wicqGzQjaD
                 csvContent += `${index + 1},"${row.id}","${cleanName}","${row.kategori}","${row.waktu}","HADIR","${row.waStatus}"\r\n`;
             });
 
+            // Menggunakan metode pengunduhan asli (Native URL Object Blob) agar tidak bergantung pada library FileSaver.js yang rusak/terpotong
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const fileDate = new Date().toISOString().slice(0,10);
             const link = document.createElement("a");
             
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Rekap_Kehadiran_${fileDate}.csv`);
+            link.setAttribute("download", `Rekap_Kehadiran_${filterKls}_${fileDate}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
