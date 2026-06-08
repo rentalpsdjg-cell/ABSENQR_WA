@@ -44,7 +44,7 @@
         <button onclick="switchTab('scan')" id="m-scan" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">📷 Scan Kartu QR</button>
         <button onclick="switchTab('peserta')" id="m-peserta" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">👥 Data Anggota</button>
         <button onclick="switchTab('rekap')" id="m-rekap" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">📋 Laporan Bulanan</button>
-        <button onclick="switchTab('pengaturan')" id="m-pengaturan" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">⚙️ Aturan Jam Masuk</button>
+        <button onclick="switchTab('pengaturan')" id="m-pengaturan" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">⚙️ Aturan Jam & Token</button>
       </nav>
       <div class="p-4 border-t border-slate-800"><button onclick="handleLogout()" class="w-full bg-red-950/30 hover:bg-red-900/40 text-red-400 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer">🚪 Keluar Admin</button></div>
     </aside>
@@ -168,14 +168,18 @@
         <section id="tab-pengaturan" class="hidden space-y-6">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Konfigurasi Aturan Jam & Token</h1>
           <form id="formSettings" onsubmit="simpanSettings(event)" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-1">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Instansi / Sekolah</label>
                 <input type="text" id="set-instansiNama" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
               </div>
               <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Maksimal Jam Masuk (HH:MM)</label>
                 <input type="time" id="set-jamMasuk" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mulai Jam Pulang (HH:MM)</label>
+                <input type="time" id="set-jamPulang" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
               </div>
             </div>
             <div>
@@ -245,8 +249,7 @@
   </style>
 
   <script>
-    // MASUKKAN URL DEPLOY WEB APP BACKEND ANDA DI SINI
-    const CLOUD_API = "https://script.google.com/macros/s/AKfycbwqhLJC0MrRdiUABo5wSjMn68chMIdeKM6a73DS_Pnj-YhRsRKhtN2UdonqB2_RTm9s3w/exec";
+    const CLOUD_API = "https://script.google.com/macros/s/AKfycbzeoqg626RLEEcvdcu15KEE9HHQKTOZV3zY1y0QMtp5lb8uvqVWGU09bsQZCExKvLodcg/exec";
     
     let masterPeserta = [];
     let masterRekap = [];
@@ -255,13 +258,11 @@
     let waktuScanTerakhir = 0;
     let qrcodeGeneratorInstance = null;
 
-    // Jam Digital Live Hari Ini
     setInterval(() => {
       const d = new Date();
       document.getElementById('live-clock').innerText = d.toLocaleTimeString('id-ID');
     }, 1000);
 
-    // Otomatisasi Session Login Admin
     if(localStorage.getItem('admin_session_v7') === 'true') {
       document.getElementById('auth-layer').classList.add('hidden');
       document.getElementById('app-layer').classList.remove('hidden');
@@ -426,25 +427,25 @@
           if(kolom.length >= 3) {
             parsedPayload.push({ 
               id: kolom[0].replace(/['"]/g, '').trim(), 
-              nama: kolom[1].replace(/['"]/g, '').trim(), 
-              jurusan: kolom[2].replace(/['"]/g, '').trim(), 
-              wa: kolom[3] ? kolom[3].replace(/['"]/g, '').trim() : "" 
+              nama: kolom[1].replace(/['"]/g, '').trim(),
+              jurusan: kolom[2].replace(/['"]/g, '').trim(),
+              wa: kolom[3] ? kolom[3].replace(/['"]/g, '').trim() : ""
             });
           }
         }
         if(parsedPayload.length > 0) {
           fetch(`${CLOUD_API}?action=uploadMasal`, {
-            method: 'POST',
+            method: "POST",
             headers: { "Content-Type": "text/plain" },
             body: JSON.stringify(parsedPayload)
-          }).then(r => r.json()).then(res => {
-            alert(res.message);
-            syncPeserta();
-          }).catch(() => alert("Gagal mengunggah CSV"));
+          }).then(r => r.json()).then(res => { alert(res.message); syncPeserta(); });
         }
       };
       reader.readAsText(file);
     }
+
+    function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
+    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); }
 
     function simpanPeserta(e) {
       e.preventDefault();
@@ -455,26 +456,74 @@
         wa: document.getElementById('form-wa').value
       };
       fetch(`${CLOUD_API}?action=addPeserta`, {
-        method: 'POST',
+        method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
-      }).then(r => r.json()).then(res => {
-        alert(res.message);
-        if(res.status === 'success') { tutupModal(); syncPeserta(); }
-      });
+      }).then(r => r.json()).then(res => { alert(res.message); if(res.status==='success') { tutupModal(); document.getElementById('formPeserta').reset(); syncPeserta(); } });
     }
 
     function hapusPeserta(id) {
-      if(confirm(`Hapus anggota dengan ID ${id}?`)) {
-        fetch(`${CLOUD_API}?action=deletePeserta`, {
-          method: 'POST',
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ id: id })
-        }).then(r => r.json()).then(res => {
-          alert(res.message);
-          syncPeserta();
-        });
-      }
+      if(!confirm("Hapus peserta dengan ID: " + id + "?")) return;
+      fetch(`${CLOUD_API}?action=deletePeserta`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ id: id })
+      }).then(r => r.json()).then(res => { alert(res.message); syncPeserta(); });
+    }
+
+    function syncRekap() {
+      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
+        if(res.status==='success') { masterRekap = res.data; aplikasikanFilterSistem(); }
+      });
+    }
+
+    function aplikasikanFilterSistem() {
+      let bln = document.getElementById('filter-bulan').value;
+      let jur = document.getElementById('filter-jurusan').value;
+      let filtered = masterRekap.filter(r => {
+        let matchBulan = bln ? r.waktu.substring(0, 7) === bln : true;
+        let matchJurusan = jur !== "ALL" ? r.jurusan === jur : true;
+        return matchBulan && matchJurusan;
+      });
+
+      document.getElementById('tabelRekapBody').innerHTML = filtered.map(r => `
+        <tr>
+          <td class="py-3 px-4 font-mono text-xs">${r.waktu}</td>
+          <td class="py-3 px-4 font-mono text-xs">${r.id}</td>
+          <td class="py-3 px-4 font-bold text-slate-800">${r.nama}</td>
+          <td class="py-3 px-4 text-xs font-semibold text-slate-500">${r.jurusan || '-'}</td>
+          <td class="py-3 px-4 font-mono text-emerald-600 font-bold">${r.datang}</td>
+          <td class="py-3 px-4 font-mono text-blue-600 font-bold">${r.pulang}</td>
+          <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-md text-xs font-bold ${getBadgeStyle(r.statusKehadiran)}">${r.statusKehadiran}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Data rekap tidak ditemukan.</td></tr>';
+    }
+
+    function syncSettings() {
+      fetch(`${CLOUD_API}?action=getSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
+        if(res.status==='success') {
+          document.getElementById('set-instansiNama').value = res.data.instansiNama || "";
+          document.getElementById('set-jamMasuk').value = res.data.jamMasuk || "07:15";
+          document.getElementById('set-jamPulang').value = res.data.jamPulang || "13:30";
+          document.getElementById('set-waToken').value = res.data.waToken || "";
+          document.getElementById('pdf-nama-sekolah').innerText = `LAPORAN ABSENSI ${ (res.data.instansiNama || "ELEKTRONIK").toUpperCase() }`;
+        }
+      });
+    }
+
+    function simpanSettings(e) {
+      e.preventDefault();
+      let dataSaves = {
+        instansiNama: document.getElementById('set-instansiNama').value,
+        jamMasuk: document.getElementById('set-jamMasuk').value,
+        jamPulang: document.getElementById('set-jamPulang').value,
+        waToken: document.getElementById('set-waToken').value
+      };
+      fetch(`${CLOUD_API}?action=saveSettings`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(dataSaves)
+      }).then(r => r.json()).then(res => { alert(res.message); syncSettings(); switchTab('dashboard'); });
     }
 
     function kirimManualStatus() {
@@ -482,84 +531,13 @@
         id: document.getElementById('fast-student-id').value,
         status: document.getElementById('fast-student-status').value
       };
+      if(!payload.id) return alert("Pilih siswa terlebih dahulu!");
       fetch(`${CLOUD_API}?action=inputManual`, {
-        method: 'POST',
+        method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
-      }).then(r => r.json()).then(res => {
-        alert(res.message);
-        syncDashboard(); syncRekap();
-      });
+      }).then(r => r.json()).then(res => { alert(res.message); syncDashboard(); syncRekap(); });
     }
-
-    function syncRekap() {
-      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
-        if(res.status === 'success') {
-          masterRekap = res.data;
-          aplikasikanFilterSistem();
-        }
-      });
-    }
-
-    function aplikasikanFilterSistem() {
-      let blnFilter = document.getElementById('filter-bulan').value; // format: YYYY-MM
-      let jurFilter = document.getElementById('filter-jurusan').value;
-      
-      let filtered = masterRekap.filter(item => {
-        let matchBulan = true;
-        let matchJurusan = true;
-        
-        if(blnFilter) matchBulan = item.waktu.substring(0, 7) === blnFilter;
-        if(jurFilter !== 'ALL') matchJurusan = item.jurusan === jurFilter;
-        
-        return matchBulan && matchJurusan;
-      });
-
-      document.getElementById('tabelRekapBody').innerHTML = filtered.map(t => `
-        <tr class="hover:bg-slate-50 transition-all">
-          <td class="py-3 px-4">${t.waktu}</td>
-          <td class="py-3 px-4 font-mono text-xs font-bold">${t.id}</td>
-          <td class="py-3 px-4 text-slate-900 font-semibold">${t.nama}</td>
-          <td class="py-3 px-4 text-xs font-bold text-indigo-600">${t.jurusan || '-'}</td>
-          <td class="py-3 px-4 font-mono text-emerald-600 font-bold">${t.datang || '-'}</td>
-          <td class="py-3 px-4 font-mono text-blue-600 font-bold">${t.pulang || '-'}</td>
-          <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(t.statusKehadiran)}">${t.statusKehadiran}</span></td>
-        </tr>
-      `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada data rekap yang sesuai filter.</td></tr>';
-    }
-
-    function syncSettings() {
-      fetch(`${CLOUD_API}?action=getSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
-        if(res.status === 'success') {
-          document.getElementById('set-instansiNama').value = res.data.instansiNama || "";
-          document.getElementById('set-jamMasuk').value = res.data.jamMasuk || "07:15";
-          document.getElementById('set-waToken').value = res.data.waToken || "";
-          if(res.data.instansiNama) {
-            document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN ABSENSI ELEKTRONIK\n" + res.data.instansiNama.toUpperCase();
-          }
-        }
-      });
-    }
-
-    function simpanSettings(e) {
-      e.preventDefault();
-      let payload = {
-        instansiNama: document.getElementById('set-instansiNama').value,
-        jamMasuk: document.getElementById('set-jamMasuk').value,
-        waToken: document.getElementById('set-waToken').value
-      };
-      fetch(`${CLOUD_API}?action=saveSettings`, {
-        method: 'POST',
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify(payload)
-      }).then(r => r.json()).then(res => {
-        alert(res.message);
-        syncSettings();
-      });
-    }
-
-    function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
-    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); document.getElementById('formPeserta').reset(); }
   </script>
 </body>
 </html>
