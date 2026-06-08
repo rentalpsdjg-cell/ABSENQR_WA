@@ -37,7 +37,7 @@
     <aside class="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col fixed inset-y-0 left-0 z-40 shadow-xl hide-on-print">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
         <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">A7</div>
-        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Mobile</h2><p class="text-[10px] text-emerald-400 font-medium">● Server Engine V7.0</p></div>
+        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Mobile</h2><p class="text-[10px] text-emerald-400 font-medium">● Server Engine V7.2</p></div>
       </div>
       <nav class="flex-1 p-4 space-y-1.5">
         <button onclick="switchTab('dashboard')" id="m-dashboard" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">📊 Beranda Dasbor</button>
@@ -84,7 +84,7 @@
                 <option value="SAKIT">🤒 SAKIT</option>
                 <option value="ALPA">❌ ALPA</option>
               </select>
-              <button onclick="kirimManualStatus()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm py-2.5 transition-all cursor-pointer">Suntik Status Kehadiran</button>
+              <button onclick="kirimManualStatus()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm py-2.5 transition-all cursor-pointer">Suntik Kehadiran</button>
             </div>
           </div>
 
@@ -245,6 +245,7 @@
   </style>
 
   <script>
+    // MASUKKAN URL DEPLOY WEB APP BACKEND ANDA DI SINI
     const CLOUD_API = "https://script.google.com/macros/s/AKfycbwqhLJC0MrRdiUABo5wSjMn68chMIdeKM6a73DS_Pnj-YhRsRKhtN2UdonqB2_RTm9s3w/exec";
     
     let masterPeserta = [];
@@ -254,11 +255,13 @@
     let waktuScanTerakhir = 0;
     let qrcodeGeneratorInstance = null;
 
+    // Jam Digital Live Hari Ini
     setInterval(() => {
       const d = new Date();
       document.getElementById('live-clock').innerText = d.toLocaleTimeString('id-ID');
     }, 1000);
 
+    // Otomatisasi Session Login Admin
     if(localStorage.getItem('admin_session_v7') === 'true') {
       document.getElementById('auth-layer').classList.add('hidden');
       document.getElementById('app-layer').classList.remove('hidden');
@@ -278,7 +281,14 @@
     }
 
     function handleLogout() { matikanKamera(); localStorage.removeItem('admin_session_v7'); location.reload(); }
-    function bootEngineSistem() { syncDashboard(); syncPeserta(); syncRekap(); syncSettings(); switchTab('dashboard'); }
+    
+    function bootEngineSistem() { 
+      syncDashboard(); 
+      syncPeserta(); 
+      syncRekap(); 
+      syncSettings(); 
+      switchTab('dashboard'); 
+    }
 
     function switchTab(tab) {
       ['dashboard', 'scan', 'peserta', 'rekap', 'pengaturan'].forEach(t => {
@@ -336,12 +346,12 @@
             <tr class="hover:bg-slate-50 transition-all">
               <td class="py-3 px-5">${t.tanggal}</td>
               <td class="py-3 px-5 text-slate-900 font-semibold">${t.nama}</td>
-              <td class="py-3 px-5 text-xs text-indigo-600 font-bold">${t['Kelas/Jurusan'] || t.jurusan || '-'}</td>
-              <td class="py-3 px-5 font-mono text-emerald-600 font-bold">${t['Jam Masuk'] || t.datang || '-'}</td>
-              <td class="py-3 px-5 font-mono text-blue-600 font-bold">${t['Jam Pulang'] || t.pulang || '-'}</td>
+              <td class="py-3 px-5 text-xs text-indigo-600 font-bold">${t.jurusan || '-'}</td>
+              <td class="py-3 px-5 font-mono text-emerald-600 font-bold">${t.datang || '-'}</td>
+              <td class="py-3 px-5 font-mono text-blue-600 font-bold">${t.pulang || '-'}</td>
               <td class="py-3 px-5 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(t.statusKehadiran)}">${t.statusKehadiran}</span></td>
             </tr>
-          `).join('') || '<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada antrean tap masuk hari ini.</td></tr>';
+          `).join('') || '<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada transaksi tap masuk hari ini.</td></tr>';
         }
       });
     }
@@ -358,16 +368,16 @@
       fetch(`${CLOUD_API}?action=getPeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
         if(res.status==='success') {
           masterPeserta = res.data;
-          document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} — [${p['Kelas/Jurusan'] || p.jurusan || ''}]</option>`).join('');
+          document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} — [${p.jurusan || ''}]</option>`).join('');
           
           document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => {
-            let jur = p['Kelas/Jurusan'] || p.jurusan || '-';
+            let jur = p.jurusan || '-';
             return `
               <tr class="hover:bg-slate-50 transition-all">
                 <td class="py-3 px-5 font-mono font-bold text-slate-700">${p.id}</td>
                 <td class="py-3 px-5 text-slate-900 font-bold">${p.nama}</td>
                 <td class="py-3 px-5 text-xs font-bold text-indigo-600">${jur}</td>
-                <td class="py-3 px-5 font-mono text-slate-500">${p.wa || p.WhatsApp || '-'}</td>
+                <td class="py-3 px-5 font-mono text-slate-500">${p.wa || '-'}</td>
                 <td class="py-3 px-5 text-center flex justify-center gap-1.5">
                   <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${jur}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🪪 QR</button>
                   <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-2 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🗑️</button>
@@ -376,7 +386,7 @@
             `;
           }).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Database kosong.</td></tr>';
           
-          let listJurusan = [...new Set(masterPeserta.map(p => p['Kelas/Jurusan'] || p.jurusan).filter(Boolean))];
+          let listJurusan = [...new Set(masterPeserta.map(p => p.jurusan).filter(Boolean))];
           document.getElementById('filter-jurusan').innerHTML = '<option value="ALL">Semua Jurusan</option>' + listJurusan.map(j => `<option value="${j}">${j}</option>`).join('');
         }
       });
@@ -410,90 +420,146 @@
         const text = evt.target.result;
         const lines = text.split("\n");
         let parsedPayload = [];
-        for(let i=1; i<lines.length; i++) {
+        for(let i = 1; i < lines.length; i++) {
           if(lines[i].trim() === "") continue;
           let kolom = lines[i].split(",");
           if(kolom.length >= 3) {
-            parsedPayload.push({ id: kolom[0].replace(/['"]/g, '').trim(), nama: kolom[1].trim(), jurusan: kolom[2].trim(), wa: kolom[3] ? kolom[3].trim() : "" });
+            parsedPayload.push({ 
+              id: kolom[0].replace(/['"]/g, '').trim(), 
+              nama: kolom[1].replace(/['"]/g, '').trim(), 
+              jurusan: kolom[2].replace(/['"]/g, '').trim(), 
+              wa: kolom[3] ? kolom[3].replace(/['"]/g, '').trim() : "" 
+            });
           }
         }
-        if(parsedPayload.length === 0) { alert("Format data kosong!"); return; }
-        fetch(`${CLOUD_API}?action=uploadMasal`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(parsedPayload) }).then(r=>r.json()).then(res => { alert(res.message); syncPeserta(); });
+        if(parsedPayload.length > 0) {
+          fetch(`${CLOUD_API}?action=uploadMasal`, {
+            method: 'POST',
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify(parsedPayload)
+          }).then(r => r.json()).then(res => {
+            alert(res.message);
+            syncPeserta();
+          }).catch(() => alert("Gagal mengunggah CSV"));
+        }
       };
       reader.readAsText(file);
     }
 
-    function kirimManualStatus() {
-      const idSiswa = document.getElementById('fast-student-id').value;
-      const statusSiswa = document.getElementById('fast-student-status').value;
-      if(!idSiswa) return;
-      fetch(`${CLOUD_API}?action=inputManual`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id: idSiswa, status: statusSiswa }) }).then(r => r.json()).then(res => { alert(res.message); syncDashboard(); syncRekap(); });
-    }
-
     function simpanPeserta(e) {
       e.preventDefault();
-      const p = { id: document.getElementById('form-id').value, nama: document.getElementById('form-nama').value, jurusan: document.getElementById('form-jurusan').value, wa: document.getElementById('form-wa').value };
-      tutupModal();
-      fetch(`${CLOUD_API}?action=addPeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => { alert('Disimpan!'); bootEngineSistem(); document.getElementById('formPeserta').reset(); });
+      let payload = {
+        id: document.getElementById('form-id').value,
+        nama: document.getElementById('form-nama').value,
+        jurusan: document.getElementById('form-jurusan').value,
+        wa: document.getElementById('form-wa').value
+      };
+      fetch(`${CLOUD_API}?action=addPeserta`, {
+        method: 'POST',
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        alert(res.message);
+        if(res.status === 'success') { tutupModal(); syncPeserta(); }
+      });
     }
 
     function hapusPeserta(id) {
-      if(confirm('Hapus data siswa ini?')) { fetch(`${CLOUD_API}?action=deletePeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id: id }) }).then(() => { syncPeserta(); }); }
+      if(confirm(`Hapus anggota dengan ID ${id}?`)) {
+        fetch(`${CLOUD_API}?action=deletePeserta`, {
+          method: 'POST',
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ id: id })
+        }).then(r => r.json()).then(res => {
+          alert(res.message);
+          syncPeserta();
+        });
+      }
+    }
+
+    function kirimManualStatus() {
+      let payload = {
+        id: document.getElementById('fast-student-id').value,
+        status: document.getElementById('fast-student-status').value
+      };
+      fetch(`${CLOUD_API}?action=inputManual`, {
+        method: 'POST',
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        alert(res.message);
+        syncDashboard(); syncRekap();
+      });
     }
 
     function syncRekap() {
-      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => { if(res.status==='success') { masterRekap = res.data; aplikasikanFilterSistem(); } });
+      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
+        if(res.status === 'success') {
+          masterRekap = res.data;
+          aplikasikanFilterSistem();
+        }
+      });
     }
 
     function aplikasikanFilterSistem() {
-      const filterJurusan = document.getElementById('filter-jurusan').value;
-      const filterBulan = document.getElementById('filter-bulan').value;
-      let filteredData = masterRekap;
+      let blnFilter = document.getElementById('filter-bulan').value; // format: YYYY-MM
+      let jurFilter = document.getElementById('filter-jurusan').value;
       
-      if(filterJurusan !== 'ALL') {
-        filteredData = filteredData.filter(r => (r['Kelas/Jurusan'] || r.jurusan) === filterJurusan);
-      }
-      if(filterBulan) {
-        filteredData = filteredData.filter(r => r.waktu && r.waktu.substring(0, 7) === filterBulan);
-      }
+      let filtered = masterRekap.filter(item => {
+        let matchBulan = true;
+        let matchJurusan = true;
+        
+        if(blnFilter) matchBulan = item.waktu.substring(0, 7) === blnFilter;
+        if(jurFilter !== 'ALL') matchJurusan = item.jurusan === jurFilter;
+        
+        return matchBulan && matchJurusan;
+      });
 
-      document.getElementById('tabelRekapBody').innerHTML = filteredData.map(r => `
+      document.getElementById('tabelRekapBody').innerHTML = filtered.map(t => `
         <tr class="hover:bg-slate-50 transition-all">
-          <td class="py-3 px-4 font-semibold">${r.waktu || r.Tanggal || '-'}</td>
-          <td class="py-3 px-4 font-mono">${r.id || '-'}</td>
-          <td class="py-3 px-4 text-slate-900 font-bold">${r.nama || '-'}</td>
-          <td class="py-3 px-4 text-xs font-bold text-slate-500">${r['Kelas/Jurusan'] || r.jurusan || '-'}</td>
-          <td class="py-3 px-4 text-emerald-600 font-mono font-bold">${r['Jam Masuk'] || r.datang || '-'}</td>
-          <td class="py-3 px-4 text-blue-600 font-mono font-bold">${r['Jam Pulang'] || r.pulang || '-'}</td>
-          <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(r.statusKehadiran)}">${r.statusKehadiran}</span></td>
+          <td class="py-3 px-4">${t.waktu}</td>
+          <td class="py-3 px-4 font-mono text-xs font-bold">${t.id}</td>
+          <td class="py-3 px-4 text-slate-900 font-semibold">${t.nama}</td>
+          <td class="py-3 px-4 text-xs font-bold text-indigo-600">${t.jurusan || '-'}</td>
+          <td class="py-3 px-4 font-mono text-emerald-600 font-bold">${t.datang || '-'}</td>
+          <td class="py-3 px-4 font-mono text-blue-600 font-bold">${t.pulang || '-'}</td>
+          <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${getBadgeStyle(t.statusKehadiran)}">${t.statusKehadiran}</span></td>
         </tr>
-      `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada log rekapitulasi.</td></tr>';
+      `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada data rekap yang sesuai filter.</td></tr>';
     }
 
     function syncSettings() {
       fetch(`${CLOUD_API}?action=getSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
-        if(res.status==='success') {
-          const s = res.data;
-          document.getElementById('set-instansiNama').value = s.instansiNama || "";
-          document.getElementById('set-jamMasuk').value = s.jamMasuk || "07:15";
-          document.getElementById('set-waToken').value = s.waToken || "";
-          document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN REKAPITULASI — " + (s.instansiNama || "SCHOOL APP").toUpperCase();
+        if(res.status === 'success') {
+          document.getElementById('set-instansiNama').value = res.data.instansiNama || "";
+          document.getElementById('set-jamMasuk').value = res.data.jamMasuk || "07:15";
+          document.getElementById('set-waToken').value = res.data.waToken || "";
+          if(res.data.instansiNama) {
+            document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN ABSENSI ELEKTRONIK\n" + res.data.instansiNama.toUpperCase();
+          }
         }
       });
     }
 
     function simpanSettings(e) {
       e.preventDefault();
-      const p = { 
-        instansiNama: document.getElementById('set-instansiNama').value, 
-        jamMasuk: document.getElementById('set-jamMasuk').value, 
-        waToken: document.getElementById('set-waToken').value 
+      let payload = {
+        instansiNama: document.getElementById('set-instansiNama').value,
+        jamMasuk: document.getElementById('set-jamMasuk').value,
+        waToken: document.getElementById('set-waToken').value
       };
-      fetch(`${CLOUD_API}?action=saveSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => { alert('Pengaturan Disimpan!'); syncSettings(); });
+      fetch(`${CLOUD_API}?action=saveSettings`, {
+        method: 'POST',
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        alert(res.message);
+        syncSettings();
+      });
     }
 
     function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
-    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); }
+    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); document.getElementById('formPeserta').reset(); }
   </script>
 </body>
 </html>
