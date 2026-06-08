@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ASM Absensi Super Engine v10.2 - SMKN 1 Singkil Utara</title>
+  <title>ASM Absensi Super Engine v10.3 - SMKN 1 Singkil Utara</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -37,7 +37,7 @@
     <aside class="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col fixed inset-y-0 left-0 z-40 shadow-xl hide-on-print">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
         <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">V10</div>
-        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Mobile</h2><p class="text-[10px] text-emerald-400 font-medium">● Core Engine V10.2</p></div>
+        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Mobile</h2><p class="text-[10px] text-emerald-400 font-medium">● Core Engine V10.3</p></div>
       </div>
       <nav class="flex-1 p-4 space-y-1.5">
         <button onclick="switchTab('dashboard')" id="m-dashboard" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer">📊 Beranda Dasbor</button>
@@ -74,7 +74,7 @@
               <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Siswa</p><h3 id="c-total" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3></div><span class="text-xl bg-slate-100 p-2 rounded-xl">👥</span>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
-              <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hadir</p><h3 id="c-hadir" class="text-2xl font-extrabold text-emerald-600 mt-0.5">0</h3></div><span class="text-xl bg-emerald-50 p-2 rounded-xl">✅</span>
+              <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hadir / Telat</p><h3 id="c-hadir" class="text-2xl font-extrabold text-emerald-600 mt-0.5">0</h3></div><span class="text-xl bg-emerald-50 p-2 rounded-xl">✅</span>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
               <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Izin</p><h3 id="c-izin" class="text-2xl font-extrabold text-blue-500 mt-0.5">0</h3></div><span class="text-xl bg-blue-50 p-2 rounded-xl">✉️</span>
@@ -90,7 +90,9 @@
           <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs">
             <h3 class="font-bold text-slate-800 text-sm mb-3">🛠️ Input Cepat Izin / Sakit / Alpa Manual</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <select id="fast-student-id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></select>
+              <select id="fast-student-id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                <option value="">-- Pilih Siswa --</option>
+              </select>
               <select id="fast-student-status" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
                 <option value="HADIR">✅ HADIR</option>
                 <option value="IZIN">✉️ IZIN</option>
@@ -116,7 +118,7 @@
                   </tr>
                 </thead>
                 <tbody id="liveFeedBody" class="divide-y divide-slate-100 text-slate-600 font-medium">
-                  <tr><td colspan="6" class="text-center py-6 text-slate-400">Menghubungkan ke core engine v10.2...</td></tr>
+                  <tr><td colspan="6" class="text-center py-6 text-slate-400">Menghubungkan ke core engine v10.3...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -226,14 +228,18 @@
         <section id="tab-pengaturan" class="hidden space-y-6">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Konfigurasi Aturan Jam & Token</h1>
           <form id="formSettings" onsubmit="simpanSettings(event)" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Instansi / Sekolah</label>
                 <input type="text" id="set-instansiNama" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Maksimal Jam Masuk (HH:MM)</label>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Max Jam Masuk (HH:MM)</label>
                 <input type="text" placeholder="Contoh: 07:15" id="set-jamMasuk" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batas Minimal Jam Pulang (HH:MM)</label>
+                <input type="text" placeholder="Contoh: 13:30" id="set-jamPulang" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
               </div>
             </div>
             <div>
@@ -284,7 +290,6 @@
   <style>
     .animate-fade-in { animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
     @media print {
       .hide-on-print, aside, button, select, label, input, form, #auth-layer, nav { display: none !important; }
       body, main { background: white !important; padding: 0 !important; margin: 0 !important; }
@@ -308,18 +313,17 @@
     let waktuScanTerakhir = 0;
     let qrcodeGeneratorInstance = null;
 
-    // Isian default form pencarian tanggal harian & bulanan sesuai waktu lokal hari ini
     const instanWaktu = new Date();
     document.getElementById('report-date').value = instanWaktu.toISOString().split('T')[0];
     document.getElementById('report-month').value = instanWaktu.toISOString().substring(0, 7);
 
-    // Sistem Live Clock
+    // Live Clock
     setInterval(() => {
       const d = new Date();
       document.getElementById('live-clock').innerText = d.toLocaleTimeString('id-ID');
     }, 1000);
 
-    // Otentikasi Sesi Admin Lokal
+    // Authentication Session Check
     if(localStorage.getItem('admin_session_v10') === 'true') {
       document.getElementById('auth-layer').classList.add('hidden');
       document.getElementById('app-layer').classList.remove('hidden');
@@ -373,7 +377,6 @@
       }
     }
 
-    // Jembatan Request POST HTTP Stream 
     function executePostAction(action, payload = {}) {
       return fetch(`${CLOUD_API}?action=${action}`, {
         method: 'POST',
@@ -382,7 +385,7 @@
       }).then(r => r.json());
     }
 
-    // Pemrosesan Data Scanner Kamera QR
+    // Camera Scan Process
     function mulaiKamera() {
       cameraQRScanner = new Html5Qrcode("reader");
       cameraQRScanner.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 240, height: 240 } }, (text) => {
@@ -409,11 +412,10 @@
 
     function matikanKamera() { if(cameraQRScanner) { cameraQRScanner.stop().then(() => cameraQRScanner = null).catch(()=>{}); } }
 
-    // Sinkronisasi Dashboard & Counter Ringkasan Kehadiran
+    // Dashboard Data Counter
     function syncDashboard() {
       executePostAction('getDashboard').then(res => {
         if(res.status==='success') {
-          document.getElementById('c-total').innerText = res.data.counter.totalSiswa || 0;
           document.getElementById('c-hadir').innerText = res.data.counter.hadir || 0;
           document.getElementById('c-izin').innerText = res.data.counter.izin || 0;
           document.getElementById('c-sakit').innerText = res.data.counter.sakit || 0;
@@ -435,128 +437,115 @@
 
     function getBadgeStyle(st) {
       if(st==='HADIR') return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      if(st==='TERLAMBAT') return 'bg-amber-100 text-amber-800 border border-amber-300';
       if(st==='IZIN') return 'bg-blue-50 text-blue-700 border border-blue-200';
       if(st==='SAKIT') return 'bg-amber-50 text-amber-700 border border-amber-200';
       return 'bg-red-50 text-red-700 border border-red-200';
     }
 
-    // Tarik Database Peserta & Pembuatan Filter Dinamis Jurusan
+    // Sync Student Database & Dropdown Fast Select
     function syncPeserta() {
       executePostAction('getPeserta').then(res => {
-        if(res.status==='success') {
-          masterPeserta = res.data;
-          document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} — [${p.jurusan || ''}]</option>`).join('');
-          
-          document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => `
-            <tr class="hover:bg-slate-50 transition-all">
-              <td class="py-3 px-5 font-mono font-bold text-slate-700">${p.id}</td>
-              <td class="py-3 px-5 text-slate-900 font-bold">${p.nama}</td>
-              <td class="py-3 px-5 text-xs font-bold text-indigo-600">${p.jurusan || '-'}</td>
-              <td class="py-3 px-5 font-mono text-slate-500">${p.wa || '-'}</td>
-              <td class="py-3 px-5 text-center flex justify-center gap-1.5">
-                <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${p.jurusan || '-'}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🪪 QR</button>
-                <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-2 py-1.5 rounded-xl font-bold cursor-pointer transition-all">🗑️</button>
-              </td>
-            </tr>
-          `).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Database kosong.</td></tr>';
-          
-          let listJurusan = [...new Set(masterPeserta.map(p => p.jurusan).filter(Boolean))];
-          document.getElementById('filter-jurusan').innerHTML = '<option value="ALL">Semua Jurusan</option>' + listJurusan.map(j => `<option value="${j}">${j}</option>`).join('');
-        }
-      });
-    }
-
-    // ENGINE UTAMA PULL DATA LAPORAN HARIAN / BULANAN BERBASIS CORE API V10.2
-    function prosesTarikDataLaporan() {
-      const tipe = document.getElementById('report-type').value;
-      const jSelected = document.getElementById('filter-jurusan').value;
-      
-      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">Menarik data dari database...</td></tr>';
-      
-      let actionCall = 'getLaporanHarian';
-      let payloadCall = { tanggal: document.getElementById('report-date').value };
-      
-      if(tipe === 'bulanan') {
-        actionCall = 'getLaporanBulanan';
-        payloadCall = { bulan: document.getElementById('report-month').value };
-      }
-
-      executePostAction(actionCall, payloadCall).then(res => {
         if(res.status === 'success') {
-          dataBufferLaporan = res.data;
+          masterPeserta = res.data;
+          document.getElementById('c-total').innerText = masterPeserta.length;
           
-          // Modifikasi Kertas Preview Judul Cetak PDF
-          document.getElementById('pdf-sub-title').innerText = `LAPORAN ABSENSI REKAPITULASI ${res.tipe.toUpperCase()} SISWA`;
-          document.getElementById('pdf-periode-info').innerText = `Periode Evaluasi: ${tipe === 'harian' ? res.tanggal : res.bulan} | Filter Jurusan: ${jSelected}`;
+          // Render Fast Input Dropdown
+          let dropdownHTML = '<option value="">-- Pilih Siswa --</option>';
+          // Render Main Table Database
+          let tableHTML = '';
+          // Render Filter Jurusan Laporan
+          let listJurusan = new Set();
 
-          // Proses Filter Cabang Client-Side Jurusan
-          let dataTerfilter = dataBufferLaporan.filter(item => {
-            return (jSelected === 'ALL' || item.jurusan === jSelected);
+          masterPeserta.forEach(p => {
+            dropdownHTML += `<option value="${p.id}">${p.nama} (${p.id})</option>`;
+            listJurusan.add(p.jurusan);
+            tableHTML += `
+              <tr class="hover:bg-slate-50 transition-all">
+                <td class="py-3 px-5 font-mono font-bold text-slate-900">${p.id}</td>
+                <td class="py-3 px-5 font-semibold">${p.nama}</td>
+                <td class="py-3 px-5 text-xs text-slate-500">${p.jurusan}</td>
+                <td class="py-3 px-5 text-slate-600 font-mono text-xs">${p.wa}</td>
+                <td class="py-3 px-5 text-center flex justify-center gap-2">
+                  <button onclick="bukaModalQR('${p.id}','${p.nama}','${p.jurusan}')" class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-100 cursor-pointer">🪪 QR</button>
+                  <button onclick="hapusPeserta('${p.id}')" class="px-2.5 py-1 bg-red-50 text-red-500 rounded-lg text-xs font-bold border border-red-100 cursor-pointer">🗑️</button>
+                </td>
+              </tr>`;
           });
 
-          // Cetak Baris ke HTML Tabel Rekap
-          document.getElementById('tabelRekapBody').innerHTML = dataTerfilter.map(r => `
-            <tr class="hover:bg-slate-50 transition-all text-xs">
-              <td class="py-3 px-4 text-slate-500">${r.tanggal}</td>
-              <td class="py-3 px-4 font-mono font-bold">${r.id}</td>
-              <td class="py-3 px-4 font-bold text-slate-800">${r.nama}</td>
-              <td class="py-3 px-4 text-slate-500">${r.jurusan}</td>
-              <td class="py-3 px-4 font-semibold text-emerald-600">${r.datang}</td>
-              <td class="py-3 px-4 font-semibold text-blue-600">${r.pulang}</td>
-              <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[11px] font-black ${getBadgeStyle(r.status)}">${r.status}</span></td>
-            </tr>
-          `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada arsip data absensi yang cocok untuk filter ini.</td></tr>';
-        } else {
-          alert('Gagal mengambil data: ' + res.message);
+          document.getElementById('fast-student-id').innerHTML = dropdownHTML;
+          document.getElementById('tabelPesertaBody').innerHTML = tableHTML || '<tr><td colspan="5" class="text-center py-6">Tidak ada data anggota.</td></tr>';
+          
+          let filterHTML = '<option value="ALL">Semua Jurusan</option>';
+          listJurusan.forEach(j => { if(j.trim() !== "") filterHTML += `<option value="${j}">${j}</option>`; });
+          document.getElementById('filter-jurusan').innerHTML = filterHTML;
         }
-      }).catch(() => { alert('Koneksi engine backend terputus.'); });
-    }
-
-    function kirimManualStatus() {
-      let mid = document.getElementById('fast-student-id').value;
-      let mstatus = document.getElementById('fast-student-status').value;
-      if(!mid) return alert('Pilih siswa terlebih dahulu!');
-      
-      executePostAction('inputManual', { id: mid, status: mstatus }).then(res => {
-        alert(res.message);
-        if(res.status === 'success') { syncDashboard(); }
       });
     }
 
+    // Sync Rules Config Settings
     function syncSettings() {
       executePostAction('getSettings').then(res => {
-        if(res.status==='success') {
-          document.getElementById('set-instansiNama').value = res.data.instansiNama || '';
-          document.getElementById('set-jamMasuk').value = res.data.jamMasuk || '';
+        if(res.status === 'success') {
+          document.getElementById('set-instansiNama').value = res.data.instansiNama || 'SMK Negeri 1 Singkil Utara';
+          document.getElementById('set-jamMasuk').value = res.data.jamMasuk || '07:15';
+          document.getElementById('set-jamPulang').value = res.data.jamPulang || '13:30'; // Sinkronisasi Jam Pulang
           document.getElementById('set-waToken').value = res.data.waToken || '';
-          document.getElementById('pdf-nama-instansi').innerText = (res.data.instansiNama || 'SMK NEGERI 1 SINGKIL UTARA').toUpperCase();
+          
+          // Sinkronisasi teks header cetak PDF
+          document.getElementById('pdf-nama-instansi').innerText = (res.data.instansiNama || 'SMK Negeri 1 Singkil Utara').toUpperCase();
         }
       });
     }
 
     function simpanSettings(e) {
       e.preventDefault();
-      let d = {
+      let payload = {
         instansiNama: document.getElementById('set-instansiNama').value,
         jamMasuk: document.getElementById('set-jamMasuk').value,
+        jamPulang: document.getElementById('set-jamPulang').value, // Ditambahkan ke data pengiriman
         waToken: document.getElementById('set-waToken').value
       };
-      executePostAction('saveSettings', d).then(res => { alert(res.message); if(res.status==='success') syncSettings(); });
+      executePostAction('saveSettings', payload).then(res => {
+        alert(res.message);
+        syncSettings();
+      });
     }
 
+    // Fast Action / Inject Status Manual Dashboard
+    function kirimManualStatus() {
+      const idSiswa = document.getElementById('fast-student-id').value;
+      const statusAbsen = document.getElementById('fast-student-status').value;
+      if(!idSiswa) return alert("Pilih siswa terlebih dahulu!");
+      
+      executePostAction('inputManual', { id: idSiswa, status: statusAbsen }).then(res => {
+        alert(res.message);
+        syncDashboard();
+      });
+    }
+
+    // CRUD Siswa
     function simpanPeserta(e) {
       e.preventDefault();
-      let p = {
+      let payload = {
         id: document.getElementById('form-id').value,
         nama: document.getElementById('form-nama').value,
         jurusan: document.getElementById('form-jurusan').value,
         wa: document.getElementById('form-wa').value
       };
-      executePostAction('addPeserta', p).then(res => { alert(res.message); if(res.status==='success') { tutupModal(); syncPeserta(); } });
+      executePostAction('addPeserta', payload).then(res => {
+        alert(res.message);
+        if(res.status==='success') { tutupModal(); syncPeserta(); }
+      });
     }
 
-    function hapusPeserta(id) { if(confirm('Hapus id '+id+' dari sistem?')) { executePostAction('deletePeserta', { id: id }).then(res => { alert(res.message); syncPeserta(); }); } }
+    function hapusPeserta(idCard) {
+      if(confirm(`Hapus permanen data siswa dengan ID ${idCard}?`)) {
+        executePostAction('deletePeserta', { id: idCard }).then(res => { alert(res.message); syncPeserta(); });
+      }
+    }
 
+    // CSV Massive Upload Processing
     function handleCSVUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -564,42 +553,97 @@
       reader.onload = function(evt) {
         const text = evt.target.result;
         const lines = text.split('\n');
-        const dataSiswa = [];
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i].trim() === '') continue;
-          const cols = lines[i].split(',');
-          if (cols.length >= 3) {
-            dataSiswa.push({ id: cols[0].trim(), nama: cols[1].trim(), jurusan: cols[2].trim(), wa: cols[3] ? cols[3].trim() : '' });
+        let dataSiswaMassal = [];
+        
+        for(let i = 1; i < lines.length; i++) {
+          let cols = lines[i].split(',');
+          if(cols.length >= 4 && cols[0].trim() !== "") {
+            dataSiswaMassal.push({ id: cols[0].trim(), nama: cols[1].trim(), jurusan: cols[2].trim(), wa: cols[3].trim() });
           }
         }
-        if(dataSiswa.length > 0) {
-          executePostAction('uploadMasal', { data: dataSiswa }).then(res => { alert(res.message); syncPeserta(); });
-        } else { alert('Format baris data CSV tidak sah.'); }
+        if(dataSiswaMassal.length > 0) {
+          executePostAction('uploadMasal', dataSiswaMassal).then(res => { alert(res.message); syncPeserta(); });
+        } else { alert("Struktur file CSV salah / kosong. Pastikan pembatas menggunakan tanda koma (,)"); }
       };
       reader.readAsText(file);
     }
 
-    // Modal Manager Control
-    function bukaModal() { document.getElementById('formPeserta').reset(); document.getElementById('modalTambah').classList.remove('hidden'); }
-    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); }
+    // Laporan Data Filter Engine
+    function prosesTarikDataLaporan() {
+      const tipe = document.getElementById('report-type').value;
+      const tglHarian = document.getElementById('report-date').value;
+      const blnTahunan = document.getElementById('report-month').value;
+      const filterJurusan = document.getElementById('filter-jurusan').value;
+
+      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">Menarik seluruh log dari Google Engine...</td></tr>';
+      
+      executePostAction('getRekap').then(res => {
+        if(res.status === 'success') {
+          let logMentah = res.data;
+          
+          // Jalankan Filter Tanggal/Bulan
+          let logTerfilter = logMentah.filter(row => {
+            if(tipe === 'harian') {
+              return row.waktu === tglHarian;
+            } else {
+              return row.waktu.substring(0, 7) === blnTahunan;
+            }
+          });
+
+          // Jalankan Filter Jurusan
+          if(filterJurusan !== 'ALL') {
+            logTerfilter = logTerfilter.filter(row => row.jurusan === filterJurusan);
+          }
+
+          // Update Teks Metadata Cetakan PDF Laporan
+          document.getElementById('pdf-sub-title').innerText = `LAPORAN TRANSAKSIONAL ABSENSI Siswa - JURUSAN: ${filterJurusan.toUpperCase()}`;
+          document.getElementById('pdf-periode-info').innerText = `Periode: ${tipe === 'harian' ? tglHarian : blnTahunan}`;
+
+          // Render Array ke Tampilan Baris Tabel Laporan
+          document.getElementById('tabelRekapBody').innerHTML = logTerfilter.map(r => `
+            <tr class="hover:bg-slate-50 transition-all text-xs">
+              <td class="py-3 px-4 font-mono">${r.waktu}</td>
+              <td class="py-3 px-4 font-mono font-bold">${r.id}</td>
+              <td class="py-3 px-4 font-semibold text-slate-900">${r.nama}</td>
+              <td class="py-3 px-4 font-bold text-indigo-600">${r.jurusan}</td>
+              <td class="py-3 px-4 font-mono font-bold text-emerald-600">${r.datang}</td>
+              <td class="py-3 px-4 font-mono font-bold text-blue-600">${r.pulang}</td>
+              <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-md font-bold text-[10px] ${getBadgeStyle(r.statusKehadiran)}">${r.statusKehadiran}</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada log absensi yang cocok dengan filter parameter di atas.</td></tr>';
+        }
+      });
+    }
+
+    // Modal Helper Actions
+    function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
+    function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); document.getElementById('formPeserta').reset(); }
     
     function bukaModalQR(id, nama, jurusan) {
-      document.getElementById('qr-card-nama').innerText = nama;
       document.getElementById('qr-card-id').innerText = id;
+      document.getElementById('qr-card-nama').innerText = nama;
       document.getElementById('qr-card-jurusan').innerText = jurusan;
       document.getElementById('canvas-qrcode').innerHTML = "";
       
-      qrcodeGeneratorInstance = new QRCode(document.getElementById('canvas-qrcode'), {
-        text: id, width: 160, height: 160, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
+      // Render Instance Canvas QR Code Baru
+      qrcodeGeneratorInstance = new QRCode(document.getElementById("canvas-qrcode"), {
+        text: id,
+        width: 160,
+        height: 160,
+        colorDark : "#0f172a",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
       });
       document.getElementById('modalQR').classList.remove('hidden');
     }
 
-    function tutupModalQR() { document.getElementById('modalQR').classList.add('hidden'); document.body.classList.remove('cetak-mode-kartu'); }
+    function tutupModalQR() { document.getElementById('modalQR').classList.add('hidden'); qrcodeGeneratorInstance = null; }
     
     function jalankanCetakKartuSiswa() {
       document.body.classList.add('cetak-mode-kartu');
       window.print();
+      // Kembalikan ke mode normal setelah print dialog selesai ditutup
+      setTimeout(() => { document.body.classList.remove('cetak-mode-kartu'); }, 500);
     }
   </script>
 </body>
