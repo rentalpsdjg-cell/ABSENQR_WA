@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HomeEd Absensi Super Engine v4</title>
+  <title>HomeEd Absensi Super Engine v5</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -27,15 +27,15 @@
   <div id="app-layer" class="hidden w-full flex min-h-screen">
     <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 left-0 z-40 class-hide-print shadow-xl">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">H4</div>
-        <div><h2 class="font-bold text-white text-sm">HomeEd Control</h2><p class="text-[10px] text-slate-500">Engine v4.0 Ultimate</p></div>
+        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">H5</div>
+        <div><h2 class="font-bold text-white text-sm">HomeEd Control</h2><p class="text-[10px] text-slate-500">Engine v5.0 Fixed</p></div>
       </div>
       <nav class="flex-1 p-4 space-y-1">
         <button onclick="switchTab('dashboard')" id="m-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">📊 Dashboard Monitor</button>
         <button onclick="switchTab('scan')" id="m-scan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">📷 Pemindai QR Code</button>
         <button onclick="switchTab('peserta')" id="m-peserta" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">👥 Database Siswa</button>
         <button onclick="switchTab('rekap')" id="m-rekap" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">📋 Laporan Rekapitulasi</button>
-        <button onclick="switchTab('pengaturan')" id="m-pengaturan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">⚙️ Pengaturan Jam & WA</button>
+        <button onclick="switchTab('pengaturan')" id="m-pengaturan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left hover:bg-slate-800 cursor-pointer">⚙️ Aturan Jam & WA</button>
       </nav>
       <div class="p-4 border-t border-slate-800"><button onclick="handleLogout()" class="w-full bg-red-950/40 text-red-400 py-2.5 rounded-xl text-sm cursor-pointer hover:bg-red-900/40">🚪 Keluar</button></div>
     </aside>
@@ -104,7 +104,7 @@
                 📥 Upload Masal (.CSV)
                 <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVUpload(event)" class="hidden">
               </label>
-              <button onclick="bukaModal()" class="bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-md cursor-pointer">➕ Tambah Mandiri</button>
+              <button onclick="bukaModal()" class="bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-md cursor-pointer">➕ Tambah Anggota</button>
             </div>
           </div>
           <div class="bg-white rounded-2xl border p-6 shadow-xs">
@@ -118,7 +118,6 @@
         <section id="tab-rekap" class="hidden space-y-6">
           <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 class-hide-print">
             <h1 class="text-3xl font-bold text-slate-800">Laporan Rekapitulasi</h1>
-            
             <div class="flex flex-wrap gap-2 w-full lg:w-auto">
               <input type="month" id="filter-bulan" onchange="aplikasikanFilterJurusan()" class="px-4 py-2 bg-white border rounded-xl text-sm focus:outline-none">
               <select id="filter-jurusan" onchange="aplikasikanFilterJurusan()" class="px-4 py-2 bg-white border rounded-xl text-sm focus:outline-none">
@@ -144,9 +143,10 @@
         <section id="tab-pengaturan" class="hidden space-y-6">
           <h1 class="text-3xl font-bold text-slate-800">Konfigurasi Aturan Jam & Token</h1>
           <form id="formSettings" onsubmit="simpanSettings(event)" class="bg-white rounded-2xl p-6 border shadow-xs space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Instansi</label><input type="text" id="set-instansiNama" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
               <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Batas Jam Masuk (Format HH:MM)</label><input type="time" id="set-jamMasuk" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
+              <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Jadwal Jam Pulang (Format HH:MM)</label><input type="time" id="set-jamPulang" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
             </div>
             <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Fonnte Token Auth</label><input type="text" id="set-waToken" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
             <div class="flex justify-end"><button type="submit" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-xl text-sm cursor-pointer shadow-md">💾 Simpan Setelan</button></div>
@@ -157,13 +157,28 @@
     </main>
   </div>
 
+  <div id="modalQR" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 border shadow-2xl text-center space-y-4">
+      <div class="flex justify-between items-center border-b pb-2"><h3 class="font-bold text-slate-800">Kartu QR Digital</h3><button onclick="tutupModalQR()" class="text-xl text-slate-400 font-bold">&times;</button></div>
+      <div class="p-4 bg-slate-100 rounded-xl inline-block mx-auto">
+        <img id="qr-card-image" src="" alt="QR Code" class="w-48 h-48 border-2 border-white shadow-xs">
+      </div>
+      <div>
+        <h4 id="qr-card-nama" class="font-bold text-lg text-slate-900">-</h4>
+        <p id="qr-card-id" class="text-sm font-mono text-blue-600 font-semibold">-</p>
+        <p id="qr-card-jurusan" class="text-xs font-bold text-slate-400 uppercase">-</p>
+      </div>
+      <button onclick="window.print()" class="w-full bg-slate-900 text-white font-bold py-2 rounded-xl text-sm cursor-pointer">🖨️ Cetak Kartu</button>
+    </div>
+  </div>
+
   <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 border shadow-xl">
       <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">Tambah Anggota</h3><button onclick="tutupModal()" class="text-xl font-bold text-slate-400">&times;</button></div>
       <form id="formPeserta" onsubmit="simpanPeserta(event)" class="space-y-4">
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID Anggota / Nomor Induk</label><input type="text" id="form-id" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label><input type="text" id="form-nama" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Jurusan / Program Studi</label><input type="text" id="form-jurusan" placeholder="Contoh: ATU XII, TPMG XII" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Jurusan / Program Studi</label><input type="text" id="form-jurusan" placeholder="Contoh: ATU XII" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">No WhatsApp Wali (Awali 62)</label><input type="number" id="form-wa" placeholder="628xxxxxxxx" required class="w-full px-4 py-2 bg-slate-50 border rounded-xl text-sm focus:outline-none"></div>
         <div class="flex justify-end gap-3 pt-2"><button type="button" onclick="tutupModal()" class="px-4 py-2 text-slate-500 text-sm">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold">Simpan</button></div>
       </form>
@@ -172,10 +187,11 @@
 
   <style>
     @media print {
-      .class-hide-print,  aside, button, select, label, input, form, #auth-layer { display: none !important; }
+      .class-hide-print, aside, button, select, label, input, form, #auth-layer { display: none !important; }
       body, main { background: white !important; padding-left: 0 !important; }
       #app-layer { display: block !important; }
       #area-rekap-cetak { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; }
+      #modalQR { display: flex !important; background: white !important; position: absolute; inset: 0; box-shadow: none !important; }
       .block-print { display: block !important; }
     }
   </style>
@@ -187,9 +203,6 @@
     let masterPeserta = [];
     let masterRekap = [];
     let cameraQRScanner = null;
-    let namaSekolahGlobal = "HomeEd Center";
-
-    // VARIABEL CEGAH DOUBLE SCAN (COOLDOWN ANTRIAN)
     let idScanTerakhir = null;
     let waktuScanTerakhir = 0;
 
@@ -222,19 +235,12 @@
       if(tab !== 'scan') matikanKamera();
     }
 
-    // ENGINE PEMINDAI DENGAN VALIDASI DOUBLE-TAP COOLDOWN 10 DETIK
     function mulaiKamera() {
       cameraQRScanner = new Html5Qrcode("reader");
       cameraQRScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (decodedText) => {
         let waktuSekarang = Date.now();
-        
-        // VALIDASI UTAMA: Jika ID sama & jeda ketukan kurang dari 10 detik, kunci/abaikan!
-        if (decodedText === idScanTerakhir && (waktuSekarang - waktuScanTerakhir) < 10000) {
-          console.warn("Sistem mengabaikan double scan beruntun dari ID:", decodedText);
-          return;
-        }
+        if (decodedText === idScanTerakhir && (waktuSekarang - waktuScanTerakhir) < 10000) return;
 
-        // Amankan data ketukan terakhir
         idScanTerakhir = decodedText;
         waktuScanTerakhir = waktuSekarang;
 
@@ -288,10 +294,14 @@
           masterPeserta = res.data;
           document.getElementById('fast-student-id').innerHTML = masterPeserta.map(p => `<option value="${p.id}">${p.nama} (${p.jurusan})</option>`).join('');
           
+          // DITAMBAHKAN TOMBOL GENERATE KARTU QR PER SISWA SEPERTI PERMINTAAN KEDUA
           document.getElementById('tabelPesertaBody').innerHTML = masterPeserta.map(p => `
             <tr class="hover:bg-slate-50">
               <td class="py-3 px-4 font-mono font-bold">${p.id}</td><td class="py-3 px-4 font-medium text-slate-800">${p.nama}</td><td class="py-3 px-4 text-xs font-bold text-indigo-600">${p.jurusan}</td><td class="py-3 px-4 text-slate-500">${p.wa}</td>
-              <td class="py-3 px-4 text-center"><button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-lg font-bold cursor-pointer">🗑️ Hapus</button></td>
+              <td class="py-3 px-4 text-center flex justify-center gap-1">
+                <button onclick="bukaModalQR('${p.id}', '${p.nama}', '${p.jurusan}')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold cursor-pointer">🪪 Lihat QR</button>
+                <button onclick="hapusPeserta('${p.id}')" class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-lg font-bold cursor-pointer">🗑️ Hapus</button>
+              </td>
             </tr>
           `).join('') || '<tr><td colspan="5" class="text-center py-4">Database kosong.</td></tr>';
           
@@ -301,7 +311,15 @@
       });
     }
 
-    // FITUR UPLOAD MASAL BERBASIS CSV MURNI
+    function bukaModalQR(id, nama, jurusan) {
+      document.getElementById('qr-card-nama').innerText = nama;
+      document.getElementById('qr-card-id').innerText = id;
+      document.getElementById('qr-card-jurusan').innerText = "JURUSAN " + jurusan;
+      document.getElementById('qr-card-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${id}`;
+      document.getElementById('modalQR').classList.remove('hidden');
+    }
+    function tutupModalQR() { document.getElementById('modalQR').classList.add('hidden'); }
+
     function handleCSVUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -310,31 +328,15 @@
         const text = evt.target.result;
         const lines = text.split("\n");
         let parsedPayload = [];
-        
-        // Loop mulai baris kedua (Baris 1 = Header: id,nama,jurusan,wa)
         for(let i=1; i<lines.length; i++) {
           if(lines[i].trim() === "") continue;
           let kolom = lines[i].split(",");
           if(kolom.length >= 3) {
-            parsedPayload.push({
-              id: kolom[0].replace(/['"]/g, '').trim(),
-              nama: kolom[1].trim(),
-              jurusan: kolom[2].trim(),
-              wa: kolom[3] ? kolom[3].trim() : ""
-            });
+            parsedPayload.push({ id: kolom[0].replace(/['"]/g, '').trim(), nama: kolom[1].trim(), jurusan: kolom[2].trim(), wa: kolom[3] ? kolom[3].trim() : "" });
           }
         }
-        
-        if(parsedPayload.length === 0) { alert("Format CSV kosong atau tidak valid!"); return; }
-        
-        fetch(`${CLOUD_API}?action=uploadMasal`, {
-          method: 'POST',
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(parsedPayload)
-        }).then(r=>r.json()).then(res => {
-          alert(res.message);
-          syncPeserta();
-        });
+        if(parsedPayload.length === 0) { alert("Format CSV kosong!"); return; }
+        fetch(`${CLOUD_API}?action=uploadMasal`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(parsedPayload) }).then(r=>r.json()).then(res => { alert(res.message); syncPeserta(); });
       };
       reader.readAsText(file);
     }
@@ -343,56 +345,30 @@
       const idSiswa = document.getElementById('fast-student-id').value;
       const statusSiswa = document.getElementById('fast-student-status').value;
       if(!idSiswa) return;
-      fetch(`${CLOUD_API}?action=inputManual`, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ id: idSiswa, status: statusSiswa })
-      }).then(r => r.json()).then(res => { alert(res.message); syncDashboard(); syncRekap(); });
+      fetch(`${CLOUD_API}?action=inputManual`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id: idSiswa, status: statusSiswa }) }).then(r => r.json()).then(res => { alert(res.message); syncDashboard(); syncRekap(); });
     }
 
     function simpanPeserta(e) {
       e.preventDefault();
       const p = { id: document.getElementById('form-id').value, nama: document.getElementById('form-nama').value, jurusan: document.getElementById('form-jurusan').value, wa: document.getElementById('form-wa').value };
       tutupModal();
-      fetch(`${CLOUD_API}?action=addPeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => {
-        alert('Data berhasil disimpan!'); setTimeout(jalankanMesinAwal, 500); document.getElementById('formPeserta').reset();
-      });
+      fetch(`${CLOUD_API}?action=addPeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => { alert('Berhasil disimpan!'); setTimeout(jalankanMesinAwal, 500); document.getElementById('formPeserta').reset(); });
     }
 
     function hapusPeserta(id) {
-      if(confirm('Hapus peserta?')) {
-        fetch(`${CLOUD_API}?action=deletePeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id: id }) }).then(() => { setTimeout(jalankanMesinAwal, 300); });
-      }
+      if(confirm('Hapus peserta?')) { fetch(`${CLOUD_API}?action=deletePeserta`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id: id }) }).then(() => { setTimeout(jalankanMesinAwal, 300); }); }
     }
 
     function syncRekap() {
-      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => {
-        if(res.status==='success') { masterRekap = res.data; aplikasikanFilterJurusan(); }
-      });
+      fetch(`${CLOUD_API}?action=getRekap`, { method: 'POST', headers: { "Content-Type": "text/plain" } }).then(r => r.json()).then(res => { if(res.status==='success') { masterRekap = res.data; aplikasikanFilterJurusan(); } });
     }
 
-    // ENGINE FILTER MULTI-DIMENSI: JURUSAN & BULANAN (ANTI-1899 BUG FIXED)
     function aplikasikanFilterJurusan() {
       const filterJurusan = document.getElementById('filter-jurusan').value;
-      const filterBulan = document.getElementById('filter-bulan').value; // Output format: "YYYY-MM"
-      
+      const filterBulan = document.getElementById('filter-bulan').value;
       let filteredData = masterRekap;
-      
-      // 1. Saring Berdasarkan Jurusan
-      if(filterJurusan !== 'ALL') {
-        filteredData = filteredData.filter(r => r.jurusan === filterJurusan);
-        document.getElementById('pdf-filter-title').innerText = "JURUSAN: " + filterJurusan.toUpperCase();
-      } else {
-        document.getElementById('pdf-filter-title').innerText = "SEMUA JURUSAN";
-      }
-
-      // 2. Saring Berdasarkan Bulan Pilihan
-      if(filterBulan) {
-        filteredData = filteredData.filter(r => r.waktu.substring(0, 7) === filterBulan);
-        document.getElementById('pdf-bulan-title').innerText = "PERIODE BULAN: " + filterBulan;
-      } else {
-        document.getElementById('pdf-bulan-title').innerText = "SEMUA PERIODE BULANAN";
-      }
+      if(filterJurusan !== 'ALL') filteredData = filteredData.filter(r => r.jurusan === filterJurusan);
+      if(filterBulan) filteredData = filteredData.filter(r => r.waktu.substring(0, 7) === filterBulan);
 
       document.getElementById('tabelRekapBody').innerHTML = filteredData.map(r => `
         <tr>
@@ -409,9 +385,9 @@
           const s = res.data;
           document.getElementById('set-instansiNama').value = s.instansiNama || "";
           document.getElementById('set-jamMasuk').value = s.jamMasuk || "07:15";
+          document.getElementById('set-jamPulang').value = s.jamPulang || "16:00"; // Default jam pulang
           document.getElementById('set-waToken').value = s.waToken || "";
-          namaSekolahGlobal = s.instansiNama || "HomeEd Center";
-          document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN REKAPITULASI ABSENSI — " + namaSekolahGlobal.toUpperCase();
+          document.getElementById('pdf-nama-sekolah').innerText = "LAPORAN REKAPITULASI — " + (s.instansiNama || "HomeEd Center").toUpperCase();
         }
       });
     }
@@ -421,11 +397,10 @@
       const p = { 
         instansiNama: document.getElementById('set-instansiNama').value, 
         jamMasuk: document.getElementById('set-jamMasuk').value, 
+        jamPulang: document.getElementById('set-jamPulang').value, // Ditambahkan ke data simpan
         waToken: document.getElementById('set-waToken').value 
       };
-      fetch(`${CLOUD_API}?action=saveSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => {
-        alert('Konfigurasi aturan jam berhasil disimpan!'); setTimeout(syncSettings, 300);
-      });
+      fetch(`${CLOUD_API}?action=saveSettings`, { method: 'POST', headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).then(() => { alert('Konfigurasi berhasil disimpan!'); setTimeout(syncSettings, 300); });
     }
 
     function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
