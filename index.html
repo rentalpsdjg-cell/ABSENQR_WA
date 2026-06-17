@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>E-Absensi Enterprise v12.0 - Core Production</title>
+  <title>E-Absensi Enterprise v12.5 - UI Machine Mode</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,6 +23,17 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
       display: none; justify-content: center; align-items: center; z-index: 99999; color: #fff;
+    }
+    /* Scanner Custom Radar Effect */
+    .scanner-laser {
+      position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+      background: linear-gradient(to right, transparent, #2563eb, transparent);
+      animation: scanAnimation 2s linear infinite;
+    }
+    @keyframes scanAnimation {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
     }
   </style>
 </head>
@@ -153,23 +164,61 @@
           </div>
         </section>
 
-        <!-- TAB 2: MESIN SCANNER -->
+        <!-- TAB 2: MESIN SCANNER IMMERSIVE MODE -->
         <section id="tab-scan" class="hidden space-y-6 animate__animated animate__fadeIn">
-          <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Pintu Gerbang Scanner Active Camera</h1>
+          <div class="flex justify-between items-center">
+            <div>
+              <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Kamera Pemindai Utama</h1>
+              <p class="text-xs text-slate-400 mt-0.5">Arahkan QR Code tepat ke dalam kotak radar lensa</p>
+            </div>
+            <span id="scan-status-pill" class="text-xs bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl shadow-sm tracking-wide animate-pulse">● STANDBY MODE</span>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-xs flex flex-col items-center">
-              <div id="reader" class="w-full max-w-sm overflow-hidden rounded-2xl bg-slate-900 border-4 border-slate-100 aspect-square shadow-lg"></div>
-              <div class="flex gap-3 mt-4 w-full max-w-sm">
-                <button onclick="mulaiKamera()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all cursor-pointer shadow-md">Aktifkan Kamera</button>
-                <button onclick="matikanKamera()" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-xl transition-all cursor-pointer">Matikan</button>
+            <div class="lg:col-span-2 bg-slate-900 p-4 rounded-3xl relative overflow-hidden shadow-2xl flex flex-col items-center border border-slate-800">
+              <!-- Radar Laser Animation -->
+              <div class="scanner-laser"></div>
+              
+              <!-- Immersive Full-Screen Face Machine Overlay -->
+              <div id="hud-overlay" class="absolute inset-0 z-10 bg-emerald-950/90 backdrop-blur-md hidden flex-col items-center justify-center text-center p-6 animate__animated">
+                <div id="hud-icon-box" class="w-24 h-24 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-5xl mb-4 border-2 border-emerald-500/30">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 id="hud-title" class="text-2xl font-extrabold text-white tracking-tight">SCAN BERHASIL VERIFIKASI</h2>
+                <p id="hud-subtitle" class="text-emerald-400 font-semibold text-sm mt-1 uppercase tracking-wider">ABSEN MASUK TERECORD</p>
+                
+                <div class="mt-6 space-y-2 bg-black/30 px-6 py-4 rounded-2xl w-full max-w-sm border border-white/5">
+                  <div class="flex justify-between text-xs"><span class="text-slate-400">Nama Siswa</span><span id="hud-nama" class="font-bold text-white text-right">-</span></div>
+                  <div class="flex justify-between text-xs"><span class="text-slate-400">Waktu Log</span><span id="hud-jam" class="font-mono font-bold text-white">-</span></div>
+                  <div class="flex justify-between text-xs"><span class="text-slate-400">Status Hari Ini</span><span id="hud-status" class="font-bold text-emerald-400">-</span></div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-6 tracking-widest uppercase animate-pulse">Auto-reset antrean berikutnya...</p>
+              </div>
+
+              <!-- Camera Viewport Box -->
+              <div id="reader" class="w-full max-w-md overflow-hidden rounded-2xl bg-black border border-slate-800 aspect-square shadow-inner"></div>
+              
+              <div class="flex gap-3 mt-4 w-full max-w-md z-20">
+                <button onclick="mulaiKamera()" class="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all cursor-pointer shadow-lg shadow-blue-500/10">Aktifkan Kamera</button>
+                <button onclick="matikanKamera()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition-all cursor-pointer">Matikan</button>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs space-y-4">
-              <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 text-sm">Status Pemindai Terakhir</h3>
-              <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">ID Terbaca</p><p id="scan-id" class="text-xl font-extrabold text-blue-600 font-mono mt-0.5">-</p></div>
-              <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Nama Siswa</p><p id="scan-nama" class="text-sm font-semibold text-slate-800 mt-0.5">-</p></div>
-              <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Aksi Kehadiran</p><span id="scan-tipe" class="inline-block mt-1 text-xs px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg font-bold border border-slate-200">-</span></div>
-              <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Status Gateway WA</p><span id="scan-wa" class="inline-block mt-1 text-xs px-2.5 py-1 bg-slate-50 text-slate-700 rounded-lg font-semibold border border-slate-200">-</span></div>
+
+            <!-- Side Live Monitor Log Panel -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs flex flex-col justify-between">
+              <div class="space-y-4">
+                <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 text-sm flex items-center gap-2">
+                  <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Log Terminal Terakhir
+                </h3>
+                <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">UID QR Token</p><p id="scan-id" class="text-lg font-extrabold text-blue-600 font-mono mt-0.5">-</p></div>
+                <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Nama Identitas</p><p id="scan-nama" class="text-sm font-semibold text-slate-800 mt-0.5">-</p></div>
+                <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Kategori Presensi</p><span id="scan-tipe" class="inline-block mt-1 text-xs px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg font-bold border border-slate-200">-</span></div>
+                <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">WhatsApp Delivery</p><span id="scan-wa" class="inline-block mt-1 text-xs px-2.5 py-1 bg-slate-50 text-slate-700 rounded-lg font-semibold border border-slate-200">-</span></div>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-info-circle mr-1"></i> Mode Berjalan</p>
+                <p class="text-xs text-slate-600 mt-1 leading-relaxed">Sistem dalam mode <b>Mesin Mandiri</b>. Kamera akan terus menyala mencari kode QR secara kontinu.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -333,6 +382,7 @@
     let globalRekapAbsenRaw = [];
     let html5QrcodeScannerInstance = null;
     let qrcodeGeneratorInstance = null;
+    let isProcessingScan = false; // Anti Double Tap Lock
 
     setInterval(() => {
       document.getElementById('live-clock').innerHTML = `<i class="far fa-clock text-warning mr-1"></i> ${new Date().toLocaleTimeString('id-ID')}`;
@@ -475,59 +525,91 @@
       }
     }
 
+    // VOX ROBOT ASSISTANT AUDIO ENGINE
+    function panggilSuaraMesin(pesan) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        let utterance = new SpeechSynthesisUtterance(pesan);
+        utterance.lang = 'id-ID';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
     function mulaiKamera() {
       document.getElementById('reader').innerHTML = "";
+      document.getElementById('scan-status-pill').className = "text-xs bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl shadow-sm tracking-wide animate-pulse";
+      document.getElementById('scan-status-pill').innerText = "● STANDBY MODE";
+
       html5QrcodeScannerInstance = new Html5Qrcode("reader");
       html5QrcodeScannerInstance.start(
         { facingMode: "environment" },
-        { fps: 15, qrbox: 250, aspectRatio: 1.0 },
+        { fps: 24, qrbox: 250, aspectRatio: 1.0 },
         async (decodedText) => {
-          matikanKamera();
-          document.getElementById("loading-overlay").style.display = "flex";
-          
+          // Validasi interupsi ganda
+          if (isProcessingScan) return;
+          isProcessingScan = true;
+
+          document.getElementById('scan-status-pill').className = "text-xs bg-amber-500 text-white font-bold px-3 py-1.5 rounded-xl shadow-sm tracking-wide";
+          document.getElementById('scan-status-pill').innerText = "● PROCESSING";
+
           document.getElementById('scan-id').innerText = decodedText;
-          document.getElementById('scan-nama').innerText = "Memverifikasi hak akses...";
-          
+          document.getElementById('scan-nama').innerText = "Mengecek Database Enkripsi Cloud...";
+
           let res = await requestCore('scanAbsen', { id: decodedText.trim() });
-          document.getElementById("loading-overlay").style.display = "none";
+
+          const hud = document.getElementById('hud-overlay');
+          const iconBox = document.getElementById('hud-icon-box');
 
           if(res.status === 'success') {
             document.getElementById('scan-nama').innerText = res.data.nama;
             document.getElementById('scan-tipe').innerText = `${res.data.tipe} - [${res.data.jam}]`;
             document.getElementById('scan-wa').innerText = res.data.wa;
 
-            Swal.fire({
-              title: "Scan Berhasil Terbaca!",
-              html: `<div class="text-left font-normal text-slate-600 text-xs mt-2">`+
-                    `<b>Nama Siswa:</b> ${res.data.nama}<br>`+
-                    `<b>Aksi Registrasi:</b> <span class="text-blue-600 font-bold">${res.data.tipe}</span><br>`+
-                    `<b>Waktu Sistem:</b> ${res.data.jam}<br>`+
-                    `<b>Status:</b> <span class="badge bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-sm">${res.data.statusKehadiran}</span></div>`,
-              icon: "success",
-              confirmButtonText: "Lanjut Antrean Berikutnya",
-              confirmButtonColor: "#2563eb",
-              allowOutsideClick: false
-            }).then(() => { mulaiKamera(); });
+            // Injeksi Konten ke HUD Sukses
+            document.getElementById('hud-title').innerText = "SCAN VERIFIED";
+            document.getElementById('hud-subtitle').innerText = res.data.tipe;
+            document.getElementById('hud-nama').innerText = res.data.nama;
+            document.getElementById('hud-jam').innerText = res.data.jam + " WIB";
+            document.getElementById('hud-status').innerText = res.data.statusKehadiran;
+            document.getElementById('hud-status').className = "font-bold text-emerald-400";
+
+            hud.className = "absolute inset-0 z-10 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate__animated animate__fadeInUp";
+            iconBox.className = "w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-4 border border-emerald-500/40";
+            iconBox.innerHTML = '<i class="fas fa-check-circle animate__animated animate__bounceIn"></i>';
+
+            // Fitur Voice Engine Spek Dewa
+            panggilSuaraMesin(`Terima kasih. ${res.data.nama}. ${res.data.tipe.toLowerCase()} berhasil.`);
 
           } else {
-            document.getElementById('scan-nama').innerText = "Akses Ditolak";
+            document.getElementById('scan-nama').innerText = "Ditolak Aturan";
             document.getElementById('scan-tipe').innerText = "REJECTED";
             document.getElementById('scan-wa').innerText = "-";
 
-            Swal.fire({
-              title: "Absensi Ditolak Sistem!",
-              html: `<div class="text-center text-sm font-medium text-slate-700">${res.message}</div>`,
-              icon: "error",
-              confirmButtonText: "Reset & Buka Scanner",
-              confirmButtonColor: "#dc2626",
-              allowOutsideClick: false
-            }).then(() => { 
-              document.getElementById('scan-id').innerText = "-";
-              document.getElementById('scan-nama').innerText = "-";
-              document.getElementById('scan-tipe').innerText = "-";
-              mulaiKamera(); 
-            });
+            // Injeksi Konten ke HUD Gagal
+            document.getElementById('hud-title').innerText = "ACCESS DENIED";
+            document.getElementById('hud-subtitle').innerText = "VALIDASI GAGAL";
+            document.getElementById('hud-nama').innerText = "ID: " + decodedText;
+            document.getElementById('hud-jam').innerText = new Date().toLocaleTimeString('id-ID') + " WIB";
+            document.getElementById('hud-status').innerText = "REJECTED";
+            document.getElementById('hud-status').className = "font-bold text-red-400";
+
+            hud.className = "absolute inset-0 z-10 bg-red-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate__animated animate__shakeX";
+            iconBox.className = "w-20 h-20 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-4xl mb-4 border border-red-500/40";
+            iconBox.innerHTML = '<i class="fas fa-times-circle"></i>';
+
+            panggilSuaraMesin("Maaf, absensi Anda ditolak.");
           }
+
+          // Auto-Reset HUD tanpa mematikan stream kamera
+          setTimeout(() => {
+            hud.className = "absolute inset-0 z-10 bg-slate-950/95 backdrop-blur-md hidden flex-col items-center justify-center text-center p-6 animate__animated animate__fadeOutDown";
+            document.getElementById('scan-status-pill').className = "text-xs bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl shadow-sm tracking-wide animate-pulse";
+            document.getElementById('scan-status-pill').innerText = "● STANDBY MODE";
+            isProcessingScan = false; // Buka kunci antrean berikutnya
+          }, 2500);
+
         },
         () => {}
       ).catch(() => Swal.fire("Camera Error", "Gagal mengaktifkan modul kamera.", "warning"));
