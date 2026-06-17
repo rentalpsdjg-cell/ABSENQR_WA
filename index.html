@@ -32,7 +32,7 @@
     <div class="text-center animate__animated animate__fadeIn">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
       <h5 class="font-bold text-lg tracking-wide">MEMPROSES DATA ABSENSI...</h5>
-      <p class="text-slate-400 text-xs mt-1">Concurrency lock sedang memverifikasi data pada cloud database.</p>
+      <p class="text-slate-400 text-xs mt-1">Sistem sedang memverifikasi data di enkripsi cloud.</p>
     </div>
   </div>
 
@@ -61,7 +61,7 @@
     <aside class="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col fixed inset-y-0 left-0 z-40 shadow-xl hide-on-print">
       <div class="p-6 border-b border-slate-800 flex items-center gap-3">
         <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">V12</div>
-        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Pro</h2><p class="text-[10px] text-emerald-400 font-medium">● LOCK ENGINE V12.0</p></div>
+        <div><h2 class="font-bold text-white text-sm tracking-tight">E-Absen Pro</h2><p class="text-[10px] text-emerald-400 font-medium">● ENGINE ZONE LOCK</p></div>
       </div>
       <nav class="flex-1 p-4 space-y-1.5">
         <button onclick="switchTab('dashboard')" id="m-dashboard" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer bg-slate-800 text-white"><i class="fas fa-chart-pie w-5"></i> Monitor Realtime</button>
@@ -84,6 +84,7 @@
     <main class="flex-1 md:pl-64 flex flex-col min-w-0">
       <div class="p-4 md:p-8 flex-1">
         
+        <!-- TAB 1: DASHBOARD MONITOR -->
         <section id="tab-dashboard" class="space-y-6 animate__animated animate__fadeIn">
           <div class="flex justify-between items-center">
             <div>
@@ -152,6 +153,7 @@
           </div>
         </section>
 
+        <!-- TAB 2: MESIN SCANNER -->
         <section id="tab-scan" class="hidden space-y-6 animate__animated animate__fadeIn">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Pintu Gerbang Scanner Active Camera</h1>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -172,6 +174,7 @@
           </div>
         </section>
 
+        <!-- TAB 3: DATA ANGGOTA SISWA -->
         <section id="tab-peserta" class="hidden space-y-6 animate__animated animate__fadeIn">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Database Master Siswa</h1>
@@ -195,6 +198,7 @@
           </div>
         </section>
 
+        <!-- TAB 4: CETAK LAPORAN GLOBAL -->
         <section id="tab-rekap" class="hidden space-y-6 animate__animated animate__fadeIn">
           <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-4 hide-on-print">
             <h2 class="text-base font-bold text-slate-800">🖨️ Generator Filter Cetak Laporan</h2>
@@ -252,6 +256,7 @@
           </div>
         </section>
 
+        <!-- TAB 5: PENGATURAN CORE OPERASIONAL -->
         <section id="tab-pengaturan" class="hidden space-y-6 animate__animated animate__fadeIn">
           <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Konfigurasi Aturan Jam & Token Gateway</h1>
           <form id="formSettings" onsubmit="simpanSettings(event)" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs space-y-4">
@@ -283,6 +288,7 @@
     </main>
   </div>
 
+  <!-- MODAL FORM -->
   <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-100 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-slate-800">➕ Formulir Tambah Anggota Baru</h3>
@@ -296,6 +302,7 @@
     </div>
   </div>
 
+  <!-- MODAL QR -->
   <div id="modalQR" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 border border-slate-100 shadow-2xl text-center space-y-4 printable-card-container">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3 hide-on-print">
@@ -318,7 +325,7 @@
 
   <script>
     // =========================================================================
-    // URL WEB APP APPS SCRIPT LINK
+    // PASTE URL WEB APP APPS SCRIPT ANDA DI SINI
     // =========================================================================
     const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzNpFTKMSazNGHYAB19iGtPlrLjnESgESQ_QqvkDHlP0BMXBrcRye8KiG5epog-MLFoew/exec";
 
@@ -327,12 +334,10 @@
     let html5QrcodeScannerInstance = null;
     let qrcodeGeneratorInstance = null;
 
-    // Real-Time Clock
     setInterval(() => {
       document.getElementById('live-clock').innerHTML = `<i class="far fa-clock text-warning mr-1"></i> ${new Date().toLocaleTimeString('id-ID')}`;
     }, 1000);
 
-    // Auth Logic Gate
     function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('login-user').value.trim();
@@ -352,7 +357,6 @@
       document.getElementById('login-pass').value = "";
     }
 
-    // App Navigation Router Tabs
     function switchTab(tabId) {
       const tabs = ['dashboard', 'scan', 'peserta', 'rekap', 'pengaturan'];
       tabs.forEach(t => {
@@ -382,7 +386,6 @@
       document.getElementById("loading-overlay").style.display = "none";
     }
 
-    // Core Post Handler API
     async function requestCore(action, payloadData = {}) {
       try {
         let response = await fetch(`${URL_WEB_APP}?action=${action}`, {
@@ -472,9 +475,6 @@
       }
     }
 
-    // =========================================================================
-    // KAMERA SCANNER PLATINUM GRADE ENGINE (STRICT SECURITY VALIDATION)
-    // =========================================================================
     function mulaiKamera() {
       document.getElementById('reader').innerHTML = "";
       html5QrcodeScannerInstance = new Html5Qrcode("reader");
@@ -482,7 +482,6 @@
         { facingMode: "environment" },
         { fps: 15, qrbox: 250, aspectRatio: 1.0 },
         async (decodedText) => {
-          // 1. SEGERA BLOKIR LOGIKA KAMERA (Mencegah looping tembakan double scan)
           matikanKamera();
           document.getElementById("loading-overlay").style.display = "flex";
           
@@ -503,32 +502,26 @@
                     `<b>Nama Siswa:</b> ${res.data.nama}<br>`+
                     `<b>Aksi Registrasi:</b> <span class="text-blue-600 font-bold">${res.data.tipe}</span><br>`+
                     `<b>Waktu Sistem:</b> ${res.data.jam}<br>`+
-                    `<b>Status Hari Ini:</b> <span class="badge bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-sm">${res.data.statusKehadiran}</span></div>`,
+                    `<b>Status:</b> <span class="badge bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-sm">${res.data.statusKehadiran}</span></div>`,
               icon: "success",
               confirmButtonText: "Lanjut Antrean Berikutnya",
               confirmButtonColor: "#2563eb",
               allowOutsideClick: false
-            }).then(() => { 
-              mulaiKamera(); 
-            });
+            }).then(() => { mulaiKamera(); });
 
           } else {
-            // 2. LOGIKA BLOKIR KETAT (Belum Waktunya Pulang / Double Tap Masuk)
             document.getElementById('scan-nama').innerText = "Akses Ditolak";
             document.getElementById('scan-tipe').innerText = "REJECTED";
             document.getElementById('scan-wa').innerText = "-";
 
             Swal.fire({
               title: "Absensi Ditolak Sistem!",
-              html: `<div class="text-center text-sm font-medium text-slate-700">`+
-                    `${res.message}<br>`+
-                    `<span class="text-xs text-red-500 block mt-2 font-bold">Gerbang menolak manipulasi data jam keluar sekolah.</span></div>`,
+              html: `<div class="text-center text-sm font-medium text-slate-700">${res.message}</div>`,
               icon: "error",
               confirmButtonText: "Reset & Buka Scanner",
               confirmButtonColor: "#dc2626",
               allowOutsideClick: false
             }).then(() => { 
-              // 3. SAPU BERSIH BUFFER MONITOR KELUARAN SCAN UNTUK ANTREAN BARU
               document.getElementById('scan-id').innerText = "-";
               document.getElementById('scan-nama').innerText = "-";
               document.getElementById('scan-tipe').innerText = "-";
@@ -537,7 +530,7 @@
           }
         },
         () => {}
-      ).catch(() => Swal.fire("Camera Error", "Gagal mengaktifkan modul kamera perangkat.", "warning"));
+      ).catch(() => Swal.fire("Camera Error", "Gagal mengaktifkan modul kamera.", "warning"));
     }
 
     function matikanKamera() {
@@ -549,7 +542,6 @@
       }
     }
 
-    // Form Submissions Actions Pipelines
     async function simpanSettings(e) {
       e.preventDefault();
       document.getElementById("loading-overlay").style.display = "flex";
@@ -616,7 +608,6 @@
       });
     }
 
-    // CSV Batch Processing Engine
     function handleCSVUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -637,7 +628,7 @@
             });
           }
         }
-        if(arrayDataSiswa.length === 0) return Swal.fire("Format Kosong", "Format file CSV salah atau baris kosong!", "error");
+        if(arrayDataSiswa.length === 0) return Swal.fire("Format Kosong", "Format file CSV salah!", "error");
         document.getElementById("loading-overlay").style.display = "flex";
         let res = await requestCore('uploadMasal', arrayDataSiswa);
         document.getElementById("loading-overlay").style.display = "none";
@@ -647,7 +638,6 @@
       reader.readAsText(file);
     }
 
-    // Reporting Engine Controller
     function toggleFormLaporan() {
       let t = document.getElementById('report-type').value;
       if(t === 'harian') {
@@ -660,7 +650,7 @@
     }
 
     async function prosesTarikDataLaporan() {
-      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Menarik arsip data transaksi aman cloud...</td></tr>';
+      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Menarik arsip data transaksi cloud...</td></tr>';
       let res = await requestCore('getRekap');
       if(res.status === 'success') {
         globalRekapAbsenRaw = res.data;
@@ -700,7 +690,6 @@
       document.getElementById('tabelRekapBody').innerHTML = html === '' ? '<tr><td colspan="7" class="text-center py-4 text-slate-400">Tidak ditemukan baris absensi yang cocok.</td></tr>' : html;
     }
 
-    // Modal Window UI Helpers
     function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
     function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); document.getElementById('formPeserta').reset(); }
     
