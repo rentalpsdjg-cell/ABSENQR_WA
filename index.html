@@ -32,7 +32,7 @@
     <div class="text-center animate__animated animate__fadeIn">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
       <h5 class="font-bold text-lg tracking-wide">MEMPROSES DATA ABSENSI...</h5>
-      <p class="text-slate-400 text-xs mt-1">Concurrency lock sedang memverifikasi timestamp cloud database.</p>
+      <p class="text-slate-400 text-xs mt-1">Concurrency lock sedang memverifikasi data pada cloud database.</p>
     </div>
   </div>
 
@@ -130,7 +130,7 @@
           <div class="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center">
               <h3 class="font-bold text-slate-800 text-sm"><i class="fas fa-bolt text-warning mr-1"></i> Log Aliran Scan Terkini Hari Ini</h3>
-              <button class="text-xs bg-slate-100 hover:bg-slate-200 border px-3 py-1.5 rounded-lg font-semibold" onclick="fetchDashboardData()"><i class="fas fa-sync-alt"></i> Sinkron Data</button>
+              <button class="text-xs bg-slate-100 hover:bg-slate-200 border px-3 py-1.5 rounded-lg font-semibold cursor-pointer" onclick="fetchDashboardData()"><i class="fas fa-sync-alt"></i> Sinkron Data</button>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm min-w-[600px]">
@@ -162,7 +162,7 @@
                 <button onclick="matikanKamera()" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-xl transition-all cursor-pointer">Matikan</button>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs space-y-4 shadow-sm">
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs space-y-4">
               <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 text-sm">Status Pemindai Terakhir</h3>
               <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">ID Terbaca</p><p id="scan-id" class="text-xl font-extrabold text-blue-600 font-mono mt-0.5">-</p></div>
               <div><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Nama Siswa</p><p id="scan-nama" class="text-sm font-semibold text-slate-800 mt-0.5">-</p></div>
@@ -274,7 +274,7 @@
               <input type="text" id="set-waToken" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
             </div>
             <div class="flex justify-end">
-              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm cursor-pointer transition-all shadow-md shadow-blue-500/10">💾 Simpan Setelan</button>
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm cursor-pointer transition-all shadow-md">💾 Simpan Setelan</button>
             </div>
           </form>
         </section>
@@ -291,7 +291,7 @@
         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label><input type="text" id="p-nama" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Jurusan / Kelas</label><input type="text" id="p-jurusan" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">No WhatsApp Wali (Contoh: 628xxx)</label><input type="text" id="p-wa" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none"></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="tutupModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs font-medium text-slate-600">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-sm">Simpan Data</button></div>
+        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="tutupModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs font-medium text-slate-600 cursor-pointer">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">Simpan Data</button></div>
       </form>
     </div>
   </div>
@@ -300,7 +300,7 @@
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 border border-slate-100 shadow-2xl text-center space-y-4 printable-card-container">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3 hide-on-print">
         <h3 class="font-bold text-slate-800 text-sm">Kartu QR Absensi</h3>
-        <button onclick="tutupModalQR()" class="text-2xl text-slate-400 hover:text-slate-600">&times;</button>
+        <button onclick="tutupModalQR()" class="text-2xl text-slate-400 hover:text-slate-600 cursor-pointer">&times;</button>
       </div>
       <div class="space-y-1">
         <h4 class="font-extrabold text-slate-900 text-base uppercase tracking-tight">KARTU DIGITAL ELEKTRONIK</h4>
@@ -318,7 +318,7 @@
 
   <script>
     // =========================================================================
-    // GLOBAL TARGET CLOUD LINK GATEWAY - 100% SINKRON DENGAN DEWA ENGINE
+    // URL WEB APP APPS SCRIPT LINK
     // =========================================================================
     const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzNpFTKMSazNGHYAB19iGtPlrLjnESgESQ_QqvkDHlP0BMXBrcRye8KiG5epog-MLFoew/exec";
 
@@ -327,23 +327,22 @@
     let html5QrcodeScannerInstance = null;
     let qrcodeGeneratorInstance = null;
 
-    // Real-Time Clock 24 Jam
+    // Real-Time Clock
     setInterval(() => {
       document.getElementById('live-clock').innerHTML = `<i class="far fa-clock text-warning mr-1"></i> ${new Date().toLocaleTimeString('id-ID')}`;
     }, 1000);
 
-    // Form Authenticator Gate
+    // Auth Logic Gate
     function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
-
       if (u === "admin" && p === "admin123") {
         document.getElementById('auth-layer').classList.add('hidden');
         document.getElementById('app-layer').classList.remove('hidden');
         bootSistemAbsensi();
       } else {
-        Swal.fire("Kredensial Salah", "Kombinasi Username & Password tidak terdaftar!", "error");
+        Swal.fire("Kredensial Salah", "Username atau Password Anda keliru!", "error");
       }
     }
 
@@ -353,7 +352,7 @@
       document.getElementById('login-pass').value = "";
     }
 
-    // Single Page App Router Tab Engine
+    // App Navigation Router Tabs
     function switchTab(tabId) {
       const tabs = ['dashboard', 'scan', 'peserta', 'rekap', 'pengaturan'];
       tabs.forEach(t => {
@@ -361,7 +360,6 @@
         document.getElementById('m-' + t).className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer";
         document.getElementById('mb-' + t).className = "flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-400 py-1 px-3 rounded-xl";
       });
-
       document.getElementById('tab-' + tabId).classList.remove('hidden');
       document.getElementById('m-' + tabId).className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-left transition-all hover:bg-slate-800 cursor-pointer bg-slate-800 text-white";
       document.getElementById('mb-' + tabId).className = "flex flex-col items-center gap-0.5 text-[10px] font-bold text-blue-600 bg-blue-50/50 py-1 px-3 rounded-xl";
@@ -384,11 +382,10 @@
       document.getElementById("loading-overlay").style.display = "none";
     }
 
-    // POST Request Core Central Hub Gateway
+    // Core Post Handler API
     async function requestCore(action, payloadData = {}) {
       try {
-        let fetchUrl = `${URL_WEB_APP}?action=${action}`;
-        let response = await fetch(fetchUrl, {
+        let response = await fetch(`${URL_WEB_APP}?action=${action}`, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -396,8 +393,7 @@
         });
         return await response.json();
       } catch (err) {
-        console.error(err);
-        return { status: 'error', message: 'Koneksi ke Core Apps Script Terputus.' };
+        return { status: 'error', message: 'Gagal menghubungi server Apps Script Cloud.' };
       }
     }
 
@@ -411,7 +407,7 @@
         
         let html = '';
         if(res.data.terbaru.length === 0) {
-          html = '<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada aktivitas scan log hari ini.</td></tr>';
+          html = '<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada log aliran masuk hari ini.</td></tr>';
         } else {
           res.data.terbaru.forEach(row => {
             let badge = row.statusKehadiran === 'HADIR' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
@@ -435,7 +431,6 @@
       if(res.status === 'success') {
         globalSiswaDB = res.data;
         document.getElementById('c-total').innerText = globalSiswaDB.length;
-
         let opt = '<option value="">-- Pilih Siswa --</option>';
         let tr = '';
         let listJurusan = new Set();
@@ -450,15 +445,14 @@
             <td class="py-3 px-5 font-mono text-xs text-slate-500">${s.wa || '-'}</td>
             <td class="py-3 px-5 text-center">
               <div class="flex justify-center gap-1.5">
-                <button onclick="bukaModalQR('${s.id}', '${s.nama.replace(/'/g, "")}', '${s.jurusan}')" class="px-2 py-1 bg-slate-900 text-white rounded-md text-[10px] font-bold shadow-sm transition-all hover:bg-slate-800 cursor-pointer">🎴 Card</button>
-                <button onclick="hapusPeserta('${s.id}')" class="px-2 py-1 bg-red-100 text-red-600 rounded-md text-[10px] font-bold transition-all hover:bg-red-200 cursor-pointer">🗑️ Hapus</button>
+                <button onclick="bukaModalQR('${s.id}', '${s.nama.replace(/'/g, "")}', '${s.jurusan}')" class="px-2 py-1 bg-slate-900 text-white rounded-md text-[10px] font-bold shadow-sm cursor-pointer hover:bg-slate-800">🎴 Card</button>
+                <button onclick="hapusPeserta('${s.id}')" class="px-2 py-1 bg-red-100 text-red-600 rounded-md text-[10px] font-bold cursor-pointer hover:bg-red-200">🗑️ Hapus</button>
               </div>
             </td>
           </tr>`;
         });
-
         document.getElementById('fast-student-id').innerHTML = opt;
-        document.getElementById('tabelPesertaBody').innerHTML = tr === '' ? '<tr><td colspan="5" class="text-center py-4 text-slate-400">Database Siswa Kosong.</td></tr>' : tr;
+        document.getElementById('tabelPesertaBody').innerHTML = tr === '' ? '<tr><td colspan="5" class="text-center py-4 text-slate-400">Database Kosong.</td></tr>' : tr;
 
         let filterJurusanHtml = '<option value="ALL">Semua Jurusan</option>';
         listJurusan.forEach(j => { filterJurusanHtml += `<option value="${j}">${j.toUpperCase()}</option>`; });
@@ -478,7 +472,9 @@
       }
     }
 
-    // Kamera Scanner Pipeline Hook (Anti Double Read)
+    // =========================================================================
+    // KAMERA SCANNER PLATINUM GRADE ENGINE (STRICT SECURITY VALIDATION)
+    // =========================================================================
     function mulaiKamera() {
       document.getElementById('reader').innerHTML = "";
       html5QrcodeScannerInstance = new Html5Qrcode("reader");
@@ -486,12 +482,12 @@
         { facingMode: "environment" },
         { fps: 15, qrbox: 250, aspectRatio: 1.0 },
         async (decodedText) => {
-          // SEGERA BLOK KANDIDAT LOOP DI DETIK YANG SAMA
+          // 1. SEGERA BLOKIR LOGIKA KAMERA (Mencegah looping tembakan double scan)
           matikanKamera();
           document.getElementById("loading-overlay").style.display = "flex";
           
           document.getElementById('scan-id').innerText = decodedText;
-          document.getElementById('scan-nama').innerText = "Memproses absensi aman...";
+          document.getElementById('scan-nama').innerText = "Memverifikasi hak akses...";
           
           let res = await requestCore('scanAbsen', { id: decodedText.trim() });
           document.getElementById("loading-overlay").style.display = "none";
@@ -502,29 +498,42 @@
             document.getElementById('scan-wa').innerText = res.data.wa;
 
             Swal.fire({
-              title: "Scan Berhasil!",
+              title: "Scan Berhasil Terbaca!",
               html: `<div class="text-left font-normal text-slate-600 text-xs mt-2">`+
-                    `<b>Nama:</b> ${res.data.nama}<br>`+
-                    `<b>Aksi:</b> <span class="text-blue-600 font-bold">${res.data.tipe}</span><br>`+
-                    `<b>Waktu:</b> ${res.data.jam}<br>`+
-                    `<b>Status:</b> <span class="badge bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-sm">${res.data.statusKehadiran}</span></div>`,
+                    `<b>Nama Siswa:</b> ${res.data.nama}<br>`+
+                    `<b>Aksi Registrasi:</b> <span class="text-blue-600 font-bold">${res.data.tipe}</span><br>`+
+                    `<b>Waktu Sistem:</b> ${res.data.jam}<br>`+
+                    `<b>Status Hari Ini:</b> <span class="badge bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-sm">${res.data.statusKehadiran}</span></div>`,
               icon: "success",
-              confirmButtonText: "Siswa Berikutnya",
+              confirmButtonText: "Lanjut Antrean Berikutnya",
               confirmButtonColor: "#2563eb",
-            }).then(() => { mulaiKamera(); });
+              allowOutsideClick: false
+            }).then(() => { 
+              mulaiKamera(); 
+            });
 
           } else {
-            document.getElementById('scan-nama').innerText = "Ditolak";
+            // 2. LOGIKA BLOKIR KETAT (Belum Waktunya Pulang / Double Tap Masuk)
+            document.getElementById('scan-nama').innerText = "Akses Ditolak";
             document.getElementById('scan-tipe').innerText = "REJECTED";
             document.getElementById('scan-wa').innerText = "-";
 
             Swal.fire({
-              title: "Akses Absen Ditolak!",
-              text: res.message,
+              title: "Absensi Ditolak Sistem!",
+              html: `<div class="text-center text-sm font-medium text-slate-700">`+
+                    `${res.message}<br>`+
+                    `<span class="text-xs text-red-500 block mt-2 font-bold">Gerbang menolak manipulasi data jam keluar sekolah.</span></div>`,
               icon: "error",
-              confirmButtonText: "Ulangi Scan",
+              confirmButtonText: "Reset & Buka Scanner",
               confirmButtonColor: "#dc2626",
-            }).then(() => { mulaiKamera(); });
+              allowOutsideClick: false
+            }).then(() => { 
+              // 3. SAPU BERSIH BUFFER MONITOR KELUARAN SCAN UNTUK ANTREAN BARU
+              document.getElementById('scan-id').innerText = "-";
+              document.getElementById('scan-nama').innerText = "-";
+              document.getElementById('scan-tipe').innerText = "-";
+              mulaiKamera(); 
+            });
           }
         },
         () => {}
@@ -540,7 +549,7 @@
       }
     }
 
-    // Operasional Form Actions Pipeline
+    // Form Submissions Actions Pipelines
     async function simpanSettings(e) {
       e.preventDefault();
       document.getElementById("loading-overlay").style.display = "flex";
@@ -552,7 +561,7 @@
       };
       let res = await requestCore('saveSettings', payload);
       document.getElementById("loading-overlay").style.display = "none";
-      Swal.fire("Tersimpan!", res.message, "success");
+      Swal.fire("Berhasil", res.message, "success");
       bootSistemAbsensi();
     }
 
@@ -560,7 +569,6 @@
       let id = document.getElementById('fast-student-id').value;
       let status = document.getElementById('fast-student-status').value;
       if(!id) return Swal.fire("Pilih Siswa", "Silakan pilih nama siswa terlebih dahulu!", "warning");
-
       document.getElementById("loading-overlay").style.display = "flex";
       let res = await requestCore('inputManual', { id: id, status: status });
       document.getElementById("loading-overlay").style.display = "none";
@@ -591,7 +599,7 @@
     async function hapusPeserta(id) {
       Swal.fire({
         title: "Hapus Permanen?",
-        text: `Apakah Anda yakin ingin menghapus siswa dengan ID: ${id}?`,
+        text: `Ingin menghapus siswa dengan ID: ${id}?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -608,7 +616,7 @@
       });
     }
 
-    // CSV Batch Parser Engine
+    // CSV Batch Processing Engine
     function handleCSVUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -617,7 +625,6 @@
         const text = e.target.result;
         const baris = text.split('\n');
         let arrayDataSiswa = [];
-        
         for(let i = 1; i < baris.length; i++) {
           if(baris[i].trim() === '') continue;
           let kolom = baris[i].split(',');
@@ -630,18 +637,17 @@
             });
           }
         }
-        if(arrayDataSiswa.length === 0) return Swal.fire("Format Kosong", "Format CSV tidak valid atau kosong!", "error");
-        
+        if(arrayDataSiswa.length === 0) return Swal.fire("Format Kosong", "Format file CSV salah atau baris kosong!", "error");
         document.getElementById("loading-overlay").style.display = "flex";
         let res = await requestCore('uploadMasal', arrayDataSiswa);
         document.getElementById("loading-overlay").style.display = "none";
-        Swal.fire("Import Berhasil", res.message, "success");
+        Swal.fire("Import Massal Sukses", res.message, "success");
         fetchPesertaData();
       };
       reader.readAsText(file);
     }
 
-    // Generator Filter Cetak Laporan
+    // Reporting Engine Controller
     function toggleFormLaporan() {
       let t = document.getElementById('report-type').value;
       if(t === 'harian') {
@@ -654,7 +660,7 @@
     }
 
     async function prosesTarikDataLaporan() {
-      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Menarik data aman dari Cloud Database Spreadsheet...</td></tr>';
+      document.getElementById('tabelRekapBody').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Menarik arsip data transaksi aman cloud...</td></tr>';
       let res = await requestCore('getRekap');
       if(res.status === 'success') {
         globalRekapAbsenRaw = res.data;
@@ -677,7 +683,6 @@
         let cocokWaktu = false;
         if(tipe === 'harian' && row.waktu === tglPilihan) cocokWaktu = true;
         if(tipe === 'bulanan' && row.waktu.substring(0, 7) === blnPilihan) cocokWaktu = true;
-
         let cocokJurusan = (fJurusan === 'ALL' || String(row.jurusan).toUpperCase() === fJurusan.toUpperCase());
 
         if(cocokWaktu && cocokJurusan) {
@@ -692,11 +697,10 @@
           </tr>`;
         }
       });
-
-      document.getElementById('tabelRekapBody').innerHTML = html === '' ? '<tr><td colspan="7" class="text-center py-4 text-slate-400">Tidak ada data absensi yang cocok dengan filter.</td></tr>' : html;
+      document.getElementById('tabelRekapBody').innerHTML = html === '' ? '<tr><td colspan="7" class="text-center py-4 text-slate-400">Tidak ditemukan baris absensi yang cocok.</td></tr>' : html;
     }
 
-    // Modal Window Helpers
+    // Modal Window UI Helpers
     function bukaModal() { document.getElementById('modalTambah').classList.remove('hidden'); }
     function tutupModal() { document.getElementById('modalTambah').classList.add('hidden'); document.getElementById('formPeserta').reset(); }
     
@@ -705,14 +709,8 @@
       document.getElementById('qr-card-nama').innerText = nama;
       document.getElementById('qr-card-jurusan').innerText = jurusan;
       document.getElementById('canvas-qrcode').innerHTML = "";
-      
       qrcodeGeneratorInstance = new QRCode(document.getElementById("canvas-qrcode"), {
-        text: id,
-        width: 160,
-        height: 160,
-        colorDark : "#0f172a",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+        text: id, width: 160, height: 160, colorDark : "#0f172a", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
       });
       document.getElementById('modalQR').classList.remove('hidden');
     }
